@@ -56,7 +56,7 @@ class Win1(tk.Frame):
         self.pack()
 
         self.master.geometry("400x400")
-        self.master.title("window 1")
+        self.master.title("umauma drive")
         self.uma_pt_list = UmaList()
         self.create_widgets()
         self.app2 = None
