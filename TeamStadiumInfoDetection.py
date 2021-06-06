@@ -44,8 +44,8 @@ class TeamStadiumInfoDetection(Thread):
 
     #スコア読み取りモードに移行するために「スコア情報」と書いているかを確認する関数
     # 戻り値 bool
-    def __init__(self):
-        super().__init__()
+    def __init__(self, uma_pt_list:UmaList):
+        super().__init__(daemon=True)
         self.st = State.NONE_ST
         #ev = Event.NONE_EV
         self.game_window_image = None
