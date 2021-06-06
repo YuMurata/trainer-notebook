@@ -29,6 +29,7 @@ class Win1(tk.Frame):
 
         self.master.geometry("400x400")
         self.master.title("window 1")
+        self.uma_pt_list = UmaList()
         self.create_widgets()
         self.app2 = None
 
@@ -38,24 +39,72 @@ class Win1(tk.Frame):
     def setResultReadScore(self, read_score:list):
         self.app2.setResultReadScore(read_score)
 
-    def display(self, read_score):
+    def display(self):
         #print("win1")
-        self.app2.display(read_score)
+        # for i in range(self.uma_pt_list.len()):
+        #     self.treeview_score.set(i,1,'')
+        #     self.treeview_score.set(i,2,'')
+
+        for i, (name, point) in enumerate(self.uma_pt_list.Max().items()):
+            self.treeview_score.set(i,0,name)
+            self.treeview_score.set(i,1,point)
+
+        for i, (name, point) in enumerate(self.uma_pt_list.Min().items()):
+            self.treeview_score.set(i,2,point)
+
+        for i, (name, point) in enumerate(self.uma_pt_list.Mean().items()):
+            self.treeview_score.set(i,3,point)
+
+        for i, (name, point) in enumerate(self.uma_pt_list.Std().items()):
+            self.treeview_score.set(i,4,point)
+
 
     def create_widgets(self):
         # Button
         self.button_new_win2 = ttk.Button(self)
         self.button_new_win2.configure(text="Open Window 2")
         self.button_new_win2.configure(command = self.new_window2)
-        self.button_new_win2.pack()
+
         self.button_new_win3 = ttk.Button(self)
         self.button_new_win3.configure(text="Open Window 3")
         self.button_new_win3.configure(command = self.new_window3)
+
+        frame = ttk.Frame()
+        frame.pack()
+        #TreeView
+        self.treeview_score = ttk.Treeview(frame, columns=['Name', 'Max','Min', 'Mean', 'Std'],height=30,show="headings")
+        self.treeview_score.column('Name', width=120)
+        self.treeview_score.column('Max', width=50)
+        self.treeview_score.column('Min',anchor='e', width=50)
+        self.treeview_score.column('Mean', width=50)
+        self.treeview_score.column('Std', width=50)
+
+        #Create Heading
+        self.treeview_score.heading('Name', text='Name',anchor='center',command=self.click_header)
+        self.treeview_score.heading('Max', text='Max',anchor='center',command=self.click_header)
+        self.treeview_score.heading('Min', text='Min',anchor='center',command=self.click_header)
+        self.treeview_score.heading('Mean', text='Mean',anchor='center',command=self.click_header)
+        self.treeview_score.heading('Std', text='Std',anchor='center',command=self.click_header)
+
+        self.vscroll = ttk.Scrollbar(frame, orient ="vertical", command=self.treeview_score.yview)
+        self.treeview_score.configure(yscroll=self.vscroll.set)
+        #Add data
+        for i in range(self.uma_pt_list.len()):
+            self.treeview_score.insert(parent='', index='end', iid=i ,values=(i+1, '',''))
+
+        #self.treeview_score.grid(row=0,column=0,columnspan=2,pady=10)
+        self.button_new_win2.pack()
         self.button_new_win3.pack()
+        self.treeview_score.pack(side=tk.LEFT,pady=10)
+        self.vscroll.pack(side=tk.RIGHT, fill="y", pady=10)
+
+    def click_header(self):
+        x = self.treeview_score.winfo_pointerx() - self.treeview_score.winfo_rootx()
+        print(x)
 
     #Call back function
     def new_window2(self):
-        self.app2 = Win2(self.master)
+        self.app2 = Win2(self.master, self.uma_pt_list)
 
         def close_win2():
             self.app2.info_detection.stop()
@@ -71,11 +120,11 @@ class Win1(tk.Frame):
 
 
 class Win2(tk.Toplevel):
-    def __init__(self,master):
+    def __init__(self,master, uma_pt_list):
         super().__init__(master)
         self.geometry("300x380")
         self.title("window 2")
-        self.info_detection = TeamStadiumInfoDetection()
+        self.info_detection = TeamStadiumInfoDetection(uma_pt_list)
         self.create_widgets()
         self.info_detection.start()
 

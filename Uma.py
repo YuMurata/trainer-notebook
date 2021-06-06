@@ -68,7 +68,27 @@ class UmaList():
                 self.uma_pt_dict[name].insert(0,0)
 
     def Max(self):
-        pass
+        return {name:max(points) for name, points in self.uma_pt_dict.items()}
+
+    def Min(self):
+        return {name:min(points) for name, points in self.uma_pt_dict.items()}
+
+    def Mean(self):
+        def pred(points:np.array):
+            if np.any(points > 0):
+                return int(np.mean(points[points > 0]))
+            return 0
+        return {name:pred(np.array(points)) for name, points in self.uma_pt_dict.items()}
+
+    def Std(self):
+        def pred(points:np.array):
+            if np.any(points > 0):
+                return int(np.std(points[points > 0]))
+            return 0
+        return {name:pred(np.array(points)) for name, points in self.uma_pt_dict.items()}
+
+    def len(self):
+        return len(self.uma_pt_dict)
 
 if __name__ == "__main__":
     uma_list = UmaList()

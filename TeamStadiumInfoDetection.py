@@ -50,7 +50,8 @@ class TeamStadiumInfoDetection(Thread):
         #ev = Event.NONE_EV
         self.game_window_image = None
 
-        self.uma_pt_list = UmaList()
+        self.uma_pt_list = uma_pt_list
+
         self.uma_list = self.uma_pt_list.getUmaList()#全てのウマ娘の名前のリスト
 
         self.upr = UmaPointReading()#スコア情報読み取るやつ
