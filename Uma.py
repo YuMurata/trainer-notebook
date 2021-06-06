@@ -27,7 +27,7 @@ class UmaList():
         pass
 
     def readUmaList(self):
-        self.uma_pt_list = {}
+        self.uma_pt_dict = {}
         with open('uma_pt_list.txt', 'r',encoding="utf-8_sig") as f:
             max_data = 0
             for line in f.readlines():
@@ -41,35 +41,34 @@ class UmaList():
                 if len(word_list) > 1:
                     points = map(int, word_list[1:])
 
-                self.uma_pt_list[uma_name] = points
+                self.uma_pt_dict[uma_name] = points
 
                 if max_data < len(points):
                     max_data = len(points)
 
-        for name in self.uma_pt_list.keys():
-            self.uma_pt_list[name] += [0 for j in range(max-len(self.uma_pt_list[name]))]
+        for name in self.uma_pt_dict.keys():
+            self.uma_pt_dict[name] += [0 for j in range(max-len(self.uma_pt_dict[name]))]
 
     def WriteUmaList(self):
         with open('uma_pt_list.txt', 'w', encoding="utf-8_sig") as f:
-            for name, points in self.uma_pt_list.items():
+            for name, points in self.uma_pt_dict.items():
                 f.write(name)
                 for data in points:
                     f.write(', ' + str(data))
                 f.write('\n')
 
     def getUmaList(self):
-        return self.uma_pt_list.keys()
+        return sorted(self.uma_pt_dict.keys())
 
     def addUmaPt(self, read_score:dict):
-        for name, points in self.uma_pt_list.keys():
-            if name in read_score.keys():
-                uma_pt_list[name].insert(0, read_score[name])
+        for name, points in self.uma_pt_dict.keys():
+            if name in sorted(read_score.keys()):
+                uma_pt_dict[name].insert(0, read_score[name])
             else:
-                self.uma_pt_list[name].insert(0,0)
-
+                self.uma_pt_dict[name].insert(0,0)
 
     def Max(self):
-
+        pass
 
 if __name__ == "__main__":
     uma_list = UmaList()

@@ -50,17 +50,13 @@ class TeamStadiumInfoDetection(Thread):
         #ev = Event.NONE_EV
         self.game_window_image = None
 
-
-        print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-
-
         self.uma_pt_list = UmaList()
         self.uma_list = self.uma_pt_list.getUmaList()#全てのウマ娘の名前のリスト
 
         self.upr = UmaPointReading()#スコア情報読み取るやつ
         self.upr.setUmaList(self.uma_pt_list.getUmaList())
         self.read_score = []#スコア情報を読み取った結果
-        print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+
         print(self.read_score)
 
         #EV_mat = [[None, ]]#状態遷移を2次元配列で作ろうとしたけどあきらめた

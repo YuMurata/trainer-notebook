@@ -20,13 +20,13 @@ class UmaPointReading():
         self.tool = pyocr.get_available_tools()[0]
         #self.__OpenUmaList()
 
-    def setUmaList(self, uma_list):
-        self.uma_list = uma_list
+    def setUmaList(self, uma_dict:dict):
+        self.uma_dict = uma_dict
 
     # def __OpenUmaList(self):
     #     with open('uma_list.txt', 'r',encoding="utf-8_sig") as f:
     #         self.uma_list = f.read().split("\n")
-    
+
     def __isint(self, s):  # 整数値を表しているかどうかを判定
         try:
             int(s)  # 文字列を実際にint関数で変換してみる
@@ -44,7 +44,7 @@ class UmaPointReading():
             if 'pt' in word:
                 if self.__isint(word.split('pt')[0]):
                     pt = int(word.split('pt')[0])
-                else: 
+                else:
                     print(word)
                     return None,None
         if pt is None:
@@ -74,7 +74,7 @@ class UmaPointReading():
                 #no = no + 1
                 #print(uma + ":" + str(pt) + "pt")
             #cv2.rectangle(out, d.position[0], d.position[1], (0, 0, 255), 2)
-        
+
         # cv2.imshow("img",out)
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
