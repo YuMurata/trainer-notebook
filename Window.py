@@ -74,40 +74,36 @@ class Win1(tk.Frame):
         # for i in range(self.uma_pt_list.len()):
         #     self.treeview_score.set(i,1,'')
         #     self.treeview_score.set(i,2,'')
+        treeview_content = list(self.uma_pt_list.Metrics().items())
 
-        for i, (name, point) in enumerate(self.uma_pt_list.Max().items()):
+        treeview_content.sort(key=self.uma_pt_sorter.sort, reverse=self.uma_pt_sorter.is_reverse)
+
+        for i,(name, uma_data) in enumerate(treeview_content):
             self.treeview_score.set(i,0,name)
-            self.treeview_score.set(i,1,point)
-
-        for i, (name, point) in enumerate(self.uma_pt_list.Min().items()):
-            self.treeview_score.set(i,2,point)
-
-        for i, (name, point) in enumerate(self.uma_pt_list.Mean().items()):
-            self.treeview_score.set(i,3,point)
-
-        for i, (name, point) in enumerate(self.uma_pt_list.Std().items()):
-            self.treeview_score.set(i,4,point)
-
+            self.treeview_score.set(i,1,uma_data['max'])
+            self.treeview_score.set(i,2,uma_data['min'])
+            self.treeview_score.set(i,3,uma_data['mean'])
+            self.treeview_score.set(i,4,uma_data['std'])
 
     def create_widgets(self):
         # Button
         self.button_new_win2 = ttk.Button(self)
-        self.button_new_win2.configure(text="Open Window 2")
+        self.button_new_win2.configure(text="regist score")
         self.button_new_win2.configure(command = self.new_window2)
 
         self.button_new_win3 = ttk.Button(self)
-        self.button_new_win3.configure(text="Open Window 3")
+        self.button_new_win3.configure(text="disp graph")
         self.button_new_win3.configure(command = self.new_window3)
 
         frame = ttk.Frame()
         frame.pack()
         #TreeView
         self.treeview_score = ttk.Treeview(frame, columns=['Name', 'Max','Min', 'Mean', 'Std'],height=30,show="headings")
-        self.treeview_score.column('Name', width=120)
-        self.treeview_score.column('Max', width=50)
+        self.treeview_score.column('Name', anchor='w',width=120)
+        self.treeview_score.column('Max', anchor='e',width=50)
         self.treeview_score.column('Min',anchor='e', width=50)
-        self.treeview_score.column('Mean', width=50)
-        self.treeview_score.column('Std', width=50)
+        self.treeview_score.column('Mean', anchor='e',width=50)
+        self.treeview_score.column('Std', anchor='e',width=50)
 
         #Create Heading
         self.treeview_score.heading('Name', text='Name',anchor='center',command=self.click_header)
