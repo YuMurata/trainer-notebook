@@ -55,7 +55,7 @@ class TeamStadiumInfoDetection(Thread):
 
         self.upr = UmaPointReading()#スコア情報読み取るやつ
         self.upr.setUmaList(self.uma_pt_list.getUmaList())
-        self.read_score = []#スコア情報を読み取った結果
+        self.read_score = {}#スコア情報を読み取った結果
 
         print(self.read_score)
 
@@ -324,21 +324,13 @@ class TeamStadiumInfoDetection(Thread):
     def onReadScoreST(self, ev):
 
         img = self.ReadScorePreProc(self.game_window_image)
-        tmp_list = self.upr.UmaPtListfromImage(img)
-        #print(read_score)
-        for umarank in tmp_list:
-            #print(umarank[0])
-            isnotcontain = True
-            for data in self.read_score:
-                #print(data[0])
-                if umarank[0] in data:
-                    isnotcontain = False
-                    break
-            if isnotcontain:
-                self.read_score.append(umarank)
+        read_dict = self.upr.UmaPtListfromImage(img)
+
+        for uma_name, point in read_dict.items():
+            self.read_score[uma_name] = point
 
         #self.read_score.sort(key=lambda x: x[1], reverse=True)
-        self.read_score = sorted(self.read_score, key=lambda x: x[1], reverse=True)
+        #self.read_score = sorted(self.read_score, key=lambda x: x[1], reverse=True)
         #print('ev'+str(ev))
         if ev == Event.NONE_EV:
             #print('onReadST:Event.NONE_EV')

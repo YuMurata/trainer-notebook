@@ -39,7 +39,7 @@ class UmaList():
                 uma_name = word_list[0]
                 points = []
                 if len(word_list) > 1:
-                    points = map(int, word_list[1:])
+                    points = list(map(int, word_list[1:]))
 
                 self.uma_pt_dict[uma_name] = points
 
@@ -47,7 +47,7 @@ class UmaList():
                     max_data = len(points)
 
         for name in self.uma_pt_dict.keys():
-            self.uma_pt_dict[name] += [0 for j in range(max-len(self.uma_pt_dict[name]))]
+            self.uma_pt_dict[name] += [0 for j in range(max_data-len(self.uma_pt_dict[name]))]
 
     def WriteUmaList(self):
         with open('uma_pt_list.txt', 'w', encoding="utf-8_sig") as f:
@@ -61,9 +61,9 @@ class UmaList():
         return sorted(self.uma_pt_dict.keys())
 
     def addUmaPt(self, read_score:dict):
-        for name, points in self.uma_pt_dict.keys():
+        for name in self.uma_pt_dict.keys():
             if name in sorted(read_score.keys()):
-                uma_pt_dict[name].insert(0, read_score[name])
+                self.uma_pt_dict[name].insert(0, read_score[name])
             else:
                 self.uma_pt_dict[name].insert(0,0)
 

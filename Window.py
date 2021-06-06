@@ -86,9 +86,9 @@ class Win2(tk.Toplevel):
         for i in range(15):
             self.treeview_score.set(i,1,'')
             self.treeview_score.set(i,2,'')
-        for i in range(len(read_score)):
-            self.treeview_score.set(i,1,read_score[i][0])
-            self.treeview_score.set(i,2,read_score[i][1])
+        for i, (name, point) in enumerate(read_score.items()):
+            self.treeview_score.set(i,1,name)
+            self.treeview_score.set(i,2,point)
 
     def deleteResultReadScore(self):
         self.read_score = []
