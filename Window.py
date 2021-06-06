@@ -15,7 +15,7 @@ from tkinter import Tk, ttk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from PIL import Image, ImageDraw
-from enum import Enum
+from enum import IntEnum
 from UmaPointReading import UmaPointReading
 from matplotlib import pyplot
 from Uma import UmaList
@@ -23,6 +23,34 @@ from TeamStadiumInfoDetection import TeamStadiumInfoDetection
 
 
 class Win1(tk.Frame):
+    class SortUmaPtList:
+        class SortKey(IntEnum):
+            NAME=1
+            MAX=2
+            MIN=3
+            MEAN=4
+            STD=5
+
+        def __init__(self):
+            self.key = self.SortKey.NAME
+            self.is_reverse = False
+
+        def sort(self, x:tuple):
+            if self.key == self.SortKey.NAME:
+                return x[0]
+            else:
+                key_list = ['max', 'min', 'mean', 'std']
+                return x[1][key_list[int(self.key)-2]]
+
+        def set_key(self, x:int):
+            if x == self.key:
+                self.is_reverse = not self.is_reverse
+            else:
+                self.is_reverse = False
+
+            self.key = self.SortKey(x)
+
+
     def __init__(self,master):
         super().__init__(master)
         self.pack()
@@ -32,6 +60,8 @@ class Win1(tk.Frame):
         self.uma_pt_list = UmaList()
         self.create_widgets()
         self.app2 = None
+        self.treeview_content = None
+        self.uma_pt_sorter = self.SortUmaPtList()
 
     def setUmaList(self, umalist:UmaList):
         self.app2.setUmaList(umalist)
@@ -100,11 +130,13 @@ class Win1(tk.Frame):
 
     def click_header(self):
         x = self.treeview_score.winfo_pointerx() - self.treeview_score.winfo_rootx()
-        print(x)
+        column = int(self.treeview_score.identify_column(x)[1])
+        self.uma_pt_sorter.set_key(column)
+        self.display()
 
     #Call back function
     def new_window2(self):
-        self.app2 = Win2(self.master, self.uma_pt_list)
+        self.app2 = Win2(self.master, self.uma_pt_list, self)
 
         def close_win2():
             self.app2.info_detection.stop()
@@ -120,13 +152,14 @@ class Win1(tk.Frame):
 
 
 class Win2(tk.Toplevel):
-    def __init__(self,master, uma_pt_list):
+    def __init__(self,master, uma_pt_list, win1):
         super().__init__(master)
         self.geometry("300x380")
         self.title("window 2")
         self.info_detection = TeamStadiumInfoDetection(uma_pt_list)
         self.create_widgets()
         self.info_detection.start()
+        self.win1 = win1
 
     def display(self):
         read_score = self.info_detection.read_score
@@ -138,6 +171,8 @@ class Win2(tk.Toplevel):
         for i, (name, point) in enumerate(read_score.items()):
             self.treeview_score.set(i,1,name)
             self.treeview_score.set(i,2,point)
+
+        self.win1.display()
 
     def deleteResultReadScore(self):
         self.read_score = []
