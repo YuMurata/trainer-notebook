@@ -15,7 +15,7 @@ from tkinter import Tk, ttk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from PIL import Image, ImageDraw
-from enum import IntEnum
+from enum import IntEnum, auto
 from UmaPointReading import UmaPointReading
 from matplotlib import pyplot
 from Uma import UmaList
@@ -25,16 +25,17 @@ from TeamStadiumInfoDetection import TeamStadiumInfoDetection
 class MetricsView(ttk.Frame):
     class SortUmaPtList:
         class SortKey(IntEnum):
-            NAME=1
-            MAX=2
-            MIN=3
-            MEAN=4
-            STD=5
+            NUM=1
+            NAME=2
+            MAX=auto()
+            MIN=auto()
+            MEAN=auto()
+            STD=auto()
 
         def __init__(self):
             self.key = self.SortKey.NAME
             self.is_reverse = False
-            self.key_dict = {key:value for key, value in zip(self.SortKey, MetricsView.metrics_name_list)}
+            self.key_dict = {key:value for key, value in zip(self.SortKey, MetricsView.column_name_list)}
 
         def sort(self, x:tuple):
             if self.key == self.SortKey.NAME:
@@ -44,27 +45,32 @@ class MetricsView(ttk.Frame):
                 return x[1][key_list[int(self.key)-2]]
 
         def set_key(self, x:int):
-            if x == self.key:
+            key = self.SortKey(x)
+            if key == self.SortKey.NUM:
+                return
+
+            if key == self.key:
                 self.is_reverse = not self.is_reverse
             else:
                 self.is_reverse = False
 
-            self.key = self.SortKey(x)
+            self.key = key
 
         @property
         def key_to_str(self):
             return self.key_dict[self.key]
 
-    metrics_name_list = ['Name', 'Max','Min', 'Mean', 'Std']
+    column_name_list = ['Num', 'Name', 'Max','Min', 'Mean', 'Std']
 
     def __init__(self, master, uma_pt_list:UmaList):
         super().__init__(master)
         self.uma_pt_sorter = self.SortUmaPtList()
         self.uma_pt_list = uma_pt_list
         self._create_widgets()
+        self.display()
 
     def _create_heading(self):
-        for metrics_name in self.metrics_name_list:
+        for metrics_name in self.column_name_list:
             metrics_text = metrics_name
             if metrics_name == self.uma_pt_sorter.key_to_str:
                 if self.uma_pt_sorter.is_reverse:
@@ -75,7 +81,8 @@ class MetricsView(ttk.Frame):
             self.treeview_score.heading(metrics_name, text=metrics_text, anchor='center', command=self._click_header)
 
     def _create_widgets(self):
-        self.treeview_score = ttk.Treeview(self, columns=self.metrics_name_list,height=30,show="headings")
+        self.treeview_score = ttk.Treeview(self, columns=self.column_name_list,height=30,show="headings")
+        self.treeview_score.column('Num', anchor='e',width=50)
         self.treeview_score.column('Name', anchor='w',width=120)
         self.treeview_score.column('Max', anchor='e',width=50)
         self.treeview_score.column('Min',anchor='e', width=50)
@@ -90,7 +97,11 @@ class MetricsView(ttk.Frame):
 
         #Add data
         for i in range(self.uma_pt_list.len()):
-            self.treeview_score.insert(parent='', index='end', iid=i ,values=(i+1, '',''))
+            tags = ['even'] if i % 2 == 0 else ['odd']
+
+            self.treeview_score.insert(parent='', index='end', tags=tags, iid=i , values=[str(i+1)]+['' for _ in range(len(self.column_name_list[1:]))])
+
+        self.treeview_score.tag_configure('odd', background='red', foreground='blue')
 
         #self.treeview_score.grid(row=0,column=0,columnspan=2,pady=10)
         self.treeview_score.pack(side=tk.LEFT,pady=10)
@@ -113,11 +124,14 @@ class MetricsView(ttk.Frame):
         self._create_heading()
 
         for i,(name, uma_data) in enumerate(treeview_content):
-            self.treeview_score.set(i,0,name)
-            self.treeview_score.set(i,1,uma_data['max'])
-            self.treeview_score.set(i,2,uma_data['min'])
-            self.treeview_score.set(i,3,uma_data['mean'])
-            self.treeview_score.set(i,4,uma_data['std'])
+            self.treeview_score.set(i, 0, str(i+1))
+            self.treeview_score.set(i, 1, name)
+            self.treeview_score.set(i, 2, uma_data['max'])
+            self.treeview_score.set(i, 3, uma_data['min'])
+            self.treeview_score.set(i, 4, uma_data['mean'])
+            self.treeview_score.set(i, 5, uma_data['std'])
+
+        self.treeview_score.tag_configure('odd', background='red')
 
 class Win1(tk.Frame):
     def __init__(self,master):
