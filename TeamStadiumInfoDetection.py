@@ -74,6 +74,9 @@ class TeamStadiumInfoDetection(Thread):
         #「スコア情報」と書かれている部分を切り出す
         #img.show()
 
+        if self.game_window_image is None:
+            return False
+
         img = self.game_window_image.copy()
         print(img.size)
         #img = Image.open("./lose.png")
@@ -97,6 +100,9 @@ class TeamStadiumInfoDetection(Thread):
     #テンプレートマッチングを用いた
     #戻り値bool
     def canReadRank(self):
+        if self.game_window_image is None:
+            return False
+
         img = self.game_window_image.copy()
         img = self.pil2cv(img)
         img = img[195:270,125:250]
@@ -246,6 +252,9 @@ class TeamStadiumInfoDetection(Thread):
 
     def GetWindowRectFromName(self, TargetWindowTitle:str)-> tuple:
         TargetWindowHandle = ctypes.windll.user32.FindWindowW(0, TargetWindowTitle)
+        if TargetWindowHandle == 0:
+            return None
+
         Rectangle = ctypes.wintypes.RECT()
         ctypes.windll.user32.GetWindowRect(TargetWindowHandle, ctypes.pointer(Rectangle))
         return (Rectangle.left + 8, Rectangle.top, Rectangle.right - 8, Rectangle.bottom - 8)
@@ -303,7 +312,8 @@ class TeamStadiumInfoDetection(Thread):
     #     return sorted(read_score, key=lambda x: x[1], reverse=True)
 
     def CreateEvent(self):
-        print(self.read_score)
+        print(f'score: {self.read_score}')
+        print(f'score_type: {type(self.read_score)}')
 
         #if len(self.read_score) >= 15 and self.st == State.READ_SCORE_ST:
             #return Event.READ_SCORE_END_EV
@@ -403,7 +413,9 @@ class TeamStadiumInfoDetection(Thread):
 
     def UpdateImage(self):
         rect = self.GetWindowRectFromName('umamusume')
-        self.game_window_image = ImageGrab.grab(rect)
+
+        if rect is not None:
+            self.game_window_image = ImageGrab.grab(rect)
 
     def OverWriteUmaListFile(self):
         self.uma_pt_list.addUmaPt(self.read_score)

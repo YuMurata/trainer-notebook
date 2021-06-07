@@ -171,8 +171,7 @@ class Win2(tk.Toplevel):
         self.win1.display()
 
     def deleteResultReadScore(self):
-        self.read_score = []
-        self.info_detection.read_score = []
+        self.info_detection.read_score = {}
         self.display()
 
 
