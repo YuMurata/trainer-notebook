@@ -22,7 +22,7 @@ from Uma import UmaList
 from TeamStadiumInfoDetection import TeamStadiumInfoDetection
 
 
-class Win1(tk.Frame):
+class MetricsView(ttk.Frame):
     class SortUmaPtList:
         class SortKey(IntEnum):
             NAME=1
@@ -34,6 +34,7 @@ class Win1(tk.Frame):
         def __init__(self):
             self.key = self.SortKey.NAME
             self.is_reverse = False
+            self.key_dict = {key:value for key, value in zip(self.SortKey, MetricsView.metrics_name_list)}
 
         def sort(self, x:tuple):
             if self.key == self.SortKey.NAME:
@@ -50,7 +51,75 @@ class Win1(tk.Frame):
 
             self.key = self.SortKey(x)
 
+        @property
+        def key_to_str(self):
+            return self.key_dict[self.key]
 
+    metrics_name_list = ['Name', 'Max','Min', 'Mean', 'Std']
+
+    def __init__(self, master, uma_pt_list:UmaList):
+        super().__init__(master)
+        self.uma_pt_sorter = self.SortUmaPtList()
+        self.uma_pt_list = uma_pt_list
+        self._create_widgets()
+
+    def _create_heading(self):
+        for metrics_name in self.metrics_name_list:
+            metrics_text = metrics_name
+            if metrics_name == self.uma_pt_sorter.key_to_str:
+                if self.uma_pt_sorter.is_reverse:
+                    metrics_text += ' ^'
+                else:
+                    metrics_text += ' v'
+
+            self.treeview_score.heading(metrics_name, text=metrics_text, anchor='center', command=self._click_header)
+
+    def _create_widgets(self):
+        self.treeview_score = ttk.Treeview(self, columns=self.metrics_name_list,height=30,show="headings")
+        self.treeview_score.column('Name', anchor='w',width=120)
+        self.treeview_score.column('Max', anchor='e',width=50)
+        self.treeview_score.column('Min',anchor='e', width=50)
+        self.treeview_score.column('Mean', anchor='e',width=50)
+        self.treeview_score.column('Std', anchor='e',width=50)
+
+        #Create Heading
+        self._create_heading()
+
+        self.vscroll = ttk.Scrollbar(self, orient ="vertical", command=self.treeview_score.yview)
+        self.treeview_score.configure(yscroll=self.vscroll.set)
+
+        #Add data
+        for i in range(self.uma_pt_list.len()):
+            self.treeview_score.insert(parent='', index='end', iid=i ,values=(i+1, '',''))
+
+        #self.treeview_score.grid(row=0,column=0,columnspan=2,pady=10)
+        self.treeview_score.pack(side=tk.LEFT,pady=10)
+        self.vscroll.pack(side=tk.RIGHT, fill="y", pady=10)
+
+    def _click_header(self):
+        x = self.treeview_score.winfo_pointerx() - self.treeview_score.winfo_rootx()
+        column = int(self.treeview_score.identify_column(x)[1])
+        self.uma_pt_sorter.set_key(column)
+        self.display()
+
+    def display(self):
+        #print("win1")
+        # for i in range(self.uma_pt_list.len()):
+        #     self.treeview_score.set(i,1,'')
+        #     self.treeview_score.set(i,2,'')
+        treeview_content = list(self.uma_pt_list.Metrics().items())
+
+        treeview_content.sort(key=self.uma_pt_sorter.sort, reverse=self.uma_pt_sorter.is_reverse)
+        self._create_heading()
+
+        for i,(name, uma_data) in enumerate(treeview_content):
+            self.treeview_score.set(i,0,name)
+            self.treeview_score.set(i,1,uma_data['max'])
+            self.treeview_score.set(i,2,uma_data['min'])
+            self.treeview_score.set(i,3,uma_data['mean'])
+            self.treeview_score.set(i,4,uma_data['std'])
+
+class Win1(tk.Frame):
     def __init__(self,master):
         super().__init__(master)
         self.pack()
@@ -60,8 +129,7 @@ class Win1(tk.Frame):
         self.uma_pt_list = UmaList()
         self.create_widgets()
         self.app2 = None
-        self.treeview_content = None
-        self.uma_pt_sorter = self.SortUmaPtList()
+
 
     def setUmaList(self, umalist:UmaList):
         self.app2.setUmaList(umalist)
@@ -74,16 +142,7 @@ class Win1(tk.Frame):
         # for i in range(self.uma_pt_list.len()):
         #     self.treeview_score.set(i,1,'')
         #     self.treeview_score.set(i,2,'')
-        treeview_content = list(self.uma_pt_list.Metrics().items())
-
-        treeview_content.sort(key=self.uma_pt_sorter.sort, reverse=self.uma_pt_sorter.is_reverse)
-
-        for i,(name, uma_data) in enumerate(treeview_content):
-            self.treeview_score.set(i,0,name)
-            self.treeview_score.set(i,1,uma_data['max'])
-            self.treeview_score.set(i,2,uma_data['min'])
-            self.treeview_score.set(i,3,uma_data['mean'])
-            self.treeview_score.set(i,4,uma_data['std'])
+        self.metrics_view.display()
 
     def create_widgets(self):
         # Button
@@ -95,40 +154,12 @@ class Win1(tk.Frame):
         self.button_new_win3.configure(text="disp graph")
         self.button_new_win3.configure(command = self.new_window3)
 
-        frame = ttk.Frame()
-        frame.pack()
-        #TreeView
-        self.treeview_score = ttk.Treeview(frame, columns=['Name', 'Max','Min', 'Mean', 'Std'],height=30,show="headings")
-        self.treeview_score.column('Name', anchor='w',width=120)
-        self.treeview_score.column('Max', anchor='e',width=50)
-        self.treeview_score.column('Min',anchor='e', width=50)
-        self.treeview_score.column('Mean', anchor='e',width=50)
-        self.treeview_score.column('Std', anchor='e',width=50)
-
-        #Create Heading
-        self.treeview_score.heading('Name', text='Name',anchor='center',command=self.click_header)
-        self.treeview_score.heading('Max', text='Max',anchor='center',command=self.click_header)
-        self.treeview_score.heading('Min', text='Min',anchor='center',command=self.click_header)
-        self.treeview_score.heading('Mean', text='Mean',anchor='center',command=self.click_header)
-        self.treeview_score.heading('Std', text='Std',anchor='center',command=self.click_header)
-
-        self.vscroll = ttk.Scrollbar(frame, orient ="vertical", command=self.treeview_score.yview)
-        self.treeview_score.configure(yscroll=self.vscroll.set)
-        #Add data
-        for i in range(self.uma_pt_list.len()):
-            self.treeview_score.insert(parent='', index='end', iid=i ,values=(i+1, '',''))
-
         #self.treeview_score.grid(row=0,column=0,columnspan=2,pady=10)
         self.button_new_win2.pack()
         self.button_new_win3.pack()
-        self.treeview_score.pack(side=tk.LEFT,pady=10)
-        self.vscroll.pack(side=tk.RIGHT, fill="y", pady=10)
 
-    def click_header(self):
-        x = self.treeview_score.winfo_pointerx() - self.treeview_score.winfo_rootx()
-        column = int(self.treeview_score.identify_column(x)[1])
-        self.uma_pt_sorter.set_key(column)
-        self.display()
+        self.metrics_view = MetricsView(self, self.uma_pt_list)
+        self.metrics_view.pack()
 
     #Call back function
     def new_window2(self):
