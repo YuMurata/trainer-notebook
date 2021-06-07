@@ -19,6 +19,8 @@ from enum import Enum
 from UmaPointReading import UmaPointReading
 from matplotlib import pyplot
 import statistics
+from pathlib import Path
+from exception import FileNotFoundException
 
 class UmaList():
     def __init__(self):
@@ -28,7 +30,12 @@ class UmaList():
 
     def readUmaList(self):
         self.uma_pt_dict = {}
-        with open('uma_pt_list.txt', 'r',encoding="utf-8_sig") as f:
+
+        resource_path = './resource/uma_pt_list.txt'
+        if not Path(resource_path).exists():
+            raise FileNotFoundException(f"can't load {resource_path}")
+
+        with open(resource_path, 'r',encoding="utf-8_sig") as f:
             max_data = 0
             for line in f.readlines():
                 line = line.replace("\n", "").replace(' ','').replace('　','')

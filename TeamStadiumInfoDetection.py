@@ -19,6 +19,9 @@ from matplotlib import pyplot
 #from Window import Win1
 from Uma import UmaList
 
+from exception import FileNotFoundException
+from pathlib import Path
+
 from threading import Thread
 import time
 import os
@@ -54,7 +57,8 @@ class TeamStadiumInfoDetection(Thread):
 
         self.uma_list = self.uma_pt_list.getUmaList()#全てのウマ娘の名前のリスト
 
-        self.upr = UmaPointReading()#スコア情報読み取るやつ
+        self.ocr_tool = self.GetOCRTool()
+        self.upr = UmaPointReading(self.ocr_tool)#スコア情報読み取るやつ
         self.upr.setUmaList(self.uma_pt_list.getUmaList())
         self.read_score = {}#スコア情報を読み取った結果
 
@@ -62,9 +66,6 @@ class TeamStadiumInfoDetection(Thread):
 
         #EV_mat = [[None, ]]#状態遷移を2次元配列で作ろうとしたけどあきらめた
 
-        self.ocr_tool = None
-
-        self.EnvironSetting()
         self.WindowSetting()
 
         self.is_updating = True
@@ -99,7 +100,22 @@ class TeamStadiumInfoDetection(Thread):
         img = self.game_window_image.copy()
         img = self.pil2cv(img)
         img = img[195:270,125:250]
-        win_lose_img = [cv2.imread('win.png'),cv2.imread('lose.png')]
+
+        def load_image():
+            resource_dir = './resource'
+            image_name_list = ['win.png', 'lose.png']
+
+            def pred(image_name:str):
+                resource_path = Path(resource_dir)/image_name
+
+                if not resource_path.exists():
+                    raise FileNotFoundException(f"can't read {str(resource_path)}")
+                return cv2.imread(str(resource_path))
+
+            return [pred(image_name) for image_name in image_name_list]
+
+
+        win_lose_img = load_image()
         method = eval('cv2.TM_SQDIFF_NORMED')
         min = 1.0
         for template in win_lose_img:
@@ -234,7 +250,7 @@ class TeamStadiumInfoDetection(Thread):
         ctypes.windll.user32.GetWindowRect(TargetWindowHandle, ctypes.pointer(Rectangle))
         return (Rectangle.left + 8, Rectangle.top, Rectangle.right - 8, Rectangle.bottom - 8)
 
-    def EnvironSetting(self):
+    def GetOCRTool(self):
         #インストールしたTesseract-OCRのパスを環境変数「PATH」へ追記する。
         #OS自体に設定してあれば以下の2行は不要
         # path=';C:\\tesseract-ocr'
@@ -242,10 +258,9 @@ class TeamStadiumInfoDetection(Thread):
 
         tools = pyocr.get_available_tools()
         if len(tools) == 0:
-            print("No OCR tool found")
-            sys.exit(1)
+            raise FileNotFoundException("No OCR tool found")
 
-        self.ocr_tool = tools[0]
+        return tools[0]
 
     #スコア情報を読み取るための前処理
     def ReadScorePreProc(self, img):

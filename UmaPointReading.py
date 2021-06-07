@@ -15,9 +15,9 @@ class UmaPointReading():
 
     tool = None
 
-    def __init__(self):
+    def __init__(self, tool):
 
-        self.tool = pyocr.get_available_tools()[0]
+        self.tool = tool
         #self.__OpenUmaList()
 
     def setUmaList(self, uma_name_list:list):
