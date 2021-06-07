@@ -24,6 +24,7 @@ from exception import FileNotFoundException
 
 class UmaList():
     def __init__(self):
+        self.resource_path = './resource/uma_pt_list.txt'
         self.readUmaList()
         self.WriteUmaList()
         pass
@@ -31,11 +32,10 @@ class UmaList():
     def readUmaList(self):
         self.uma_pt_dict = {}
 
-        resource_path = './resource/uma_pt_list.txt'
-        if not Path(resource_path).exists():
+        if not Path(self.resource_path).exists():
             raise FileNotFoundException(f"can't load {resource_path}")
 
-        with open(resource_path, 'r',encoding="utf-8_sig") as f:
+        with open(self.resource_path, 'r',encoding="utf-8_sig") as f:
             max_data = 0
             for line in f.readlines():
                 line = line.replace("\n", "").replace(' ','').replace('　','')
@@ -57,7 +57,7 @@ class UmaList():
             self.uma_pt_dict[name] += [0 for j in range(max_data-len(self.uma_pt_dict[name]))]
 
     def WriteUmaList(self):
-        with open('uma_pt_list.txt', 'w', encoding="utf-8_sig") as f:
+        with open(self.resource_path, 'w', encoding="utf-8_sig") as f:
             for name, points in self.uma_pt_dict.items():
                 f.write(name)
                 for data in points:
