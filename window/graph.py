@@ -3,15 +3,17 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 
+
 class GraphWindow(tk.Toplevel):
     window_name = 'umauma graph'
-    def __init__(self,master):
+
+    def __init__(self, master, ):
         super().__init__(master)
         self.geometry("500x500")
         self.title(self.window_name)
         self.create_widgets()
 
-    def test(self):
+    def _make_fig(self):
         x1 = np.linspace(0.0, 5.0)
         y1 = np.cos(2 * np.pi * x1) * np.exp(-x1)
         x2 = np.linspace(0.0, 3.0)
@@ -47,6 +49,7 @@ class GraphWindow(tk.Toplevel):
     def create_widgets(self):
         fig = self.test()
 
-        self.canvas = FigureCanvasTkAgg(fig, master=self)  # Generate canvas instance, Embedding fig in root
+        # Generate canvas instance, Embedding fig in root
+        self.canvas = FigureCanvasTkAgg(fig, master=self)
         self.canvas.draw()
         self.canvas.get_tk_widget().pack()
