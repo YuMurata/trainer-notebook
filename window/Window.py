@@ -21,6 +21,7 @@ from matplotlib import pyplot
 from Uma import UmaList
 from TeamStadiumInfoDetection import TeamStadiumInfoDetection
 
+from .graph import GraphWindow
 
 class MetricsView(ttk.Frame):
     class SortUmaPtList:
@@ -187,8 +188,7 @@ class Win1(tk.Frame):
         self.app2.protocol('WM_DELETE_WINDOW', close_win2)
 
     def new_window3(self):
-        self.newWindow = tk.Toplevel(self.master)
-        self.app3 = Win3(self.newWindow)
+        self.app3 = GraphWindow(self.master)
 
 
 
@@ -254,24 +254,7 @@ class Win2(tk.Toplevel):
         self.button_register.grid(row=1,column=1)
 
 
-class Win3(tk.Frame):
-    def __init__(self,master):
 
-        super().__init__(master)
-        self.pack()
-        self.master.geometry("300x300")
-        self.master.title("window 3")
-        self.create_widgets()
-
-    def create_widgets(self):
-        # Button
-        self.button_quit = ttk.Button(self)
-        self.button_quit.configure(text="Close Window 3")
-        self.button_quit.configure(command=self.quit_window)
-        self.button_quit.pack()
-
-    def quit_window(self):
-        self.master.destroy()
 
 #root = tk.Tk()
 #app = Win1(master=root)#Inherit
