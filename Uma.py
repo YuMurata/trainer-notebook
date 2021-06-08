@@ -23,11 +23,11 @@ from pathlib import Path
 from exception import FileNotFoundException
 
 class UmaList():
+    resource_path = './resource/uma_pt_list.txt'
+
     def __init__(self):
-        self.resource_path = './resource/uma_pt_list.txt'
         self.readUmaList()
         self.WriteUmaList()
-        pass
 
     def readUmaList(self):
         self.uma_pt_dict = {}
