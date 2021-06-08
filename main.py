@@ -7,7 +7,6 @@ if __name__ == "__main__":
     app = Win1(master=root)
 
     def loop():
-        app.display()
         if app.app2 is not None:
             app.app2.display()
         root.after(1000,loop)
