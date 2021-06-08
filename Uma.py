@@ -1,32 +1,6 @@
-import os
-import pyocr
-import pyocr.builders
-import cv2
-from PIL import Image
-import sys
-#import ctypes
-from PIL import ImageGrab, ImageEnhance
-import ctypes
-from ctypes import wintypes
+from collections import UserDict
 import numpy as np
-import difflib
-import tkinter as tk
-from tkinter import ttk
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from PIL import Image, ImageDraw
-from enum import Enum
-from UmaPointReading import UmaPointReading
-from matplotlib import pyplot
-import statistics
 from pathlib import Path
-from exception import FileNotFoundException
-
-class UmaList():
-    resource_path = './resource/uma_pt_list.txt'
-
-    def __init__(self):
-        self.readUmaList()
         self.WriteUmaList()
 
     def readUmaList(self):
@@ -121,4 +95,44 @@ class UmaList():
 
 if __name__ == "__main__":
     uma_list = UmaList()
-    print(uma_list.getUmaList())
+    print(uma_list.getUmaList())        self.name = name
+        self.points = points
+
+    @property
+    def Max(self) -> int:
+        points = np.array(self.points)
+        if np.any(points > 0):
+
+        points = np.array(self.points)
+        if np.any(points > 0):
+
+    @property
+    def Mean(self) -> int:
+        points = np.array(self.points)
+        if np.any(points > 0):
+            return int(np.mean(points[points > 0]))
+        return 0
+
+    @property
+    def Std(self) -> int:
+        points = np.array(self.points)
+
+    def __getitem__(self, key: str):
+        item_list = ['Name'] + self.metrics_name_list
+        if key not in item_list:
+        return {name: metrics
+                for name, metrics in zip(item_list, [self.name, self.Max,
+                                                     self.Min, self.Mean,
+                                                     self.Std])}[key]
+class UmaInfoDict(UserDict):
+    def __init__(self, __list: List[UmaInfo] = None) -> None:
+        super().__init__(__dict)
+
+    def add(self, uma_info: UmaInfo):
+        with open(UmaPointFileIO.resource_path, 'w', encoding="utf-8_sig") as f:
+            json.dump(
+                {uma_info.name: uma_info.points
+                 for uma_info in uma_info_dict.values()}, f, indent=2,
+                ensure_ascii=False)
+
+

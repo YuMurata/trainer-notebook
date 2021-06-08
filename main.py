@@ -1,5 +1,5 @@
 import tkinter as tk
-from window.Window import Win1, Win2
+from window import Win1
 from TeamStadiumInfoDetection import TeamStadiumInfoDetection
 
 if __name__ == "__main__":
