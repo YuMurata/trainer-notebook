@@ -153,7 +153,7 @@ class Win1(tk.Frame):
         self.master.geometry("400x400")
         self.master.title("umauma drive")
         self.create_widgets()
-        self.app2 = None
+        self.score_app = None
         self.display()
         self.master.protocol('WM_DELETE_WINDOW', self._close_win1)
 
@@ -178,11 +178,11 @@ class Win1(tk.Frame):
         self.metrics_view.pack()
 
     def _close_win1(self):
-        if self.app2:
-            self.app2.info_detection.stop()
-            self.app2.info_detection.join()
-            self.app2.destroy()
-            self.app2 = None
+        if self.score_app:
+            self.score_app.info_detection.stop()
+            self.score_app.info_detection.join()
+            self.score_app.destroy()
+            self.score_app = None
         self.master.destroy()
 
     # Call back function
@@ -191,10 +191,11 @@ class Win1(tk.Frame):
 
         def close_win2():
             self.score_app.info_detection.stop()
+            self.score_app.info_detection.join()
             self.score_app.destroy()
             self.score_app = None
 
-        self.app2.protocol('WM_DELETE_WINDOW', close_win2)
+        self.score_app.protocol('WM_DELETE_WINDOW', close_win2)
 
     def new_window3(self):
         self.graph_app = GraphWindow(self.master)
