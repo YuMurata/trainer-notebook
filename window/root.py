@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from enum import IntEnum, auto
 from window import ScoreWindow, GraphWindow
-from Uma import UmaInfo, UmaInfoDict, UmaPointFileIO
+from Uma import UmaInfo, UmaPointFileIO
 from typing import List
 
 
@@ -46,6 +46,7 @@ class MetricsView(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
         self.uma_info_sorter = self.SortUmaInfo()
+        self.graph_updater = None
         self._create_widgets()
 
     def _create_heading(self):
@@ -95,6 +96,8 @@ class MetricsView(ttk.Frame):
         self.treeview_score.pack(side=tk.LEFT, pady=10)
         self.vscroll.pack(side=tk.RIGHT, fill="y", pady=10)
 
+        self.treeview_score.bind('<<TreeviewSelect>>', self._click_view)
+
     def _click_header(self):
         x = (self.treeview_score.winfo_pointerx() -
              self.treeview_score.winfo_rootx())
@@ -102,7 +105,20 @@ class MetricsView(ttk.Frame):
         self.uma_info_sorter.set_key(column)
         self.display()
 
-    def display(self, uma_info_dict: UmaInfoDict):
+    def _click_view(self, event):
+        item_id = self.treeview_score.selection()[0]
+        item = self.treeview_score.item(item_id)
+        uma_info_dict = UmaPointFileIO.Read()
+        uma_info = uma_info_dict[item['values'][1]]
+
+        if self.graph_updater:
+            self.graph_updater(uma_info)
+
+    def set_graph_updater(self, graph_updater):
+        self.graph_updater = graph_updater
+
+    def display(self):
+        uma_info_dict = UmaPointFileIO.Read()
         treeview_content: List[UmaInfo] = list(uma_info_dict.values())
 
         treeview_content.sort(key=self.uma_info_sorter.sort,
@@ -143,8 +159,7 @@ class Win1(tk.Frame):
         self.master.protocol('WM_DELETE_WINDOW', self._close_win1)
 
     def display(self):
-        uma_info_dict = UmaPointFileIO.Read()
-        self.metrics_view.display(uma_info_dict)
+        self.metrics_view.display()
 
     def create_widgets(self):
         # Button
