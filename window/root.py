@@ -54,9 +54,9 @@ class MetricsView(ttk.Frame):
             metrics_text = metrics_name
             if metrics_name == self.uma_info_sorter.key_to_str:
                 if self.uma_info_sorter.is_reverse:
-                    metrics_text += ' ^'
-                else:
                     metrics_text += ' v'
+                else:
+                    metrics_text += ' ^'
 
             self.treeview_score.heading(
                 metrics_name, text=metrics_text, anchor='center',
