@@ -139,6 +139,7 @@ class Win1(tk.Frame):
         self.create_widgets()
         self.app2 = None
         self.display()
+        self.master.protocol('WM_DELETE_WINDOW', self._close_win1)
 
     def display(self):
         uma_info_dict = UmaPointFileIO.Read()
@@ -161,12 +162,21 @@ class Win1(tk.Frame):
         self.metrics_view = MetricsView(self)
         self.metrics_view.pack()
 
+    def _close_win1(self):
+        if self.app2:
+            self.app2.info_detection.stop()
+            self.app2.info_detection.join()
+            self.app2.destroy()
+            self.app2 = None
+        self.master.destroy()
+
     # Call back function
     def new_window2(self):
         self.app2 = ScoreWindow(self.master, self)
 
         def close_win2():
             self.app2.info_detection.stop()
+            self.app2.info_detection.join()
             self.app2.destroy()
             self.app2 = None
 
