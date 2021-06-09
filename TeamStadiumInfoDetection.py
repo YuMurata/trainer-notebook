@@ -68,7 +68,8 @@ class TeamStadiumInfoDetection(Thread):
         img = img.convert(mode="L")
         img = ImageEnhance.Contrast(img).enhance(1.5)
 
-        img = img.crop((150, 50, 240, 80))
+        img = img.crop((150, 20, 240, 50))
+
         # 白抜き文字だから白黒反転
         img = img.point(lambda x: 255 if x < 200 else 0)
 
@@ -95,7 +96,7 @@ class TeamStadiumInfoDetection(Thread):
         img = self.game_window_image.copy()
         img = self.pil2cv(img)
 
-        img = img[195:270, 125:250]
+        img = img[175:250, 125:250]
 
         def load_image():
             resource_dir = './resource'
@@ -155,7 +156,7 @@ class TeamStadiumInfoDetection(Thread):
 
         ctypes.windll.user32.GetWindowRect(
             TargetWindowHandle, ctypes.pointer(Rectangle))
-        return (Rectangle.left + 8, Rectangle.top,
+        return (Rectangle.left + 8, Rectangle.top + 30,
                 Rectangle.right - 8, Rectangle.bottom - 8)
 
     def GetOCRTool(self):
