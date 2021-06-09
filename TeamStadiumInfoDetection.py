@@ -154,16 +154,13 @@ class TeamStadiumInfoDetection(Thread):
         Rectangle = ctypes.wintypes.RECT()
 
 
-<< << << < HEAD
-   ctypes.windll.user32.GetWindowRect(
-       TargetWindowHandle, ctypes.pointer(Rectangle))
-    return (Rectangle.left + 8, Rectangle.top + 30, Rectangle.right - 8, Rectangle.bottom - 8)
-== == == =
+
+
    ctypes.windll.user32.GetWindowRect(
         TargetWindowHandle, ctypes.pointer(Rectangle))
     return (Rectangle.left + 8, Rectangle.top,
             Rectangle.right - 8, Rectangle.bottom - 8)
->>>>>> > a005e3a(formatting)
+
 
    def GetOCRTool(self):
         # インストールしたTesseract-OCRのパスを環境変数「PATH」へ追記する。
