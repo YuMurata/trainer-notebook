@@ -22,7 +22,7 @@ class GraphWindow(tk.Toplevel):
         self.ax.cla()
 
         # ax1
-        self.ax.plot(x, y)
+        self.ax.plot(x, y, marker='o')
         self.ax.set_title(uma_info.name, fontname='Meiryo')
         self.ax.set_ylabel('score')
         self.ax.get_xaxis().set_major_locator(ticker.MaxNLocator(integer=True))
