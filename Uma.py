@@ -1,124 +1,114 @@
-import os
-import pyocr
-import pyocr.builders
-import cv2
-from PIL import Image
-import sys
-#import ctypes
-from PIL import ImageGrab, ImageEnhance
-import ctypes
-from ctypes import wintypes
+from collections import UserDict
 import numpy as np
-import difflib
-import tkinter as tk
-from tkinter import ttk
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from PIL import Image, ImageDraw
-from enum import Enum
-from UmaPointReading import UmaPointReading
-from matplotlib import pyplot
-import statistics
 from pathlib import Path
-from exception import FileNotFoundException
+from exception import FileNotFoundException, InvalidKeyException
+import json
 
-class UmaList():
-    def __init__(self):
-        self.resource_path = './resource/uma_pt_list.txt'
-        self.readUmaList()
-        self.WriteUmaList()
-        pass
+from typing import List
 
-    def readUmaList(self):
-        self.uma_pt_dict = {}
 
-        if not Path(self.resource_path).exists():
-            raise FileNotFoundException(f"can't load {resource_path}")
+class UmaInfo:
+    metrics_name_list = ['Max', 'Min', 'Mean', 'Std']
+    item_name_list = ['Name'] + metrics_name_list
 
-        with open(self.resource_path, 'r',encoding="utf-8_sig") as f:
-            max_data = 0
-            for line in f.readlines():
-                line = line.replace("\n", "").replace(' ','').replace('　','')
-                if line == '':
-                    continue
-                #uma_pt = []
-                word_list = line.split(",")
-                uma_name = word_list[0]
-                points = []
-                if len(word_list) > 1:
-                    points = list(map(int, word_list[1:]))
+    def __init__(self, name: str, points: list):
+        self.name = name
+        self.points = points
 
-                self.uma_pt_dict[uma_name] = points
+    @property
+    def Max(self) -> int:
+        points = np.array(self.points)
+        if np.any(points > 0):
+            return int(np.max(points[points > 0]))
+        return 0
 
-                if max_data < len(points):
-                    max_data = len(points)
+    @property
+    def Min(self) -> int:
+        points = np.array(self.points)
+        if np.any(points > 0):
+            return int(np.min(points[points > 0]))
+        return 0
 
-        for name in self.uma_pt_dict.keys():
-            self.uma_pt_dict[name] += [0 for j in range(max_data-len(self.uma_pt_dict[name]))]
+    @property
+    def Mean(self) -> int:
+        points = np.array(self.points)
+        if np.any(points > 0):
+            return int(np.mean(points[points > 0]))
+        return 0
 
-    def WriteUmaList(self):
-        with open(self.resource_path, 'w', encoding="utf-8_sig") as f:
-            for name, points in self.uma_pt_dict.items():
-                f.write(name)
-                for data in points:
-                    f.write(', ' + str(data))
-                f.write('\n')
+    @property
+    def Std(self) -> int:
+        points = np.array(self.points)
+        if np.any(points > 0):
+            return int(np.std(points[points > 0]))
+        return 0
 
-    def getUmaList(self):
-        return sorted(self.uma_pt_dict.keys())
+    @property
+    def NumRace(self) -> int:
+        points = np.array(self.points)
+        return np.count_nonzero(points > 0)
 
-    def addUmaPt(self, read_score:dict):
-        for name in self.uma_pt_dict.keys():
-            if name in sorted(read_score.keys()):
-                self.uma_pt_dict[name].insert(0, read_score[name])
-            else:
-                self.uma_pt_dict[name].insert(0,0)
+    def AddPoint(self, point: int):
+        self.points.append(point)
 
-    def Max(self):
-        def pred(points:np.array):
-            if np.any(points > 0):
-                return int(np.max(points[points > 0]))
-            return 0
-        return {name:pred(np.array(points)) for name, points in self.uma_pt_dict.items()}
+    def __getitem__(self, key: str):
+        item_list = ['Name'] + self.metrics_name_list
+        if key not in item_list:
+            raise InvalidKeyException(f'{key} is not metrics')
 
-    def Min(self):
-        def pred(points:np.array):
-            if np.any(points > 0):
-                return int(np.min(points[points > 0]))
-            return 0
-        return {name:pred(np.array(points)) for name, points in self.uma_pt_dict.items()}
+        return {name: metrics
+                for name, metrics in zip(item_list, [self.name, self.Max,
+                                                     self.Min, self.Mean,
+                                                     self.Std])}[key]
 
-    def Mean(self):
-        def pred(points:np.array):
-            if np.any(points > 0):
-                return int(np.mean(points[points > 0]))
-            return 0
-        return {name:pred(np.array(points)) for name, points in self.uma_pt_dict.items()}
 
-    def Std(self):
-        def pred(points:np.array):
-            if np.any(points > 0):
-                return int(np.std(points[points > 0]))
-            return 0
-        return {name:pred(np.array(points)) for name, points in self.uma_pt_dict.items()}
+class UmaInfoDict(UserDict):
+    def __init__(self, __list: List[UmaInfo] = None) -> None:
+        __dict = {uma_info.name: uma_info
+                  for uma_info in __list} if __list is not None else None
+        super().__init__(__dict)
 
-    def len(self):
-        return len(self.uma_pt_dict)
+    def add(self, uma_info: UmaInfo):
+        self.data[uma_info.name] = uma_info
 
-    def Metrics(self):
-        max_dict = self.Max()
-        min_dict = self.Min()
-        mean_dict = self.Mean()
-        std_dict = self.Std()
-        name_list = max_dict.keys()
+    def __getitem__(self, key: str) -> UmaInfo:
+        if key not in self.data:
+            self.add(UmaInfo(key, []))
+        return self.data[key]
 
-        return {name:{'max':max_dict[name],
-                    'min':min_dict[name],
-                    'mean':mean_dict[name],
-                    'std':std_dict[name],
-                    }
-                for name in name_list}
 
-if __name__ == "__main__":
-    uma_list = UmaList()
-    print(uma_list.getUmaList())
+class UmaPointFileIO:
+    resource_path = './resource/uma_pt_list.json'
+
+    @staticmethod
+    def Read() -> UmaInfoDict:
+        try:
+            if not Path(UmaPointFileIO.resource_path).exists():
+                raise FileNotFoundException(
+                    f"can't load {UmaPointFileIO.resource_path}")
+
+            with open(UmaPointFileIO.resource_path, 'r', encoding="utf-8_sig") as f:
+                return UmaInfoDict([UmaInfo(name, points)
+                                    for name, points in json.load(f).items()])
+        except:
+            return UmaInfoDict()
+
+    @staticmethod
+    def Write(uma_info_dict: UmaInfoDict):
+        with open(UmaPointFileIO.resource_path, 'w', encoding="utf-8_sig") as f:
+            json.dump(
+                {uma_info.name: uma_info.points
+                 for uma_info in uma_info_dict.values()}, f, indent=2,
+                ensure_ascii=False)
+
+
+class UmaNameFileReader:
+    resource_path = './resource/uma_name_list.txt'
+
+    @staticmethod
+    def Read() -> list:
+        if not Path(UmaNameFileReader.resource_path).exists():
+            raise FileNotFoundException(
+                f"can't load {UmaNameFileReader.resource_path}")
+        with open(UmaNameFileReader.resource_path, 'r', encoding="utf-8_sig") as f:
+            return f.readlines()
