@@ -82,9 +82,11 @@ class TeamStadiumInfoDetection(Thread):
         #img = Image.open("./lose.png")
         img = img.convert(mode="L")
         img = ImageEnhance.Contrast(img).enhance(1.5)
-        img = img.crop((150, 50, 240, 80))
+        img = img.crop((150, 20, 240, 50))
         #白抜き文字だから白黒反転
         img = img.point(lambda x: 255 if x < 200 else 0)
+        # cv2.imshow("スコア情報", self.pil2cv(img))
+        # cv2.waitKey(0)
         tool = pyocr.get_available_tools()[0]
         res = tool.image_to_string(img,
                                 lang="jpn",
@@ -105,8 +107,9 @@ class TeamStadiumInfoDetection(Thread):
 
         img = self.game_window_image.copy()
         img = self.pil2cv(img)
-        img = img[195:270,125:250]
-
+        #img = img[195:270,125:250]
+        img = img[175:250,125:250]
+        # cv2.imshow("rank", img)
         def load_image():
             resource_dir = './resource'
             image_name_list = ['win.png', 'lose.png']
@@ -257,7 +260,7 @@ class TeamStadiumInfoDetection(Thread):
 
         Rectangle = ctypes.wintypes.RECT()
         ctypes.windll.user32.GetWindowRect(TargetWindowHandle, ctypes.pointer(Rectangle))
-        return (Rectangle.left + 8, Rectangle.top, Rectangle.right - 8, Rectangle.bottom - 8)
+        return (Rectangle.left + 8, Rectangle.top + 30, Rectangle.right - 8, Rectangle.bottom - 8)
 
     def GetOCRTool(self):
         #インストールしたTesseract-OCRのパスを環境変数「PATH」へ追記する。
@@ -283,7 +286,7 @@ class TeamStadiumInfoDetection(Thread):
         draw.rectangle([(0, 0), (90, height)], fill='white')
         draw.rectangle([(width-45, 0), (width, height)], fill='white')
         draw.rectangle([(215, 0), (250, height)], fill='white')
-        draw.rectangle([(0, 0), (width, 80)], fill='white')
+        draw.rectangle([(0, 0), (width, 50)], fill='white')
         draw.rectangle([(0, height - 80), (width, height)], fill='white')
 
         return test_img
@@ -416,6 +419,10 @@ class TeamStadiumInfoDetection(Thread):
 
         if rect is not None:
             self.game_window_image = ImageGrab.grab(rect)
+            print(self.game_window_image.size)
+            self.game_window_image = self.game_window_image.resize((388,720))
+            # cv2.imshow("img", self.pil2cv(self.game_window_image))
+            # cv2.waitKey(0)
 
     def OverWriteUmaListFile(self):
         self.uma_pt_list.addUmaPt(self.read_score)
