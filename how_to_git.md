@@ -35,7 +35,6 @@ $ git branch
 
 コマンド`git checkout -b <新ブランチ名>`で現在のブランチから派生して新しいブランチを作れるよ
 
-
 > **NOTE**
 >
 > 最初のうちは`git checkout -b develop`とかで作っちゃってもいい
