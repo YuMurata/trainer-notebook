@@ -163,14 +163,15 @@ class Win1(tk.Frame):
 
     # Call back function
     def new_window2(self):
-        self.app2 = ScoreWindow(self.master, self)
+        self.score_app = ScoreWindow(self.master, self)
 
         def close_win2():
-            self.app2.info_detection.stop()
-            self.app2.destroy()
-            self.app2 = None
+            self.score_app.info_detection.stop()
+            self.score_app.destroy()
+            self.score_app = None
 
         self.app2.protocol('WM_DELETE_WINDOW', close_win2)
 
     def new_window3(self):
-        self.app3 = GraphWindow(self.master)
+        self.graph_app = GraphWindow(self.master)
+        self.metrics_view.set_graph_updater(self.graph_app.update_fig)
