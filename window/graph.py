@@ -1,57 +1,101 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter.constants import BOTTOM
+from typing import List
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 from Uma import UmaInfo, UmaPointFileIO
 from enum import Enum, auto
+from colorsys import hsv_to_rgb
+
+
+class GraphView:
+    class DrawTarget(Enum):
+        LINE = auto()
+        BAR = auto()
+
+    def __init__(self):
+        self.fig = plt.Figure()
+        self.ax = self.fig.add_subplot(111)
+
+        self.fig.subplots_adjust(bottom=0.2, left=0.2)
+
+        self.uma_info_list: List[UmaInfo] = None
+        self.draw_target = self.DrawTarget.LINE
+        self.update_line()
+
+    def update_line(self):
+        self.ax.cla()
+
+        self.ax.set_xlabel('race')
+        self.ax.set_ylabel('score')
+
+        self.ax.get_xaxis().set_major_locator(ticker.MaxNLocator(integer=True))
+        self.ax.get_yaxis().set_major_locator(ticker.MaxNLocator(integer=True))
+
+        if self.uma_info_list:
+            h_diff = 1.0 / len(self.uma_info_list)
+            for i, uma_info in enumerate(self.uma_info_list):
+                x = np.arange(len(uma_info.points))+1
+                y = np.array(uma_info.points)
+
+                rgb = hsv_to_rgb(h_diff*i, 1, 0.8)
+
+                # ax1
+                self.ax.plot(x, y, marker='o',
+                             color=rgb, label=uma_info.name)
+
+            self.ax.legend(loc="lower right", fontsize=8,
+                           prop={'family': 'Meiryo'})
+
+    def update_bar(self):
+        self.ax.cla()
+
+        self.ax.set_xlabel('name')
+        self.ax.set_ylabel('mean score')
+
+        self.ax.get_yaxis().set_major_locator(ticker.MaxNLocator(integer=True))
+
+        if self.uma_info_list:
+            name_list = [uma_info.name for uma_info in self.uma_info_list]
+            mean_list = [uma_info.Mean for uma_info in self.uma_info_list]
+            std_list = [uma_info.Std for uma_info in self.uma_info_list]
+
+            # ax1
+            self.ax.bar(name_list, mean_list, yerr=std_list, ecolor='black')
+
+            self.ax.set_xticklabels(
+                name_list, fontname='Meiryo', rotation=30, fontsize=8)
+
+    def update_uma_info_list(self, uma_info_list: List[UmaInfo]):
+        self.uma_info_list = uma_info_list
+        update_func_dict = {draw_target: func for draw_target, func in zip(
+            self.DrawTarget, [self.update_line, self.update_bar])}
+        update_func_dict[self.draw_target]()
+
+    def update_target(self, draw_target):
+        self.draw_target = draw_target
 
 
 class GraphWindow(tk.Toplevel):
     window_name = 'umauma graph'
 
-    class DrawTarget(Enum):
-        LINE = auto()
-        BAR = auto()
-
-    def __init__(self, master):
+    def __init__(self, master, graph_view: GraphView):
         super().__init__(master)
         self.geometry("500x550")
         self.title(self.window_name)
+        self.graph_view = graph_view
         self._create_widgets()
-        self.draw_target = self.DrawTarget.LINE
-
-    def update_fig(self, uma_info: UmaInfo):
-        if self.draw_target == self.DrawTarget.LINE:
-            x = np.arange(len(uma_info.points))+1
-            y = np.array(uma_info.points)
-
-            self.ax.cla()
-
-            # ax1
-            self.ax.plot(x, y, marker='o')
-            self.ax.set_title(uma_info.name, fontname='Meiryo')
-            self.ax.set_ylabel('score')
-            self.ax.get_xaxis().set_major_locator(ticker.MaxNLocator(integer=True))
-            self.ax.get_xaxis().set_major_locator(ticker.MaxNLocator(integer=True))
-
-            self.canvas.draw()
 
     def _create_canvas(self):
         frame = ttk.Frame(self)
-        # Figure instance
-        fig = plt.Figure()
-        self.ax = fig.add_subplot(111)
-        self.ax.get_xaxis().set_major_locator(ticker.MaxNLocator(integer=True))
-        self.ax.get_yaxis().set_major_locator(ticker.MaxNLocator(integer=True))
 
         # Generate canvas instance, Embedding fig in root
-        self.canvas = FigureCanvasTkAgg(fig, master=frame)
+        self.canvas = FigureCanvasTkAgg(self.graph_view.fig, master=frame)
         self.canvas.get_tk_widget().pack()
-
-        fig.subplots_adjust(bottom=0.2)
 
         return frame
 
@@ -62,7 +106,7 @@ class GraphWindow(tk.Toplevel):
         self.line_button.configure(command=self._click_draw_line)
 
         self.bar_button = ttk.Button(frame, text="bar")
-        self.bar_button.configure(command=self._draw_bar)
+        self.bar_button.configure(command=self._click_draw_bar)
 
         self.line_button.pack(side=tk.LEFT)
         self.bar_button.pack(side=tk.RIGHT)
@@ -73,26 +117,14 @@ class GraphWindow(tk.Toplevel):
         self._create_buttons().pack(pady=10, side=BOTTOM)
 
     def _click_draw_line(self):
-        self.draw_target = self.DrawTarget.LINE
-        self.ax.cla()
-        self.ax.get_xaxis().set_major_locator(ticker.MaxNLocator(integer=True))
-        self.ax.get_yaxis().set_major_locator(ticker.MaxNLocator(integer=True))
-        self.canvas.draw()
+        self.graph_view.update_target(GraphView.DrawTarget.LINE)
+        self.graph_view.update_line()
+        self.update_canvas()
 
-    def _draw_bar(self):
-        self.draw_target = self.DrawTarget.BAR
-        uma_info_list = list(UmaPointFileIO.Read().values())
+    def _click_draw_bar(self):
+        self.graph_view.update_target(GraphView.DrawTarget.BAR)
+        self.graph_view.update_bar()
+        self.update_canvas()
 
-        self.ax.cla()
-
-        name_list = [uma_info.name for uma_info in uma_info_list]
-        mean_list = [uma_info.Mean for uma_info in uma_info_list]
-        std_list = [uma_info.Std for uma_info in uma_info_list]
-
-        # ax1
-        self.ax.bar(name_list, mean_list, yerr=std_list, ecolor='black')
-
-        self.ax.set_xticklabels(
-            name_list, fontname='Meiryo', rotation=30, fontsize=8)
-        self.ax.set_ylabel('mean score')
+    def update_canvas(self):
         self.canvas.draw()
