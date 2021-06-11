@@ -52,7 +52,6 @@ class GraphWindow(tk.Toplevel):
 
         self.line_button.pack(side=tk.LEFT)
         self.bar_button.pack(side=tk.RIGHT)
-
         return frame
 
     def _create_widgets(self):
