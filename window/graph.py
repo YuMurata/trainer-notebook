@@ -47,7 +47,7 @@ class GraphWindow(tk.Toplevel):
         return fig
 
     def create_widgets(self):
-        fig = self.test()
+        fig = self._make_fig()
 
         # Generate canvas instance, Embedding fig in root
         self.canvas = FigureCanvasTkAgg(fig, master=self)
