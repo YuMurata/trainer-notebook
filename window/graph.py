@@ -13,7 +13,7 @@ class GraphWindow(tk.Toplevel):
 
     def __init__(self, master):
         super().__init__(master)
-        self.geometry("500x500")
+        self.geometry("500x550")
         self.title(self.window_name)
         self._create_widgets()
 
