@@ -92,8 +92,7 @@ class GraphWindow(tk.Toplevel):
         # ax1
         self.ax.bar(name_list, mean_list, yerr=error_list, ecolor='black')
 
-        xticklabels = self.ax.get_xticklabels()
         self.ax.set_xticklabels(
-            xticklabels, fontname='Meiryo', rotation=30, fontsize=8)
+            name_list, fontname='Meiryo', rotation=30, fontsize=8)
         self.ax.set_ylabel('mean score')
         self.canvas.draw()
