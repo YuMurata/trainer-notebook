@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
-from Uma import UmaInfo
+from Uma import UmaInfo, UmaPointFileIO
 
 
 class GraphWindow(tk.Toplevel):
@@ -34,12 +34,12 @@ class GraphWindow(tk.Toplevel):
     def _create_canvas(self):
         frame = ttk.Frame(self)
         # Figure instance
-        fig = plt.Figure()
-        self.ax = fig.add_subplot(111)
+        self.fig = plt.Figure()
+        self.ax = self.fig.add_subplot(111)
         self.ax.get_xaxis().set_major_locator(ticker.MaxNLocator(integer=True))
 
         # Generate canvas instance, Embedding fig in root
-        self.canvas = FigureCanvasTkAgg(fig, master=frame)
+        self.canvas = FigureCanvasTkAgg(self.fig, master=frame)
         self.canvas.get_tk_widget().pack()
 
         return frame
@@ -49,6 +49,7 @@ class GraphWindow(tk.Toplevel):
 
         self.line_button = ttk.Button(frame, text="line")
         self.bar_button = ttk.Button(frame, text="bar")
+        self.bar_button.configure(command=self._draw_bar)
 
         self.line_button.pack(side=tk.LEFT)
         self.bar_button.pack(side=tk.RIGHT)
@@ -57,3 +58,21 @@ class GraphWindow(tk.Toplevel):
     def _create_widgets(self):
         self._create_canvas().pack()
         self._create_buttons().pack(pady=10, side=BOTTOM)
+
+    def _draw_bar(self):
+        uma_info_list = list(UmaPointFileIO.Read().values())
+
+        self.ax.cla()
+
+        name_list = [uma_info.name for uma_info in uma_info_list]
+        mean_list = [uma_info.Mean for uma_info in uma_info_list]
+        error_list = [0 for _ in uma_info_list]
+
+        # ax1
+        self.ax.bar(name_list, mean_list, yerr=error_list, ecolor='black')
+        self.ax.set_xticklabels(
+            name_list, fontname='Meiryo', rotation=30, fontsize=8)
+        self.ax.set_ylabel('mean score')
+        self.ax.autoscale(enable=True)
+        self.fig.subplots_adjust(bottom=0.2)
+        self.canvas.draw()
