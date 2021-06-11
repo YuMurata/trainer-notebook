@@ -87,10 +87,10 @@ class GraphWindow(tk.Toplevel):
 
         name_list = [uma_info.name for uma_info in uma_info_list]
         mean_list = [uma_info.Mean for uma_info in uma_info_list]
-        error_list = [0 for _ in uma_info_list]
+        std_list = [uma_info.Std for uma_info in uma_info_list]
 
         # ax1
-        self.ax.bar(name_list, mean_list, yerr=error_list, ecolor='black')
+        self.ax.bar(name_list, mean_list, yerr=std_list, ecolor='black')
 
         self.ax.set_xticklabels(
             name_list, fontname='Meiryo', rotation=30, fontsize=8)
