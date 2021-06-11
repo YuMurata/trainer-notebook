@@ -6,30 +6,38 @@ import matplotlib.ticker as ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 from Uma import UmaInfo, UmaPointFileIO
+from enum import Enum, auto
 
 
 class GraphWindow(tk.Toplevel):
     window_name = 'umauma graph'
+
+    class DrawTarget(Enum):
+        LINE = auto()
+        BAR = auto()
 
     def __init__(self, master):
         super().__init__(master)
         self.geometry("500x550")
         self.title(self.window_name)
         self._create_widgets()
+        self.draw_target = self.DrawTarget.LINE
 
     def update_fig(self, uma_info: UmaInfo):
-        x = np.arange(len(uma_info.points))+1
-        y = np.array(uma_info.points)
+        if self.draw_target == self.DrawTarget.LINE:
+            x = np.arange(len(uma_info.points))+1
+            y = np.array(uma_info.points)
 
-        self.ax.cla()
+            self.ax.cla()
 
-        # ax1
-        self.ax.plot(x, y, marker='o')
-        self.ax.set_title(uma_info.name, fontname='Meiryo')
-        self.ax.set_ylabel('score')
-        self.ax.get_xaxis().set_major_locator(ticker.MaxNLocator(integer=True))
+            # ax1
+            self.ax.plot(x, y, marker='o')
+            self.ax.set_title(uma_info.name, fontname='Meiryo')
+            self.ax.set_ylabel('score')
+            self.ax.get_xaxis().set_major_locator(ticker.MaxNLocator(integer=True))
+            self.ax.get_xaxis().set_major_locator(ticker.MaxNLocator(integer=True))
 
-        self.canvas.draw()
+            self.canvas.draw()
 
     def _create_canvas(self):
         frame = ttk.Frame(self)
@@ -59,7 +67,15 @@ class GraphWindow(tk.Toplevel):
         self._create_canvas().pack()
         self._create_buttons().pack(pady=10, side=BOTTOM)
 
+    def _click_draw_line(self):
+        self.draw_target = self.DrawTarget.LINE
+        self.ax.cla()
+        self.ax.get_xaxis().set_major_locator(ticker.MaxNLocator(integer=True))
+        self.ax.get_yaxis().set_major_locator(ticker.MaxNLocator(integer=True))
+        self.canvas.draw()
+
     def _draw_bar(self):
+        self.draw_target = self.DrawTarget.BAR
         uma_info_list = list(UmaPointFileIO.Read().values())
 
         self.ax.cla()
