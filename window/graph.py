@@ -42,13 +42,16 @@ class GraphWindow(tk.Toplevel):
     def _create_canvas(self):
         frame = ttk.Frame(self)
         # Figure instance
-        self.fig = plt.Figure()
-        self.ax = self.fig.add_subplot(111)
+        fig = plt.Figure()
+        self.ax = fig.add_subplot(111)
         self.ax.get_xaxis().set_major_locator(ticker.MaxNLocator(integer=True))
+        self.ax.get_yaxis().set_major_locator(ticker.MaxNLocator(integer=True))
 
         # Generate canvas instance, Embedding fig in root
-        self.canvas = FigureCanvasTkAgg(self.fig, master=frame)
+        self.canvas = FigureCanvasTkAgg(fig, master=frame)
         self.canvas.get_tk_widget().pack()
+
+        fig.subplots_adjust(bottom=0.2)
 
         return frame
 
@@ -56,6 +59,8 @@ class GraphWindow(tk.Toplevel):
         frame = ttk.Frame(self)
 
         self.line_button = ttk.Button(frame, text="line")
+        self.line_button.configure(command=self._click_draw_line)
+
         self.bar_button = ttk.Button(frame, text="bar")
         self.bar_button.configure(command=self._draw_bar)
 
@@ -86,9 +91,9 @@ class GraphWindow(tk.Toplevel):
 
         # ax1
         self.ax.bar(name_list, mean_list, yerr=error_list, ecolor='black')
+
+        xticklabels = self.ax.get_xticklabels()
         self.ax.set_xticklabels(
-            name_list, fontname='Meiryo', rotation=30, fontsize=8)
+            xticklabels, fontname='Meiryo', rotation=30, fontsize=8)
         self.ax.set_ylabel('mean score')
-        self.ax.autoscale(enable=True)
-        self.fig.subplots_adjust(bottom=0.2)
         self.canvas.draw()
