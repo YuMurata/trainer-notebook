@@ -15,6 +15,7 @@ from pathlib import Path
 from threading import Thread
 import time
 
+from tkinter import messagebox
 
 path = ";C:\\Program Files\\Tesseract-OCR"
 os.environ['PATH'] = os.environ['PATH'] + path
@@ -50,6 +51,8 @@ class TeamStadiumInfoDetection(Thread):
             self.ocr_tool, self.all_uma_name_list)  # スコア情報読み取るやつ
         self.read_score = {}  # スコア情報を読み取った結果
 
+        self.display_warning = False #画面が小さいことを警告したかどうか
+
         print(self.read_score)
 
         # EV_mat = [[None, ]]#状態遷移を2次元配列で作ろうとしたけどあきらめた
@@ -68,10 +71,13 @@ class TeamStadiumInfoDetection(Thread):
         img = img.convert(mode="L")
         img = ImageEnhance.Contrast(img).enhance(1.5)
 
-        img = img.crop((150, 20, 240, 50))
+        img = img.crop((150, 20, 255, 50))
 
         # 白抜き文字だから白黒反転
         img = img.point(lambda x: 255 if x < 200 else 0)
+
+        # cv2.imshow("score", self.pil2cv(img))
+        # cv2.waitKey(0)
 
         builder = pyocr.builders.LineBoxBuilder(tesseract_layout=8)
         res = self.ocr_tool.image_to_string(img,
@@ -96,7 +102,10 @@ class TeamStadiumInfoDetection(Thread):
         img = self.game_window_image.copy()
         img = self.pil2cv(img)
 
-        img = img[175:250, 125:250]
+        img = img[175:250, 130:265]
+
+        # cv2.imshow("rank", self.pil2cv(img))
+        # cv2.waitKey(0)
 
         def load_image():
             resource_dir = './resource'
@@ -180,10 +189,13 @@ class TeamStadiumInfoDetection(Thread):
         width, height = test_img.size
         draw = ImageDraw.Draw(test_img)
         draw.rectangle([(0, 0), (90, height)], fill='white')
-        draw.rectangle([(width-45, 0), (width, height)], fill='white')
-        draw.rectangle([(215, 0), (250, height)], fill='white')
+        draw.rectangle([(width-48, 0), (width, height)], fill='white')
+        draw.rectangle([(230, 0), (260, height)], fill='white')
         draw.rectangle([(0, 0), (width, 50)], fill='white')
         draw.rectangle([(0, height - 80), (width, height)], fill='white')
+
+        # cv2.imshow("preproc", self.pil2cv(test_img))
+        # cv2.waitKey(0)
 
         return test_img
 
@@ -264,7 +276,17 @@ class TeamStadiumInfoDetection(Thread):
         if rect is not None:
             self.game_window_image = ImageGrab.grab(rect)
             print(self.game_window_image.size)
-            self.game_window_image = self.game_window_image.resize((388, 720))
+
+            if self.display_warning == False and self.game_window_image.height < 450:
+                #print('ここに入ったよ')
+                messagebox.showwarning('警告','ウマ娘の画面が小さいためうまく読み取れない可能性があります')
+                self.display_warning = True
+            
+            aspect_ratio = self.game_window_image.width / self.game_window_image.height
+            height = 720
+            width = (int)(height * aspect_ratio)
+            self.game_window_image = self.game_window_image.resize((width, height))
+            #print(self.game_window_image.size)
             # cv2.imshow("img", self.pil2cv(self.game_window_image))
             # cv2.waitKey(0)
 
