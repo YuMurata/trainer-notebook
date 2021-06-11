@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from enum import IntEnum, auto
-from window import ScoreWindow, GraphWindow
+from window import ScoreWindow, GraphWindow, GraphView
 from Uma import UmaInfo, UmaPointFileIO
 from typing import List
 
@@ -106,13 +106,18 @@ class MetricsView(ttk.Frame):
         self.display()
 
     def _click_view(self, event):
-        item_id = self.treeview_score.selection()[0]
-        item = self.treeview_score.item(item_id)
         uma_info_dict = UmaPointFileIO.Read()
-        uma_info = uma_info_dict[item['values'][1]]
+
+        item_id_list = self.treeview_score.selection()
+
+        def func(item_id):
+            item = self.treeview_score.item(item_id)
+            return uma_info_dict[item['values'][1]]
+
+        uma_info_list = [func(item_id) for item_id in item_id_list]
 
         if self.graph_updater:
-            self.graph_updater(uma_info)
+            self.graph_updater(uma_info_list)
 
     def set_graph_updater(self, graph_updater):
         self.graph_updater = graph_updater
@@ -152,6 +157,7 @@ class Win1(tk.Frame):
 
         self.master.geometry("400x400")
         self.master.title("umauma drive")
+        self.graph_view = GraphView()
         self.create_widgets()
         self.score_app = None
         self.graph_app = None
@@ -176,6 +182,8 @@ class Win1(tk.Frame):
         self.button_new_win3.pack()
 
         self.metrics_view = MetricsView(self)
+        self.metrics_view.set_graph_updater(
+            self.graph_view.update_uma_info_list)
         self.metrics_view.pack()
 
     def _close_win1(self):
@@ -199,5 +207,12 @@ class Win1(tk.Frame):
         self.score_app.protocol('WM_DELETE_WINDOW', close_win2)
 
     def new_window3(self):
-        self.graph_app = GraphWindow(self.master)
-        self.metrics_view.set_graph_updater(self.graph_app.update_fig)
+        self.graph_app = GraphWindow(self.master, self.graph_view)
+
+        def updater(uma_info_list: List[UmaInfo]):
+            if self.graph_view:
+                self.graph_view.update_uma_info_list(uma_info_list)
+            if self.graph_app:
+                self.graph_app.update_canvas()
+
+        self.metrics_view.set_graph_updater(updater)
