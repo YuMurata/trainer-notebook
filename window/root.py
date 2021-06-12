@@ -103,7 +103,8 @@ class MetricsView(ttk.Frame):
              self.treeview_score.winfo_rootx())
         column = int(self.treeview_score.identify_column(x)[1])
         self.uma_info_sorter.set_key(column)
-        self.display()
+        uma_info_dict = UmaPointFileIO.Read()
+        self.display(uma_info_dict)
 
     def _click_view(self, event):
         uma_info_dict = UmaPointFileIO.Read()
