@@ -196,23 +196,25 @@ class Win1(tk.Frame):
 
     # Call back function
     def new_window2(self):
-        self.score_app = ScoreWindow(self.master, self)
+        if not self.score_app:
+            self.score_app = ScoreWindow(self.master, self)
 
-        def close_win2():
-            self.score_app.info_detection.stop()
-            self.score_app.info_detection.join()
-            self.score_app.destroy()
-            self.score_app = None
+            def close_win2():
+                self.score_app.info_detection.stop()
+                self.score_app.info_detection.join()
+                self.score_app.destroy()
+                self.score_app = None
 
-        self.score_app.protocol('WM_DELETE_WINDOW', close_win2)
+            self.score_app.protocol('WM_DELETE_WINDOW', close_win2)
 
     def new_window3(self):
-        self.graph_app = GraphWindow(self.master, self.graph_view)
+        if not self.graph_app:
+            self.graph_app = GraphWindow(self.master, self.graph_view)
 
-        def updater(uma_info_list: List[UmaInfo]):
-            if self.graph_view:
-                self.graph_view.update_uma_info_list(uma_info_list)
-            if self.graph_app:
-                self.graph_app.update_canvas()
+            def updater(uma_info_list: List[UmaInfo]):
+                if self.graph_view:
+                    self.graph_view.update_uma_info_list(uma_info_list)
+                if self.graph_app:
+                    self.graph_app.update_canvas()
 
-        self.metrics_view.set_graph_updater(updater)
+            self.metrics_view.set_graph_updater(updater)
