@@ -138,6 +138,7 @@ class Win1(tk.Frame):
         self.master.title("umauma drive")
         self.create_widgets()
         self.app2 = None
+        self.app3 = None
         self.display()
         self.master.protocol('WM_DELETE_WINDOW', self._close_win1)
 
@@ -172,15 +173,17 @@ class Win1(tk.Frame):
 
     # Call back function
     def new_window2(self):
-        self.app2 = ScoreWindow(self.master, self)
+        if not self.app2:
+            self.app2 = ScoreWindow(self.master, self)
 
-        def close_win2():
-            self.app2.info_detection.stop()
-            self.app2.info_detection.join()
-            self.app2.destroy()
-            self.app2 = None
+            def close_win2():
+                self.app2.info_detection.stop()
+                self.app2.info_detection.join()
+                self.app2.destroy()
+                self.app2 = None
 
-        self.app2.protocol('WM_DELETE_WINDOW', close_win2)
+            self.app2.protocol('WM_DELETE_WINDOW', close_win2)
 
     def new_window3(self):
-        self.app3 = GraphWindow(self.master)
+        if not self.app3:
+            self.app3 = GraphWindow(self.master)
