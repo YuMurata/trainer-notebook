@@ -54,9 +54,9 @@ class MetricsView(ttk.Frame):
             metrics_text = metrics_name
             if metrics_name == self.uma_info_sorter.key_to_str:
                 if self.uma_info_sorter.is_reverse:
-                    metrics_text += ' v'
+                    metrics_text += ' ↓'
                 else:
-                    metrics_text += ' ^'
+                    metrics_text += ' ↑'
 
             self.treeview_score.heading(
                 metrics_name, text=metrics_text, anchor='center',
@@ -103,8 +103,7 @@ class MetricsView(ttk.Frame):
              self.treeview_score.winfo_rootx())
         column = int(self.treeview_score.identify_column(x)[1])
         self.uma_info_sorter.set_key(column)
-        uma_info_dict = UmaPointFileIO.Read()
-        self.display(uma_info_dict)
+        self.display()
 
     def _click_view(self, event):
         uma_info_dict = UmaPointFileIO.Read()
@@ -209,6 +208,10 @@ class Win1(tk.Frame):
             self.score_app.protocol('WM_DELETE_WINDOW', close_win2)
 
     def new_window3(self):
+        def close_win():
+            self.graph_app.destroy()
+            self.graph_app = None
+
         if not self.graph_app:
             self.graph_app = GraphWindow(self.master, self.graph_view)
 
@@ -219,3 +222,4 @@ class Win1(tk.Frame):
                     self.graph_app.update_canvas()
 
             self.metrics_view.set_graph_updater(updater)
+            self.graph_app.protocol('WM_DELETE_WINDOW', close_win)
