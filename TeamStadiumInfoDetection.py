@@ -266,6 +266,7 @@ class TeamStadiumInfoDetection(Thread):
     def run(self):
         while self.is_updating:
             self.game_window_image = self.snipper.Snip()
-            self.TransitionST()
+            if self.game_window_image:
+                self.TransitionST()
 
             time.sleep(0.5)

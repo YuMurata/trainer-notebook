@@ -32,6 +32,9 @@ class ImageSnipper:
                 messagebox.showwarning('警告', 'ウマ娘の画面が小さいためうまく読み取れない可能性があります')
                 self.display_warning = True
 
+            if game_window_image.height == 0:
+                return None
+
             aspect_ratio = game_window_image.width / game_window_image.height
 
             target_height = 720
