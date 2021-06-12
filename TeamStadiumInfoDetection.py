@@ -2,20 +2,16 @@ import os
 import pyocr
 import pyocr.builders
 import cv2
-import ctypes
 import numpy as np
-from PIL import Image, ImageDraw, ImageGrab, ImageEnhance
+from PIL import Image, ImageDraw,  ImageEnhance
 from enum import Enum
 from UmaPointReading import UmaPointReader
 from Uma import UmaNameFileReader, UmaPointFileIO
-
 from exception import FileNotFoundException
 from pathlib import Path
-
 from threading import Thread
 import time
-
-from tkinter import messagebox
+from snip import ImageSnipper
 
 path = ";C:\\Program Files\\Tesseract-OCR"
 os.environ['PATH'] = os.environ['PATH'] + path
@@ -43,7 +39,8 @@ class TeamStadiumInfoDetection(Thread):
     def __init__(self):
         super().__init__(daemon=True)
         self.st = State.NONE_ST
-        self.game_window_image = None
+        self.snipper = ImageSnipper()
+        self.game_window_image = self.snipper.Snip()
         self.all_uma_name_list = UmaNameFileReader.Read()  # 全てのウマ娘の名前のリスト
         self.uma_info_dict = UmaPointFileIO.Read()
         self.ocr_tool = self.GetOCRTool()
@@ -155,19 +152,6 @@ class TeamStadiumInfoDetection(Thread):
         new_image = Image.fromarray(new_image)
         return new_image
 
-    def GetWindowRectFromName(self, TargetWindowTitle: str) -> tuple:
-        TargetWindowHandle = ctypes.windll.user32.FindWindowW(
-            0, TargetWindowTitle)
-        if TargetWindowHandle == 0:
-            return None
-
-        Rectangle = ctypes.wintypes.RECT()
-
-        ctypes.windll.user32.GetWindowRect(
-            TargetWindowHandle, ctypes.pointer(Rectangle))
-        return (Rectangle.left + 8, Rectangle.top + 30,
-                Rectangle.right - 8, Rectangle.bottom - 8)
-
     def GetOCRTool(self):
         # インストールしたTesseract-OCRのパスを環境変数「PATH」へ追記する。
         # OS自体に設定してあれば以下の2行は不要
@@ -270,27 +254,6 @@ class TeamStadiumInfoDetection(Thread):
         elif self.st == State.READ_RANK_ST:
             self.onReadRankST(ev)
 
-    def UpdateImage(self):
-        rect = self.GetWindowRectFromName('umamusume')
-
-        if rect is not None:
-            self.game_window_image = ImageGrab.grab(rect)
-            print(self.game_window_image.size)
-
-            if self.display_warning == False and self.game_window_image.height < 450:
-                # print('ここに入ったよ')
-                messagebox.showwarning('警告', 'ウマ娘の画面が小さいためうまく読み取れない可能性があります')
-                self.display_warning = True
-
-            aspect_ratio = self.game_window_image.width / self.game_window_image.height
-            height = 720
-            width = (int)(height * aspect_ratio)
-            self.game_window_image = self.game_window_image.resize(
-                (width, height))
-            # print(self.game_window_image.size)
-            # cv2.imshow("img", self.pil2cv(self.game_window_image))
-            # cv2.waitKey(0)
-
     def OverWriteUmaListFile(self):
         for name, point in self.read_score.items():
             self.uma_info_dict[name].AddPoint(point)
@@ -302,7 +265,7 @@ class TeamStadiumInfoDetection(Thread):
 
     def run(self):
         while self.is_updating:
-            self.UpdateImage()
+            self.game_window_image = self.snipper.Snip()
             self.TransitionST()
 
             time.sleep(0.5)
