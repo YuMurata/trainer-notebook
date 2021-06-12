@@ -10,6 +10,7 @@ import numpy as np
 from Uma import UmaInfo
 from enum import Enum, auto
 from colorsys import hsv_to_rgb
+import mplcursors
 
 
 class GraphView:
@@ -50,6 +51,7 @@ class GraphView:
 
             self.ax.legend(loc="lower right", fontsize=8,
                            prop={'family': 'Meiryo'})
+        mplcursors.cursor(self.ax, hover=True)
 
     def update_bar(self):
         self.ax.cla()
