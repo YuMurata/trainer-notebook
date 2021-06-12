@@ -2,14 +2,14 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter.constants import BOTTOM
 from typing import List
-import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
-from Uma import UmaInfo, UmaPointFileIO
+from Uma import UmaInfo
 from enum import Enum, auto
 from colorsys import hsv_to_rgb
+import mplcursors
 
 
 class GraphView:
@@ -50,6 +50,7 @@ class GraphView:
 
             self.ax.legend(loc="lower right", fontsize=8,
                            prop={'family': 'Meiryo'})
+        mplcursors.cursor(self.ax, hover=True)
 
     def update_bar(self):
         self.ax.cla()
