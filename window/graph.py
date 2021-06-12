@@ -45,8 +45,8 @@ class GraphView:
                 self.line_ax.plot(x, y, marker='o',
                                   color=rgb, label=uma_info.name)
 
-            self.line_ax.legend(loc="lower right", fontsize=8,
-                                prop={'family': 'Meiryo'})
+            self.line_ax.legend(loc="lower right",
+                                prop={'family': 'Meiryo', 'size': 8})
 
     def update_bar(self):
         self.bar_ax.cla()
