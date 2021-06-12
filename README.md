@@ -1,4 +1,4 @@
 # うまうまドライブ
 
 ## 何ができるんですか？
-![image](https://user-images.githubusercontent.com/25917340/120931721-ce16f980-c72d-11eb-9b47-c9e6a2ed1ce4.PNG)
+![usecase](https://user-images.githubusercontent.com/25917340/121775905-26824700-cbc5-11eb-89e0-8b5116d0d7ef.PNG)
