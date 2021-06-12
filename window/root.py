@@ -209,6 +209,10 @@ class Win1(tk.Frame):
             self.score_app.protocol('WM_DELETE_WINDOW', close_win2)
 
     def new_window3(self):
+        def close_win():
+            self.graph_app.destroy()
+            self.graph_app = None
+
         if not self.graph_app:
             self.graph_app = GraphWindow(self.master, self.graph_view)
 
@@ -219,3 +223,4 @@ class Win1(tk.Frame):
                     self.graph_app.update_canvas()
 
             self.metrics_view.set_graph_updater(updater)
+            self.graph_app.protocol('WM_DELETE_WINDOW', close_win)
