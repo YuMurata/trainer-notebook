@@ -12,6 +12,7 @@ from pathlib import Path
 from threading import Thread
 import time
 from snip import ImageSnipper
+from misc import pil2cv, cv2pil
 
 path = ";C:\\Program Files\\Tesseract-OCR"
 os.environ['PATH'] = os.environ['PATH'] + path
@@ -97,7 +98,7 @@ class TeamStadiumInfoDetection(Thread):
             return False
 
         img = self.game_window_image.copy()
-        img = self.pil2cv(img)
+        img = pil2cv(img)
 
         img = img[175:250, 130:265]
 
@@ -128,29 +129,6 @@ class TeamStadiumInfoDetection(Thread):
                 min = min_val
 
         return min < 0.1
-
-    def pil2cv(self, image):
-        ''' PIL型 -> OpenCV型 '''
-        new_image = np.array(image, dtype=np.uint8)
-        if new_image.ndim == 2:  # モノクロ
-            pass
-        elif new_image.shape[2] == 3:  # カラー
-            new_image = cv2.cvtColor(new_image, cv2.COLOR_RGB2BGR)
-        elif new_image.shape[2] == 4:  # 透過
-            new_image = cv2.cvtColor(new_image, cv2.COLOR_RGBA2BGRA)
-        return new_image
-
-    def cv2pil(self, image):
-        ''' OpenCV型 -> PIL型 '''
-        new_image = image.copy()
-        if new_image.ndim == 2:  # モノクロ
-            pass
-        elif new_image.shape[2] == 3:  # カラー
-            new_image = cv2.cvtColor(new_image, cv2.COLOR_BGR2RGB)
-        elif new_image.shape[2] == 4:  # 透過
-            new_image = cv2.cvtColor(new_image, cv2.COLOR_BGRA2RGBA)
-        new_image = Image.fromarray(new_image)
-        return new_image
 
     def GetOCRTool(self):
         # インストールしたTesseract-OCRのパスを環境変数「PATH」へ追記する。
