@@ -13,28 +13,25 @@ from colorsys import hsv_to_rgb
 
 
 class GraphView:
-    class DrawTarget(Enum):
-        LINE = auto()
-        BAR = auto()
-
     def __init__(self):
-        self.fig = plt.Figure()
-        self.ax = self.fig.add_subplot(111)
+        self.fig = plt.Figure(figsize=(5, 10))
+        self.line_ax = self.fig.add_subplot(211)
+        self.bar_ax = self.fig.add_subplot(212)
 
         self.fig.subplots_adjust(bottom=0.2, left=0.2)
 
         self.uma_info_list: List[UmaInfo] = None
-        self.draw_target = self.DrawTarget.LINE
         self.update_line()
+        self.update_bar()
 
     def update_line(self):
-        self.ax.cla()
+        self.line_ax.cla()
 
-        self.ax.set_xlabel('race')
-        self.ax.set_ylabel('score')
+        self.line_ax.set_xlabel('race')
+        self.line_ax.set_ylabel('score')
 
-        self.ax.get_xaxis().set_major_locator(ticker.MaxNLocator(integer=True))
-        self.ax.get_yaxis().set_major_locator(ticker.MaxNLocator(integer=True))
+        self.line_ax.get_xaxis().set_major_locator(ticker.MaxNLocator(integer=True))
+        self.line_ax.get_yaxis().set_major_locator(ticker.MaxNLocator(integer=True))
 
         if self.uma_info_list:
             h_diff = 1.0 / len(self.uma_info_list)
@@ -45,19 +42,19 @@ class GraphView:
                 rgb = hsv_to_rgb(h_diff*i, 1, 0.8)
 
                 # ax1
-                self.ax.plot(x, y, marker='o',
-                             color=rgb, label=uma_info.name)
+                self.line_ax.plot(x, y, marker='o',
+                                  color=rgb, label=uma_info.name)
 
-            self.ax.legend(loc="lower right", fontsize=8,
-                           prop={'family': 'Meiryo'})
+            self.line_ax.legend(loc="lower right", fontsize=8,
+                                prop={'family': 'Meiryo'})
 
     def update_bar(self):
-        self.ax.cla()
+        self.bar_ax.cla()
 
-        self.ax.set_xlabel('name')
-        self.ax.set_ylabel('mean score')
+        self.bar_ax.set_xlabel('name')
+        self.bar_ax.set_ylabel('mean score')
 
-        self.ax.get_yaxis().set_major_locator(ticker.MaxNLocator(integer=True))
+        self.bar_ax.get_yaxis().set_major_locator(ticker.MaxNLocator(integer=True))
 
         if self.uma_info_list:
             name_list = [uma_info.name for uma_info in self.uma_info_list]
@@ -65,16 +62,17 @@ class GraphView:
             std_list = [uma_info.Std for uma_info in self.uma_info_list]
 
             # ax1
-            self.ax.bar(name_list, mean_list, yerr=std_list, ecolor='black')
+            self.bar_ax.bar(name_list, mean_list,
+                            yerr=std_list, ecolor='black')
 
-            self.ax.set_xticklabels(
+            self.bar_ax.set_xticklabels(
                 name_list, fontname='Meiryo', rotation=30, fontsize=8)
 
     def update_uma_info_list(self, uma_info_list: List[UmaInfo]):
         self.uma_info_list = uma_info_list
-        update_func_dict = {draw_target: func for draw_target, func in zip(
-            self.DrawTarget, [self.update_line, self.update_bar])}
-        update_func_dict[self.draw_target]()
+
+        self.update_bar()
+        self.update_line()
 
     def update_target(self, draw_target):
         self.draw_target = draw_target
@@ -85,7 +83,7 @@ class GraphWindow(tk.Toplevel):
 
     def __init__(self, master, graph_view: GraphView):
         super().__init__(master)
-        self.geometry("500x550")
+        self.geometry("500x800")
         self.title(self.window_name)
         self.graph_view = graph_view
         self._create_widgets()
@@ -114,7 +112,6 @@ class GraphWindow(tk.Toplevel):
 
     def _create_widgets(self):
         self._create_canvas().pack()
-        self._create_buttons().pack(pady=10, side=BOTTOM)
 
     def _click_draw_line(self):
         self.graph_view.update_target(GraphView.DrawTarget.LINE)
