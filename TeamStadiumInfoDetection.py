@@ -51,7 +51,7 @@ class TeamStadiumInfoDetection(Thread):
             self.ocr_tool, self.all_uma_name_list)  # スコア情報読み取るやつ
         self.read_score = {}  # スコア情報を読み取った結果
 
-        self.display_warning = False #画面が小さいことを警告したかどうか
+        self.display_warning = False  # 画面が小さいことを警告したかどうか
 
         print(self.read_score)
 
@@ -278,15 +278,16 @@ class TeamStadiumInfoDetection(Thread):
             print(self.game_window_image.size)
 
             if self.display_warning == False and self.game_window_image.height < 450:
-                #print('ここに入ったよ')
-                messagebox.showwarning('警告','ウマ娘の画面が小さいためうまく読み取れない可能性があります')
+                # print('ここに入ったよ')
+                messagebox.showwarning('警告', 'ウマ娘の画面が小さいためうまく読み取れない可能性があります')
                 self.display_warning = True
-            
+
             aspect_ratio = self.game_window_image.width / self.game_window_image.height
             height = 720
             width = (int)(height * aspect_ratio)
-            self.game_window_image = self.game_window_image.resize((width, height))
-            #print(self.game_window_image.size)
+            self.game_window_image = self.game_window_image.resize(
+                (width, height))
+            # print(self.game_window_image.size)
             # cv2.imshow("img", self.pil2cv(self.game_window_image))
             # cv2.waitKey(0)
 

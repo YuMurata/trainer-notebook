@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 from enum import IntEnum, auto
-from window import ScoreWindow, GraphWindow
-from Uma import UmaInfo, UmaInfoDict, UmaPointFileIO
+from window import ScoreWindow, GraphWindow, GraphView
+from Uma import UmaInfo, UmaPointFileIO
 from typing import List
 
 
@@ -46,6 +46,7 @@ class MetricsView(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
         self.uma_info_sorter = self.SortUmaInfo()
+        self.graph_updater = None
         self._create_widgets()
 
     def _create_heading(self):
@@ -53,9 +54,9 @@ class MetricsView(ttk.Frame):
             metrics_text = metrics_name
             if metrics_name == self.uma_info_sorter.key_to_str:
                 if self.uma_info_sorter.is_reverse:
-                    metrics_text += ' ^'
-                else:
                     metrics_text += ' v'
+                else:
+                    metrics_text += ' ^'
 
             self.treeview_score.heading(
                 metrics_name, text=metrics_text, anchor='center',
@@ -95,6 +96,8 @@ class MetricsView(ttk.Frame):
         self.treeview_score.pack(side=tk.LEFT, pady=10)
         self.vscroll.pack(side=tk.RIGHT, fill="y", pady=10)
 
+        self.treeview_score.bind('<<TreeviewSelect>>', self._click_view)
+
     def _click_header(self):
         x = (self.treeview_score.winfo_pointerx() -
              self.treeview_score.winfo_rootx())
@@ -102,7 +105,25 @@ class MetricsView(ttk.Frame):
         self.uma_info_sorter.set_key(column)
         self.display()
 
-    def display(self, uma_info_dict: UmaInfoDict):
+    def _click_view(self, event):
+        uma_info_dict = UmaPointFileIO.Read()
+
+        item_id_list = self.treeview_score.selection()
+
+        def func(item_id):
+            item = self.treeview_score.item(item_id)
+            return uma_info_dict[item['values'][1]]
+
+        uma_info_list = [func(item_id) for item_id in item_id_list]
+
+        if self.graph_updater:
+            self.graph_updater(uma_info_list)
+
+    def set_graph_updater(self, graph_updater):
+        self.graph_updater = graph_updater
+
+    def display(self):
+        uma_info_dict = UmaPointFileIO.Read()
         treeview_content: List[UmaInfo] = list(uma_info_dict.values())
 
         treeview_content.sort(key=self.uma_info_sorter.sort,
@@ -136,15 +157,15 @@ class Win1(tk.Frame):
 
         self.master.geometry("400x400")
         self.master.title("umauma drive")
+        self.graph_view = GraphView()
         self.create_widgets()
-        self.app2 = None
-        self.app3 = None
+        self.score_app = None
+        self.graph_app = None
         self.display()
         self.master.protocol('WM_DELETE_WINDOW', self._close_win1)
 
     def display(self):
-        uma_info_dict = UmaPointFileIO.Read()
-        self.metrics_view.display(uma_info_dict)
+        self.metrics_view.display()
 
     def create_widgets(self):
         # Button
@@ -161,29 +182,39 @@ class Win1(tk.Frame):
         self.button_new_win3.pack()
 
         self.metrics_view = MetricsView(self)
+        self.metrics_view.set_graph_updater(
+            self.graph_view.update_uma_info_list)
         self.metrics_view.pack()
 
     def _close_win1(self):
-        if self.app2:
-            self.app2.info_detection.stop()
-            self.app2.info_detection.join()
-            self.app2.destroy()
-            self.app2 = None
+        if self.score_app:
+            self.score_app.info_detection.stop()
+            self.score_app.info_detection.join()
+            self.score_app.destroy()
+            self.score_app = None
         self.master.destroy()
 
     # Call back function
     def new_window2(self):
-        if not self.app2:
-            self.app2 = ScoreWindow(self.master, self)
+        if not self.score_app:
+            self.score_app = ScoreWindow(self.master, self)
 
             def close_win2():
-                self.app2.info_detection.stop()
-                self.app2.info_detection.join()
-                self.app2.destroy()
-                self.app2 = None
+                self.score_app.info_detection.stop()
+                self.score_app.info_detection.join()
+                self.score_app.destroy()
+                self.score_app = None
 
-            self.app2.protocol('WM_DELETE_WINDOW', close_win2)
+            self.score_app.protocol('WM_DELETE_WINDOW', close_win2)
 
     def new_window3(self):
-        if not self.app3:
-            self.app3 = GraphWindow(self.master)
+        if not self.graph_app:
+            self.graph_app = GraphWindow(self.master, self.graph_view)
+
+            def updater(uma_info_list: List[UmaInfo]):
+                if self.graph_view:
+                    self.graph_view.update_uma_info_list(uma_info_list)
+                if self.graph_app:
+                    self.graph_app.update_canvas()
+
+            self.metrics_view.set_graph_updater(updater)
