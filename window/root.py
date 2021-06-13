@@ -1,7 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 from enum import IntEnum, auto
-from window import ScoreWindow, GraphWindow, GraphView
+from window.graph import GraphApp, GraphView
+from window.score import ScoreApp
 from Uma import UmaInfo, UmaPointFileIO
 from typing import List
 
@@ -158,11 +159,10 @@ class Win1(tk.Frame):
         self.master.geometry("400x400")
         self.master.title("umauma drive")
         self.graph_view = GraphView()
+        self.score_app = ScoreApp(master, self.display)
+        self.graph_app = GraphApp(master, self.graph_view)
         self.create_widgets()
-        self.score_app = None
-        self.graph_app = None
         self.display()
-        self.master.protocol('WM_DELETE_WINDOW', self._close_win1)
 
         def lift_app(event):
             if self.score_app:
@@ -194,62 +194,22 @@ class Win1(tk.Frame):
         # Button
         self.button_new_win2 = ttk.Button(self)
         self.button_new_win2.configure(text="regist score")
-        self.button_new_win2.configure(command=self.new_window2)
+        self.button_new_win2.configure(command=self.score_app.Activate)
 
         self.button_new_win3 = ttk.Button(self)
         self.button_new_win3.configure(text="disp graph")
-        self.button_new_win3.configure(command=self.new_window3)
+        self.button_new_win3.configure(command=self.graph_app.Activate)
 
         # self.treeview_score.grid(row=0,column=0,columnspan=2,pady=10)
         self.button_new_win2.pack()
         self.button_new_win3.pack()
 
         self.metrics_view = MetricsView(self)
-        self.metrics_view.set_graph_updater(
-            self.graph_view.update_uma_info_list)
+        self.metrics_view.set_graph_updater(self.graph_app.update_canvas)
         self.metrics_view.pack()
 
-    def _close_win1(self):
-        if self.score_app:
-            self.score_app.info_detection.stop()
-            self.score_app.info_detection.join()
-            self.score_app.destroy()
-            self.score_app = None
-        self.master.destroy()
-
-    # Call back function
-    def new_window2(self):
-        if not self.score_app:
-            self.score_app = ScoreWindow(self.master, self)
-
-            def close_win2():
-                self.score_app.info_detection.stop()
-                self.score_app.info_detection.join()
-                self.score_app.destroy()
-                self.score_app = None
-
-            self.score_app.protocol('WM_DELETE_WINDOW', close_win2)
-        elif self.score_app.winfo_exists():
-            self.score_app.deiconify()
-            self.score_app.lift()
-
-    def new_window3(self):
-        def close_win():
-            self.graph_app.destroy()
-            self.graph_app = None
-
-        if not self.graph_app:
-            self.graph_app = GraphWindow(self.master, self.graph_view)
-
-            def updater(uma_info_list: List[UmaInfo]):
-                if self.graph_view:
-                    self.graph_view.update_uma_info_list(uma_info_list)
-                if self.graph_app:
-                    self.graph_app.update_canvas()
-
-            self.metrics_view.set_graph_updater(updater)
-            self.graph_app.protocol('WM_DELETE_WINDOW', close_win)
-
-        elif self.graph_app.winfo_exists():
-            self.graph_app.deiconify()
-            self.graph_app.lift()
+    def destroy(self) -> None:
+        ret = super().destroy()
+        self.score_app.close_window()
+        self.graph_app.close_window()
+        return ret

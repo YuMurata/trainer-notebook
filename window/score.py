@@ -1,12 +1,12 @@
 import tkinter as tk
 from tkinter import ttk
 from TeamStadiumInfoDetection import TeamStadiumInfoDetection, ScoreDispatcher
+from window.app import BaseApp
 
 
 class ScoreWindow(tk.Toplevel):
     def __init__(self, master, win1):
         super().__init__(master)
-        self.geometry("300x380")
         self.title("umauma score")
         self.score_dispatcher = ScoreDispatcher(self.display)
         self.info_detection = TeamStadiumInfoDetection(self.score_dispatcher)
@@ -79,3 +79,11 @@ class ScoreWindow(tk.Toplevel):
     def _create_widgets(self):
         self._create_treeview().pack()
         self._create_button().pack()
+
+
+class ScoreApp(BaseApp):
+    def __init__(self, master_widget: tk.Toplevel, master_updater) -> None:
+        def generator():
+            return ScoreWindow(master_widget, master_updater)
+        target_size = (300, 380)
+        super().__init__(generator, master_widget, target_size)
