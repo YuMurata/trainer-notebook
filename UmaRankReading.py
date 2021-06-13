@@ -91,11 +91,11 @@ class UmaRankReader:
         except FileNotFoundError:
             return None
 
-        # cv2.imshow("template", template)
-        # cv2.waitKey(0)
+        cv2.imshow("template", template)
+        cv2.waitKey(0)
 
-        #cv2.imshow("template", template)
-        # cv2.waitKey(0)
+        cv2.imshow("template", template)
+        cv2.waitKey(0)
 
         min_values = [None] * self.n_dividion
         min_locs = [None] * self.n_dividion
@@ -137,7 +137,8 @@ class UmaRankReader:
                    [0]+self.division_upper_left_loc[1] + self.step_width * min_idx)
         return uma_loc
 
-    def UmaRankListfromImage(self, img):
+    def UmaRankListfromImage(self, src_img):
+        img = pil2cv(src_img)
         self._DivideImg(img)
         for uma_name in self.all_uma_name_list:
             # self.uma_rank_dict[uma_name] = 1
@@ -159,11 +160,11 @@ class UmaRankReader:
 
 def main():
 
-    start = time.time()
-
     snipper = ImageSnipper()
     snip_img = snipper.Snip()
     src_img = cv2.imread("./resource/read_rank_test_img.png")
+    # cv2.imshow("snip_img", pil2cv(snip_img))
+    # cv2.waitKey(0)
     print(src_img.shape)
 
     all_uma_name_list = UmaNameFileReader.Read()  # 全てのウマ娘の名前のリスト
@@ -172,14 +173,20 @@ def main():
     urr = UmaRankReader(all_uma_name_list)
     # uma_rank_dict = urr.UmaRankListfromImage(snip_img)
     # print(uma_rank_dict)
-    template = urr.CreateTemplateImg(snip_img)
-    # print(template.size)
-    # cv2.imshow("snip_img.png", pil2cv(template))
-    cv2.imwrite("./resource/uma_template.png", pil2cv(template))
-    cv2.waitKey(0)
 
-    uma_rank_dict = urr.UmaRankListfromImage(src_img)
-    print(uma_rank_dict)
+    print("実行したい番号を入力してください\n　1．ウマテンプレート作成\n　2．順位読み取り\n")
+    inputNum = int(input())
+    start = time.time()
+    if inputNum == 1:
+        print('test')
+        template = urr.CreateTemplateImg(snip_img)
+        # print(template.size)
+        # cv2.imshow("snip_img.png", pil2cv(template))
+        cv2.imwrite("./resource/uma_template.png", pil2cv(template))
+        # cv2.waitKey(0)
+    elif inputNum == 2:
+        uma_rank_dict = urr.UmaRankListfromImage(snip_img)
+        print(uma_rank_dict)
 
     elapsed_time = time.time() - start
     print("elapsed_time:{0}", format(elapsed_time) + "[sec]")
