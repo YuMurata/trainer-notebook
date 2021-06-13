@@ -1,4 +1,5 @@
 import ctypes
+from ctypes import wintypes
 from PIL import ImageGrab
 from tkinter import Image, messagebox
 
