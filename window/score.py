@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from TeamStadiumInfoDetection import TeamStadiumInfoDetection, ScoreDispatcher
 from window.app import BaseApp
+from threading import Thread
 
 
 class ScoreWindow(tk.Toplevel):
@@ -26,6 +27,16 @@ class ScoreWindow(tk.Toplevel):
         for i, (name, point) in enumerate(score_list):
             self.treeview_score.set(i, 1, name)
             self.treeview_score.set(i, 2, f'{point:,}')
+
+    def destroy(self) -> None:
+        ret = super().destroy()
+
+        def join():
+            self.info_detection.stop()
+            self.info_detection.join()
+
+        Thread(daemon=True, target=join).start()
+        return ret
 
     def deleteResultReadScore(self):
         self.score_dispatcher.init_score()

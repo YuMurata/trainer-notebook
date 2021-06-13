@@ -56,7 +56,7 @@ class TeamStadiumInfoDetection(Thread):
     # スコア読み取りモードに移行するために「スコア情報」と書いているかを確認する関数
     # 戻り値 bool
     def __init__(self, score_dispatcher: ScoreDispatcher):
-        super().__init__(daemon=True)
+        super().__init__()
         self.st = State.NONE_ST
         self.snipper = ImageSnipper()
         self.game_window_image = self.snipper.Snip()
