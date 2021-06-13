@@ -6,14 +6,14 @@ from threading import Thread
 
 
 class ScoreWindow(tk.Toplevel):
-    def __init__(self, master, win1):
+    def __init__(self, master, master_updater):
         super().__init__(master)
         self.title("umauma score")
         self.score_dispatcher = ScoreDispatcher(self.display)
         self.info_detection = TeamStadiumInfoDetection(self.score_dispatcher)
         self._create_widgets()
         self.info_detection.start()
-        self.win1 = win1
+        self.master_updater = master_updater
 
     def display(self, score: dict):
         print(f'disp: {score}')
@@ -86,7 +86,7 @@ class ScoreWindow(tk.Toplevel):
 
     def _regist(self):
         self.info_detection.OverWriteUmaListFile()
-        self.win1.display()
+        self.master_updater()
 
     def _create_widgets(self):
         self._create_treeview().pack()
