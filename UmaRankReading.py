@@ -97,9 +97,9 @@ class UmaRankReader:
         cv2.imshow("template", template)
         cv2.waitKey(0)
 
-        min_values = [None] * self.n_dividion
-        min_locs = [None] * self.n_dividion
-        for i in range(self.n_dividion):
+        min_values = [None] * self.n_division
+        min_locs = [None] * self.n_division
+        for i in range(self.n_division):
             img = self.divide_img[i]
             method = eval('cv2.TM_SQDIFF_NORMED')
 
