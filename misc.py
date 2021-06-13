@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 
 
-def pil2cv(image):
+def pil2cv(image: Image.Image) -> np.array:
     ''' PIL型 -> OpenCV型 '''
     new_image = np.array(image, dtype=np.uint8)
     if new_image.ndim == 2:  # モノクロ
@@ -15,7 +15,7 @@ def pil2cv(image):
     return new_image
 
 
-def cv2pil(image):
+def cv2pil(image: np.array) -> Image.Image:
     ''' OpenCV型 -> PIL型 '''
     new_image = image.copy()
     if new_image.ndim == 2:  # モノクロ
