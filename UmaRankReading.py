@@ -1,16 +1,18 @@
+from typing import Tuple
 from Uma import UmaNameFileReader
 from snip import ImageSnipper
-from misc import pil2cv, cv2pil
+from misc import pil2cv
 import cv2
 from PIL import Image
-# import glob
-
-from matplotlib import pyplot as plt
 import time
 from pprint import pprint
+from pathlib import Path
+import numpy as np
 
 
 class UmaRankReader:
+    rank_num = 12
+
     def __init__(self, all_uma_name_list: list):
         self.all_uma_name_list = all_uma_name_list
         self.uma_rank_dict = dict()
@@ -20,36 +22,37 @@ class UmaRankReader:
         self.division_upper_left_loc = 348, 14
         self.n_division = 5
         self.divide_img = [None] * self.n_division
-        self.template_rank = [None]*12
-        for i in range(12):
-            self.template_rank[i] = cv2.imread(
-                './resource/rank/rank{rank:02}.png'.format(rank=i+1))
+        self.template_rank = [cv2.imread(
+            f'./resource/rank/rank{i+1:02}.png') for i in range(self.rank_num)]
+        self.template_uma_dict = {path.name: Image.open(path) for path in Path(
+            './resource/uma_template').iterdir()}
 
     def _DivideImg(self, src_img):
 
         # print(divide_img)
-        for i in range(self.n_division):
-            self.divide_img[i] = src_img[self.division_upper_left_loc[0]: self.division_upper_left_loc[0] + self.rect_size[0],
-                                         self.division_upper_left_loc[1] + self.step_width * i: self.division_upper_left_loc[1] + self.step_width * i + self.rect_size[1]]
-            # cv2.imshow("divide_img", self.divide_img[i])
-            # cv2.waitKey(0)
 
-    def _ReadUmaRank(self, src_img, uma_loc, uma_name):
+        divide_y_start = self.division_upper_left_loc[0]
+        divide_y_end = self.division_upper_left_loc[0] + self.rect_size[0]
+
+        divide_x_start_list = [self.division_upper_left_loc[1] +
+                               self.step_width * i
+                               for i in range(self.n_division)]
+        divide_x_end_list = [self.division_upper_left_loc[1] +
+                             self.step_width * i + self.rect_size[1]
+                             for i in range(self.n_division)]
+
+        self.divide_img = [src_img[divide_y_start:divide_y_end,
+                                   divide_x_start_list[i]:divide_x_end_list[i]]
+                           for i in range(self.n_division)]
+        # cv2.imshow("divide_img", self.divide_img[i])
+        # cv2.waitKey(0)
+
+    def _ReadUmaRank(self, src_img: np.array, uma_loc: Tuple, uma_name: str):
 
         rank_img = src_img[uma_loc[0] + 55:uma_loc[0] +
                            80, uma_loc[1]+37:uma_loc[1]+75]
-        # files = glob.glob("./resource/rank/rank*.png")
-        # print(files)
-        # if uma_name == 'ハルウララ\n':
-        #     cv2.imshow("rank_img", rank_img)
-        #     cv2.imwrite("rank_snip_img.png", rank_img)
-        #     cv2.waitKey(0)
-        # cv2.waitKey(0)
-        min_values = [None] * 12
-        for i in range(12):
-            # cv2.imshow("template_rank", template_rank)
-            # cv2.waitKey(0)
 
+        def func(i):
             method = cv2.TM_SQDIFF_NORMED
 
             w, h, c = self.template_rank[i].shape[: 3]
@@ -58,49 +61,17 @@ class UmaRankReader:
             res = cv2.matchTemplate(rank_img, self.template_rank[i], method)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
-            min_values[i] = min_val
+            return min_val
 
-            # print(min_val, min_loc)
-
-            # top_left = min_loc
-
-            # bottom_right = (top_left[0] + w, top_left[1] + h)
-
-            # #cv2.rectangle(rank_img, top_left, bottom_right, 255, 2)
-
-            # plt.subplot(121), plt.imshow(res, cmap='gray')
-            # plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
-            # plt.subplot(122), plt.imshow(cv2pil(rank_img))
-            # plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
-            # plt.suptitle(method)
-
-            # plt.show()
-
+        min_values = [func(i) for i in range(self.rank_num)]
         min_idx = min_values.index(min(min_values))
         rank = min_idx + 1
         # print("rank="+str(rank))
 
         self.uma_rank_dict[uma_name] = rank
 
-    def _FindUmaLoc(self, src_img, uma_name):
-        file_name = './resource/uma_template/' + \
-            uma_name.replace('\n', '') + '.png'
-        # print(file_name)
-
-        try:
-            template = pil2cv(Image.open(file_name))
-        except FileNotFoundError:
-            return None
-
-        #cv2.imshow("template", template)
-        # cv2.waitKey(0)
-
-        #cv2.imshow("template", template)
-        # cv2.waitKey(0)
-
-        min_values = [None] * self.n_division
-        min_locs = [None] * self.n_division
-        for i in range(self.n_division):
+    def _FindUmaLoc(self, src_img, template: np.array):
+        def minloc_from_image(i):
             img = self.divide_img[i]
             method = cv2.TM_SQDIFF_NORMED
 
@@ -110,41 +81,36 @@ class UmaRankReader:
             res = cv2.matchTemplate(img, template, method)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
-            min_values[i] = min_val
-            min_locs[i] = min_loc
+            return min_val, min_loc
 
-            # print(min_val, min_loc)
+        def minloc_from_list():
+            minloc_list = [minloc_from_image(i)
+                           for i in range(self.n_division)]
+            min_list = [minloc[0] for minloc in minloc_list]
+            loc_list = [minloc[1] for minloc in minloc_list]
 
-            top_left = min_loc
+            min_value = min(min_list)
+            min_idx = min_list.index(min_value)
+            min_loc = loc_list[min_idx]
 
-            bottom_right = (top_left[0] + w, top_left[1] + h)
+            return min_value, min_idx, min_loc
 
-            # cv2.rectangle(img, top_left, bottom_right, 255, 2)
+        min_value, min_idx, min_loc = minloc_from_list()
 
-            # plt.subplot(121), plt.imshow(res, cmap='gray')
-            # plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
-            # plt.subplot(122), plt.imshow(cv2pil(img))
-            # plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
-            # plt.suptitle(method)
-
-            # plt.show()
-
-        min_idx = min_values.index(min(min_values))
-        # print(min_idx)
-        if min_values[min_idx] > 0.05:
+        if min_value > 0.05:
             return None
 
-        uma_loc = (min_locs[min_idx][1] + self.division_upper_left_loc[0], min_locs[min_idx]
-                   [0]+self.division_upper_left_loc[1] + self.step_width * min_idx)
+        uma_loc = (min_loc[1] + self.division_upper_left_loc[0], min_loc[0] +
+                   self.division_upper_left_loc[1] + self.step_width * min_idx)
         return uma_loc
 
     def UmaRankListfromImage(self, src_img):
         img = pil2cv(src_img)
         self._DivideImg(img)
-        for uma_name in self.all_uma_name_list:
+        for uma_name, template in self.template_uma_dict.items():
             # self.uma_rank_dict[uma_name] = 1
-            uma_loc = self._FindUmaLoc(img, uma_name)
-            if uma_loc is not None:
+            uma_loc = self._FindUmaLoc(img, pil2cv(template))
+            if uma_loc:
                 self._ReadUmaRank(img, uma_loc, uma_name)
         return self.uma_rank_dict
 
@@ -162,29 +128,22 @@ class UmaRankReader:
 def main():
 
     snipper = ImageSnipper()
-    snip_img = snipper.Snip()
-    src_img = cv2.imread("./resource/read_rank_test_img.png")
-    # cv2.imshow("snip_img", pil2cv(snip_img))
-    # cv2.waitKey(0)
-    # print(src_img.shape)
 
     all_uma_name_list = UmaNameFileReader.Read()  # 全てのウマ娘の名前のリスト
 
-    # print(all_uma_name_list)
     urr = UmaRankReader(all_uma_name_list)
-    # uma_rank_dict = urr.UmaRankListfromImage(snip_img)
-    # print(uma_rank_dict)
 
-    print("実行したい番号を入力してください\n　1．ウマテンプレート作成\n　2．順位読み取り\n")
-    inputNum = int(input())
+    print("実行したい番号を入力してください")
+    print("1．ウマテンプレート作成")
+    print("2．順位読み取り")
+
+    inputNum = int(input('-> '))
+    snip_img = snipper.Snip()
+
     start = time.time()
     if inputNum == 1:
-        print('test')
         template = urr.CreateTemplateImg(snip_img)
-        # print(template.size)
-        # cv2.imshow("snip_img.png", pil2cv(template))
         cv2.imwrite("./resource/uma_template.png", pil2cv(template))
-        # cv2.waitKey(0)
     elif inputNum == 2:
         uma_rank_dict = urr.UmaRankListfromImage(snip_img)
         pprint(uma_rank_dict)
