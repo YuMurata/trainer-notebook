@@ -17,7 +17,7 @@ class UmaRankReader:
         self.rect_size = 285, 78
         self.step_width = 75
         self.division_upper_left_loc = 348, 14
-        self.n_dividion = 5
+        self.n_division = 5
         self.divide_img = [None] * self.n_dividion
         self.template_rank = [None]*12
         for i in range(12):
