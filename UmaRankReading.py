@@ -27,7 +27,7 @@ class UmaRankReader:
     def _DivideImg(self, src_img):
 
         # print(divide_img)
-        for i in range(self.n_dividion):
+        for i in range(self.n_division):
             self.divide_img[i] = src_img[self.division_upper_left_loc[0]: self.division_upper_left_loc[0] + self.rect_size[0],
                                          self.division_upper_left_loc[1] + self.step_width * i: self.division_upper_left_loc[1] + self.step_width * i + self.rect_size[1]]
             # cv2.imshow("divide_img", self.divide_img[i])
