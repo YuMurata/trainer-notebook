@@ -46,7 +46,8 @@ class ScoreWindow(tk.Toplevel):
         frame.pack()
 
         self.treeview_score = ttk.Treeview(
-            frame, columns=['Rank', 'Name', 'Score'], height=15, show="headings")
+            frame, columns=['Rank', 'Name', 'Score'], height=15,
+            show="headings")
         self.treeview_score.column('Rank', width=40)
         self.treeview_score.column('Name', width=120)
         self.treeview_score.column('Score', anchor='e', width=50)

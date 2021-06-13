@@ -2,8 +2,7 @@ import os
 import pyocr
 import pyocr.builders
 import cv2
-import numpy as np
-from PIL import Image, ImageDraw,  ImageEnhance
+from PIL import ImageDraw,  ImageEnhance
 from enum import Enum
 from UmaPointReading import UmaPointReader
 from Uma import UmaNameFileReader, UmaPointFileIO
@@ -12,7 +11,7 @@ from pathlib import Path
 from threading import Thread
 import time
 from snip import ImageSnipper
-from misc import pil2cv, cv2pil
+from misc import pil2cv
 
 path = ";C:\\Program Files\\Tesseract-OCR"
 os.environ['PATH'] = os.environ['PATH'] + path

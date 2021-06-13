@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
-from Uma import UmaInfo, UmaPointFileIO
+from Uma import UmaInfo
 from enum import Enum, auto
 from colorsys import hsv_to_rgb
 
