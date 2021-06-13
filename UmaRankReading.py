@@ -7,6 +7,7 @@ from PIL import Image
 
 from matplotlib import pyplot as plt
 import time
+from pprint import pprint
 
 
 class UmaRankReader:
@@ -49,7 +50,7 @@ class UmaRankReader:
             # cv2.imshow("template_rank", template_rank)
             # cv2.waitKey(0)
 
-            method = eval('cv2.TM_SQDIFF_NORMED')
+            method = cv2.TM_SQDIFF_NORMED
 
             w, h, c = self.template_rank[i].shape[: 3]
 
@@ -91,17 +92,17 @@ class UmaRankReader:
         except FileNotFoundError:
             return None
 
-        cv2.imshow("template", template)
-        cv2.waitKey(0)
+        #cv2.imshow("template", template)
+        # cv2.waitKey(0)
 
-        cv2.imshow("template", template)
-        cv2.waitKey(0)
+        #cv2.imshow("template", template)
+        # cv2.waitKey(0)
 
         min_values = [None] * self.n_division
         min_locs = [None] * self.n_division
         for i in range(self.n_division):
             img = self.divide_img[i]
-            method = eval('cv2.TM_SQDIFF_NORMED')
+            method = cv2.TM_SQDIFF_NORMED
 
             w, h, c = template.shape[: 3]
 
@@ -165,7 +166,7 @@ def main():
     src_img = cv2.imread("./resource/read_rank_test_img.png")
     # cv2.imshow("snip_img", pil2cv(snip_img))
     # cv2.waitKey(0)
-    print(src_img.shape)
+    # print(src_img.shape)
 
     all_uma_name_list = UmaNameFileReader.Read()  # 全てのウマ娘の名前のリスト
 
@@ -186,7 +187,7 @@ def main():
         # cv2.waitKey(0)
     elif inputNum == 2:
         uma_rank_dict = urr.UmaRankListfromImage(snip_img)
-        print(uma_rank_dict)
+        pprint(uma_rank_dict)
 
     elapsed_time = time.time() - start
     print("elapsed_time:{0}", format(elapsed_time) + "[sec]")
