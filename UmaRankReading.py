@@ -18,7 +18,7 @@ class UmaRankReader:
         self.step_width = 75
         self.division_upper_left_loc = 348, 14
         self.n_division = 5
-        self.divide_img = [None] * self.n_dividion
+        self.divide_img = [None] * self.n_division
         self.template_rank = [None]*12
         for i in range(12):
             self.template_rank[i] = cv2.imread(
