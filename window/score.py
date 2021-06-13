@@ -25,7 +25,7 @@ class ScoreWindow(tk.Toplevel):
                             key=lambda x: x[1], reverse=True)
         for i, (name, point) in enumerate(score_list):
             self.treeview_score.set(i, 1, name)
-            self.treeview_score.set(i, 2, point)
+            self.treeview_score.set(i, 2, f'{point:,}')
 
     def deleteResultReadScore(self):
         self.info_detection.read_score = {}
