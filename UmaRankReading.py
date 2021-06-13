@@ -24,13 +24,10 @@ class UmaRankReader:
         self.divide_img = [None] * self.n_division
         self.template_rank = [cv2.imread(
             f'./resource/rank/rank{i+1:02}.png') for i in range(self.rank_num)]
-        self.template_uma_dict = {path.name: Image.open(path) for path in Path(
+        self.template_uma_dict = {path.stem: Image.open(path) for path in Path(
             './resource/uma_template').iterdir()}
 
     def _DivideImg(self, src_img):
-
-        # print(divide_img)
-
         divide_y_start = self.division_upper_left_loc[0]
         divide_y_end = self.division_upper_left_loc[0] + self.rect_size[0]
 
@@ -68,9 +65,18 @@ class UmaRankReader:
         rank = min_idx + 1
         # print("rank="+str(rank))
 
+        if min_values[min_idx] > 0.06:
+            # return
+            pass
+
+        if uma_name in ['ゴールドシップ', 'テイエムオペラオー']:
+            rank_img = src_img[uma_loc[0]:uma_loc[0] +
+                               80, uma_loc[1]:uma_loc[1]+75]
+            cv2.imshow(uma_name, rank_img)
+            cv2.waitKey(0)
         self.uma_rank_dict[uma_name] = rank
 
-    def _FindUmaLoc(self, src_img, template: np.array):
+    def _FindUmaLoc(self, template: np.array):
         def minloc_from_image(i):
             img = self.divide_img[i]
             method = cv2.TM_SQDIFF_NORMED
@@ -109,7 +115,7 @@ class UmaRankReader:
         self._DivideImg(img)
         for uma_name, template in self.template_uma_dict.items():
             # self.uma_rank_dict[uma_name] = 1
-            uma_loc = self._FindUmaLoc(img, pil2cv(template))
+            uma_loc = self._FindUmaLoc(pil2cv(template))
             if uma_loc:
                 self._ReadUmaRank(img, uma_loc, uma_name)
         return self.uma_rank_dict
@@ -138,7 +144,8 @@ def main():
     print("2．順位読み取り")
 
     inputNum = int(input('-> '))
-    snip_img = snipper.Snip()
+    #snip_img = snipper.Snip()
+    snip_img = Image.open('./resource/snip_img.png')
 
     start = time.time()
     if inputNum == 1:
@@ -147,6 +154,7 @@ def main():
     elif inputNum == 2:
         uma_rank_dict = urr.UmaRankListfromImage(snip_img)
         pprint(uma_rank_dict)
+        print('num:', len(uma_rank_dict))
 
     elapsed_time = time.time() - start
     print("elapsed_time:{0}", format(elapsed_time) + "[sec]")
