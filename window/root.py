@@ -166,10 +166,8 @@ class Win1(tk.Frame):
 
         def lift_app(event):
             if self.score_app:
-                self.score_app.deiconify()
                 self.score_app.lift()
             if self.graph_app:
-                self.graph_app.deiconify()
                 self.graph_app.lift()
             master.lift()
 
@@ -179,9 +177,15 @@ class Win1(tk.Frame):
             if self.graph_app:
                 self.graph_app.iconify()
 
+        def deicon_app(event):
+            if self.score_app:
+                self.score_app.deiconify()
+            if self.graph_app:
+                self.graph_app.deiconify()
+
         master.bind('<FocusIn>', lift_app)
         master.bind('<Unmap>', icon_app)
-        master.bind('<Map>', lift_app)
+        master.bind('<Map>', deicon_app)
 
     def display(self):
         self.metrics_view.display()
