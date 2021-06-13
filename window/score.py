@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from TeamStadiumInfoDetection import TeamStadiumInfoDetection
+from TeamStadiumInfoDetection import TeamStadiumInfoDetection, ScoreDispatcher
 
 
 class ScoreWindow(tk.Toplevel):
@@ -8,28 +8,27 @@ class ScoreWindow(tk.Toplevel):
         super().__init__(master)
         self.geometry("300x380")
         self.title("umauma score")
-        self.info_detection = TeamStadiumInfoDetection()
+        self.score_dispatcher = ScoreDispatcher(self.display)
+        self.info_detection = TeamStadiumInfoDetection(self.score_dispatcher)
         self._create_widgets()
         self.info_detection.start()
         self.win1 = win1
 
-    def display(self):
-        read_score = self.info_detection.read_score
+    def display(self, score: dict):
+        print(f'disp: {score}')
         # print('win2')
         # treeviewでスコアを表示する
         for i in range(15):
             self.treeview_score.set(i, 1, '')
             self.treeview_score.set(i, 2, '')
-
-        score_list = sorted(read_score.items(),
+        score_list = sorted(score.items(),
                             key=lambda x: x[1], reverse=True)
         for i, (name, point) in enumerate(score_list):
             self.treeview_score.set(i, 1, name)
             self.treeview_score.set(i, 2, f'{point:,}')
 
     def deleteResultReadScore(self):
-        self.info_detection.read_score = {}
-        self.display()
+        self.score_dispatcher.init_score()
 
     def _create_treeview(self):
         frame = ttk.Frame(self)

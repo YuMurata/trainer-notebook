@@ -6,12 +6,5 @@ if __name__ == "__main__":
 
     app = Win1(master=root)
 
-    def loop():
-        if app.score_app:
-            app.score_app.display()
-        root.after(1000, loop)
-
-    root.after(1000, loop)
-
     # 表示
     root.mainloop()

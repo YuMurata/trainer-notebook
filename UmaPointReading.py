@@ -36,7 +36,7 @@ class UmaPointReader:
 
         return ret_name, ret_pt
 
-    def UmaPtListfromImage(self, img):
+    def UmaPtListfromImage(self, img) -> dict:
         builder = pyocr.builders.LineBoxBuilder(tesseract_layout=6)
         res = self.tool.image_to_string(img, lang="jpn", builder=builder)
         uma_pt_dict = {}

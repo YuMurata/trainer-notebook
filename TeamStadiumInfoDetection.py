@@ -33,11 +33,29 @@ class Event(Enum):
     READ_RANK_END_EV = 4
 
 
+class ScoreDispatcher:
+    def __init__(self, callback):
+        self.init_score()
+        self.callback = callback
+
+    def update_score(self, score: dict):
+        self.current_score.update(score)
+        if self.current_score != self.old_score:
+            self.callback(self.current_score)
+
+        self.old_score = {key: value for key,
+                          value in self.current_score.items()}
+
+    def init_score(self):
+        self.current_score = dict()
+        self.old_score = dict()
+
+
 class TeamStadiumInfoDetection(Thread):
 
     # スコア読み取りモードに移行するために「スコア情報」と書いているかを確認する関数
     # 戻り値 bool
-    def __init__(self):
+    def __init__(self, score_dispatcher: ScoreDispatcher):
         super().__init__(daemon=True)
         self.st = State.NONE_ST
         self.snipper = ImageSnipper()
@@ -47,11 +65,9 @@ class TeamStadiumInfoDetection(Thread):
         self.ocr_tool = self.GetOCRTool()
         self.upr = UmaPointReader(
             self.ocr_tool, self.all_uma_name_list)  # スコア情報読み取るやつ
-        self.read_score = {}  # スコア情報を読み取った結果
+        self.score_dispatcher = score_dispatcher  # スコア情報を読み取った結果
 
         self.display_warning = False  # 画面が小さいことを警告したかどうか
-
-        print(self.read_score)
 
         # EV_mat = [[None, ]]#状態遷移を2次元配列で作ろうとしたけどあきらめた
 
@@ -162,10 +178,8 @@ class TeamStadiumInfoDetection(Thread):
         return test_img
 
     def CreateEvent(self):
-        print(f'score: {self.read_score}')
-        print(f'score_type: {type(self.read_score)}')
-
-        if self.canReadScoreInfo() and len(self.read_score) < 15:
+        read_score = self.score_dispatcher.current_score
+        if self.canReadScoreInfo() and len(read_score) < 15:
             return Event.READ_SCORE_START_EV
 
         elif self.canReadRank():
@@ -192,10 +206,9 @@ class TeamStadiumInfoDetection(Thread):
     def onReadScoreST(self, ev):
 
         img = self.ReadScorePreProc(self.game_window_image)
-        read_dict = self.upr.UmaPtListfromImage(img)
-
-        for uma_name, point in read_dict.items():
-            self.read_score[uma_name] = point
+        read_score = self.upr.UmaPtListfromImage(img)
+        print(f'from image: {read_score}')
+        self.score_dispatcher.update_score(read_score)
 
         if ev == Event.NONE_EV:
             pass
