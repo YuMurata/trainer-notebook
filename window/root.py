@@ -134,10 +134,10 @@ class MetricsView(ttk.Frame):
             if i < self.score_num:
                 self.treeview_score.set(i, 0, str(i+1))
                 self.treeview_score.set(i, 1, uma_info.name)
-                self.treeview_score.set(i, 2, uma_info.Max)
-                self.treeview_score.set(i, 3, uma_info.Min)
-                self.treeview_score.set(i, 4, uma_info.Mean)
-                self.treeview_score.set(i, 5, uma_info.Std)
+                self.treeview_score.set(i, 2, f'{uma_info.Max:,}')
+                self.treeview_score.set(i, 3, f'{uma_info.Min:,}')
+                self.treeview_score.set(i, 4, f'{uma_info.Mean:,}')
+                self.treeview_score.set(i, 5, f'{uma_info.Std:,}')
             else:
                 self.score_num += 1
 
