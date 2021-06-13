@@ -3,6 +3,7 @@ from window import Win1
 
 if __name__ == "__main__":
     root = tk.Tk()  # GUIのやつ
+
     app = Win1(master=root)
 
     def loop():
@@ -14,4 +15,3 @@ if __name__ == "__main__":
 
     # 表示
     root.mainloop()
-    print("roop end")

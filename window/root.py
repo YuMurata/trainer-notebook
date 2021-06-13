@@ -164,6 +164,29 @@ class Win1(tk.Frame):
         self.display()
         self.master.protocol('WM_DELETE_WINDOW', self._close_win1)
 
+        def lift_app(event):
+            if self.score_app:
+                self.score_app.lift()
+            if self.graph_app:
+                self.graph_app.lift()
+            master.lift()
+
+        def icon_app(event):
+            if self.score_app:
+                self.score_app.iconify()
+            if self.graph_app:
+                self.graph_app.iconify()
+
+        def deicon_app(event):
+            if self.score_app:
+                self.score_app.deiconify()
+            if self.graph_app:
+                self.graph_app.deiconify()
+
+        master.bind('<FocusIn>', lift_app)
+        master.bind('<Unmap>', icon_app)
+        master.bind('<Map>', deicon_app)
+
     def display(self):
         self.metrics_view.display()
 
@@ -206,6 +229,9 @@ class Win1(tk.Frame):
                 self.score_app = None
 
             self.score_app.protocol('WM_DELETE_WINDOW', close_win2)
+        elif self.score_app.winfo_exists():
+            self.score_app.deiconify()
+            self.score_app.lift()
 
     def new_window3(self):
         def close_win():
@@ -223,3 +249,7 @@ class Win1(tk.Frame):
 
             self.metrics_view.set_graph_updater(updater)
             self.graph_app.protocol('WM_DELETE_WINDOW', close_win)
+
+        elif self.graph_app.winfo_exists():
+            self.graph_app.deiconify()
+            self.graph_app.lift()
