@@ -106,6 +106,13 @@ class MetricsView(ttk.Frame):
         self.uma_info_sorter.set_key(column)
         self.display()
 
+            sorted_items = sorted(
+                self.selected_item_dict.items(), key=lambda x: x[1])
+            uma_info_list = [item[0] for item in sorted_items]
+
+            if self.graph_updater:
+                self.graph_updater(uma_info_list)
+
     def _click_view(self, event):
         uma_info_dict = UmaPointFileIO.Read()
 
