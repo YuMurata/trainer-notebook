@@ -46,8 +46,12 @@ class UmaRankReader:
 
     def _ReadUmaRank(self, src_img: np.array, uma_loc: Tuple, uma_name: str):
 
-        rank_img = src_img[uma_loc[0] + 55:uma_loc[0] +
-                           80, uma_loc[1]+37:uma_loc[1]+75]
+        rank_img = src_img[uma_loc[0] + 50:uma_loc[0] +
+                           75, uma_loc[1]+22:uma_loc[1]+60]
+        # rank_img = src_img[uma_loc[0]-5:uma_loc[0] +
+        #                    80, uma_loc[1]-15:uma_loc[1]+75]
+        cv2.imshow(uma_name, rank_img)
+        cv2.waitKey(0)
 
         def func(i):
             method = cv2.TM_SQDIFF_NORMED
@@ -65,13 +69,13 @@ class UmaRankReader:
         rank = min_idx + 1
         # print("rank="+str(rank))
 
-        if min_values[min_idx] > 0.06:
-            # return
-            pass
+        # if min_values[min_idx] > 0.03:
+        #     # return
+        #     pass
 
-        if uma_name in ['ゴールドシップ', 'テイエムオペラオー']:
-            rank_img = src_img[uma_loc[0]:uma_loc[0] +
-                               80, uma_loc[1]:uma_loc[1]+75]
+        if uma_name == "ビワハヤヒデ":
+            rank_img = src_img[uma_loc[0]-5:uma_loc[0] +
+                               80, uma_loc[1]-15:uma_loc[1]+75]
             cv2.imshow(uma_name, rank_img)
             cv2.waitKey(0)
         self.uma_rank_dict[uma_name] = rank
@@ -103,7 +107,7 @@ class UmaRankReader:
 
         min_value, min_idx, min_loc = minloc_from_list()
 
-        if min_value > 0.05:
+        if min_value > 0.04:
             return None
 
         uma_loc = (min_loc[1] + self.division_upper_left_loc[0], min_loc[0] +
