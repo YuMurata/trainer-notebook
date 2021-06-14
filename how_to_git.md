@@ -120,6 +120,15 @@ gitにはメモを書き込む範囲を指定する機能があるよ
 
 `git push`でgithubにファイルがアップロードされるよ（多分）
 
+> **NOTE**
+>
+> まて、pushの前にこれをしろ
+>
+> ```bash
+> git pull --rebase origin master
+> git pull
+> ```
+
 `git checkout`で新しいブランチを作ってるならpushできないことがあるよ
 
 その時はやり方教えるから連絡してね
