@@ -132,6 +132,7 @@ class MetricsView(ttk.Frame):
         self._create_heading()
 
         for i, uma_info in enumerate(treeview_content):
+            if self.selected_item_dict and uma_info in self.selected_item_dict:
             if i < self.score_num:
                 self.treeview_score.set(i, 0, str(i+1))
                 self.treeview_score.set(i, 1, uma_info.name)
