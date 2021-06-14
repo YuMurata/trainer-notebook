@@ -7,6 +7,7 @@ class ScoreWindow(tk.Toplevel):
     def __init__(self, master, win1):
         super().__init__(master)
         self.geometry("300x380")
+        self.resizable(False, False)
         self.title("umauma score")
         self.info_detection = TeamStadiumInfoDetection()
         self._create_widgets()
