@@ -1,42 +1,53 @@
 import tkinter as tk
 from tkinter import ttk
-from TeamStadiumInfoDetection import TeamStadiumInfoDetection
+from TeamStadiumInfoDetection import TeamStadiumInfoDetection, ScoreDispatcher
+from window.app import BaseApp
+from threading import Thread
 
 
 class ScoreWindow(tk.Toplevel):
-    def __init__(self, master, win1):
+    def __init__(self, master, master_updater):
         super().__init__(master)
-        self.geometry("300x380")
         self.title("umauma score")
-        self.info_detection = TeamStadiumInfoDetection()
+        self.score_dispatcher = ScoreDispatcher(self.display)
+        self.info_detection = TeamStadiumInfoDetection(self.score_dispatcher)
         self._create_widgets()
         self.info_detection.start()
-        self.win1 = win1
+        self.master_updater = master_updater
 
-    def display(self):
-        read_score = self.info_detection.read_score
+    def display(self, score: dict):
+        print(f'disp: {score}')
         # print('win2')
         # treeviewでスコアを表示する
         for i in range(15):
             self.treeview_score.set(i, 1, '')
             self.treeview_score.set(i, 2, '')
-
-        score_list = sorted(read_score.items(),
+        score_list = sorted(score.items(),
                             key=lambda x: x[1], reverse=True)
         for i, (name, point) in enumerate(score_list):
             self.treeview_score.set(i, 1, name)
             self.treeview_score.set(i, 2, f'{point:,}')
 
+    def destroy(self) -> None:
+        ret = super().destroy()
+
+        def join():
+            self.info_detection.stop()
+            self.info_detection.join()
+
+        Thread(daemon=True, target=join).start()
+        return ret
+
     def deleteResultReadScore(self):
-        self.info_detection.read_score = {}
-        self.display()
+        self.score_dispatcher.init_score()
 
     def _create_treeview(self):
         frame = ttk.Frame(self)
         frame.pack()
 
         self.treeview_score = ttk.Treeview(
-            frame, columns=['Rank', 'Name', 'Score'], height=15, show="headings")
+            frame, columns=['Rank', 'Name', 'Score'], height=15,
+            show="headings")
         self.treeview_score.column('Rank', width=40)
         self.treeview_score.column('Name', width=120)
         self.treeview_score.column('Score', anchor='e', width=50)
@@ -75,8 +86,16 @@ class ScoreWindow(tk.Toplevel):
 
     def _regist(self):
         self.info_detection.OverWriteUmaListFile()
-        self.win1.display()
+        self.master_updater()
 
     def _create_widgets(self):
         self._create_treeview().pack()
         self._create_button().pack()
+
+
+class ScoreApp(BaseApp):
+    def __init__(self, master_widget: tk.Toplevel, master_updater) -> None:
+        def generator():
+            return ScoreWindow(master_widget, master_updater)
+        target_size = (300, 380)
+        super().__init__(generator, master_widget, target_size)

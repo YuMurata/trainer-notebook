@@ -2,12 +2,12 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter.constants import BOTTOM
 from typing import List
-import matplotlib
+from window.app import BaseApp
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
-from Uma import UmaInfo, UmaPointFileIO
+from Uma import UmaInfo
 from enum import Enum, auto
 from colorsys import hsv_to_rgb
 
@@ -85,7 +85,6 @@ class GraphWindow(tk.Toplevel):
 
     def __init__(self, master, graph_view: GraphView):
         super().__init__(master)
-        self.geometry("500x550")
         self.title(self.window_name)
         self.graph_view = graph_view
         self._create_widgets()
@@ -128,3 +127,19 @@ class GraphWindow(tk.Toplevel):
 
     def update_canvas(self):
         self.canvas.draw()
+
+
+class GraphApp(BaseApp):
+    def __init__(self, master_widget: tk.Toplevel,
+                 graph_view: GraphView) -> None:
+        def generator():
+            return GraphWindow(master_widget, graph_view)
+        target_size = (500, 550)
+        self.graph_view = graph_view
+        self.window: GraphWindow = None
+        super().__init__(generator, master_widget, target_size)
+
+    def update_canvas(self, uma_info_list: List[UmaInfo]):
+        self.graph_view.update_uma_info_list(uma_info_list)
+        if self.window:
+            self.window.update_canvas()
