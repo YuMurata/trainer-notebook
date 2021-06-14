@@ -120,15 +120,25 @@ class UmaRankReader:
                 self._ReadUmaRank(img, uma_loc, uma_name)
         return self.uma_rank_dict
 
-    def CreateTemplateImg(self, img):
+    def CreateTemplateImg(self, img: Image.Image):
+
+        # template = Image.open('./resource/uma_template/ビワハヤヒデ.png')
+        # cv2.imshow("ビワハヤヒデ", pil2cv(template))
+        # cv2.waitKey(0)
         template = img.crop((26, 70, 82, 129))
         aspect_ratio = template.width / template.height
 
         target_width = 69
 
         target_height = (int)(target_width / aspect_ratio)
+        template = template.resize((target_width, target_height))
 
-        return template.resize((target_width, target_height))
+        # print(template.size)
+
+        template = template.crop(
+            (15, 5, template.width - 15, template.height - 15))
+
+        return template
 
 
 def main():
@@ -144,13 +154,23 @@ def main():
     print("2．順位読み取り")
 
     inputNum = int(input('-> '))
-    #snip_img = snipper.Snip()
-    snip_img = Image.open('./resource/snip_img.png')
+    # inputNum = 1
+    snip_img = snipper.Snip()
+    # snip_img = Image.open('./resource/snip_img.png')
 
     start = time.time()
     if inputNum == 1:
+
+        uma_name = None
+        while uma_name not in all_uma_name_list:
+            uma_name = input("作成するウマ娘の名前を入力してください\n->") + '\n'
+        # uma_name = 'test'
         template = urr.CreateTemplateImg(snip_img)
-        cv2.imwrite("./resource/uma_template.png", pil2cv(template))
+        uma_name = uma_name.replace('\n', '')
+        template.save(f"./resource/uma_template/{uma_name}.png")
+        # cv2.imshow(uma_name, pil2cv(template))
+        # cv2.waitKey(0)
+
     elif inputNum == 2:
         uma_rank_dict = urr.UmaRankListfromImage(snip_img)
         pprint(uma_rank_dict)
