@@ -182,23 +182,17 @@ class Win1(tk.Frame):
         self.display()
 
         def lift_app(event):
-            if self.score_app:
-                self.score_app.lift()
-            if self.graph_app:
-                self.graph_app.lift()
+            self.score_app.lift()
+            self.graph_app.lift()
             master.lift()
 
         def icon_app(event):
-            if self.score_app:
-                self.score_app.iconify()
-            if self.graph_app:
-                self.graph_app.iconify()
+            self.score_app.iconify()
+            self.graph_app.iconify()
 
         def deicon_app(event):
-            if self.score_app:
-                self.score_app.deiconify()
-            if self.graph_app:
-                self.graph_app.deiconify()
+            self.score_app.deiconify()
+            self.graph_app.deiconify()
 
         master.bind('<FocusIn>', lift_app)
         master.bind('<Unmap>', icon_app)

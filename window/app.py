@@ -52,3 +52,15 @@ class BaseApp:
             print('has window')
             self.window.deiconify()
             self.window.lift()
+
+    def lift(self):
+        if self.window:
+            self.window.lift()
+
+    def iconify(self):
+        if self.window:
+            self.window.iconify()
+
+    def deiconify(self):
+        if self.window:
+            self.deiconify()
