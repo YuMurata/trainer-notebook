@@ -23,7 +23,8 @@ class GraphView:
         self.ax = self.fig.add_subplot(111)
 
         self.fig.subplots_adjust(bottom=0.2, left=0.2)
-
+        plt.rcParams['font.family'][0] = ('Meiryo')
+        print(plt.rcParams)
         self.uma_info_list: List[UmaInfo] = None
         self.draw_target = self.DrawTarget.LINE
         self.update_line()
