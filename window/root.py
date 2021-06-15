@@ -174,6 +174,7 @@ class Win1(tk.Frame):
         self.pack()
 
         self.master.geometry("400x400")
+        self.master.resizable(False, False)
         self.master.title("umauma drive")
         self.graph_view = GraphView()
         self.score_app = ScoreApp(master, self.display)

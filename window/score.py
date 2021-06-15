@@ -8,6 +8,7 @@ from threading import Thread
 class ScoreWindow(tk.Toplevel):
     def __init__(self, master, master_updater):
         super().__init__(master)
+        self.resizable(False, False)
         self.title("umauma score")
         self.score_dispatcher = ScoreDispatcher(self.display)
         self.info_detection = TeamStadiumInfoDetection(self.score_dispatcher)

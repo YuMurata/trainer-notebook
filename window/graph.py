@@ -85,6 +85,7 @@ class GraphWindow(tk.Toplevel):
 
     def __init__(self, master, graph_view: GraphView):
         super().__init__(master)
+        self.resizable(False, False)
         self.title(self.window_name)
         self.graph_view = graph_view
         self._create_widgets()
