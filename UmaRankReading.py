@@ -3,11 +3,67 @@ from Uma import UmaNameFileReader
 from snip import ImageSnipper
 from misc import pil2cv
 import cv2
-from PIL import Image
+from PIL import Image, ImageEnhance
 import time
 from pprint import pprint
 from pathlib import Path
 import numpy as np
+
+
+class MouseXYGetter:
+    winname = 'mouse_xy'
+
+    def __init__(self) -> None:
+        self.is_draw = False
+        self.start_xy: tuple = None
+        self.org_image: np.ndarray = None
+        self.rect_image: np.ndarray = None
+
+    def _callback(self, event, x, y, flags, param):
+        if event == cv2.EVENT_LBUTTONDOWN:
+            self.is_draw = True
+            self.start_xy = x, y
+
+            self.rect_image = self.org_image.copy()
+            cv2.circle(self.rect_image, self.start_xy, 5, (0, 255, 0), -1)
+
+        if self.is_draw and event == cv2.EVENT_MOUSEMOVE:
+            self.rect_image = self.org_image.copy()
+            cv2.rectangle(self.rect_image, self.start_xy,
+                          (x, y), (255, 150, 150), 3)
+            cv2.circle(self.rect_image, self.start_xy, 5, (0, 255, 0), -1)
+
+        if self.is_draw and event == cv2.EVENT_LBUTTONUP:
+            self.rect_image = self.org_image.copy()
+            cv2.rectangle(self.rect_image, self.start_xy,
+                          (x, y), (255, 150, 155), 3)
+            cv2.circle(self.rect_image, self.start_xy, 5, (0, 255, 0), -1)
+            cv2.circle(self.rect_image, (x, y), 5, (0, 0, 255), -1)
+
+            self.is_draw = False
+
+            print('top-left:', self.start_xy)
+            print('bottom-right:', (x, y))
+            print('width, height:',
+                  (abs(x-self.start_xy[0]), abs(y-self.start_xy[1])))
+
+        if event == cv2.EVENT_RBUTTONDOWN:
+            self.rect_image = self.org_image.copy()
+
+    def get(self, image: np.ndarray):
+        self.org_image = image.copy()
+        self.rect_image = image.copy()
+
+        self.is_draw = False
+
+        cv2.namedWindow(self.winname)
+        cv2.setMouseCallback(self.winname, self._callback)
+        cv2.imshow(self.winname, self.rect_image)
+
+        while cv2.waitKey(1) != 27:
+            cv2.imshow(self.winname, self.rect_image)
+
+        cv2.destroyWindow(self.winname)
 
 
 class UmaRankReader:
@@ -50,8 +106,8 @@ class UmaRankReader:
                            75, uma_loc[1]+22:uma_loc[1]+60]
         # rank_img = src_img[uma_loc[0]-5:uma_loc[0] +
         #                    80, uma_loc[1]-15:uma_loc[1]+75]
-        cv2.imshow(uma_name, rank_img)
-        cv2.waitKey(0)
+        #cv2.imshow(uma_name, rank_img)
+        # cv2.waitKey(0)
 
         def func(i):
             method = cv2.TM_SQDIFF_NORMED
@@ -76,8 +132,8 @@ class UmaRankReader:
         if uma_name == "ビワハヤヒデ":
             rank_img = src_img[uma_loc[0]-5:uma_loc[0] +
                                80, uma_loc[1]-15:uma_loc[1]+75]
-            cv2.imshow(uma_name, rank_img)
-            cv2.waitKey(0)
+            #cv2.imshow(uma_name, rank_img)
+            # cv2.waitKey(0)
         self.uma_rank_dict[uma_name] = rank
 
     def _FindUmaLoc(self, template: np.array):
@@ -117,11 +173,14 @@ class UmaRankReader:
     def UmaRankListfromImage(self, src_img):
         img = pil2cv(src_img)
         self._DivideImg(img)
+
         for uma_name, template in self.template_uma_dict.items():
             # self.uma_rank_dict[uma_name] = 1
+            start = time.time()
             uma_loc = self._FindUmaLoc(pil2cv(template))
             if uma_loc:
                 self._ReadUmaRank(img, uma_loc, uma_name)
+            print(time.time()-start)
         return self.uma_rank_dict
 
     def CreateTemplateImg(self, img: Image.Image):
@@ -157,9 +216,11 @@ def main():
     print("1．ウマテンプレート作成")
     print("2．順位読み取り")
 
-    inputNum = int(input('-> '))
-    # inputNum = 1
+    #inputNum = int(input('-> '))
+    inputNum = 2
     snip_img = snipper.Snip()
+    MouseXYGetter().get(pil2cv(snip_img))
+    exit()
     # snip_img = Image.open('./resource/snip_img.png')
 
     start = time.time()
