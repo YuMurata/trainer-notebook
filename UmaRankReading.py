@@ -112,6 +112,8 @@ class UmaRankReader:
             if uma_loc:
                 self._ReadUmaRank(img, uma_loc, uma_name)
             print(time.time()-start)
+                concat_imshow(
+                    'template', [self.src_region, pil2cv(template.convert('L'))])
         return self.uma_rank_dict
 
     def CreateTemplateImg(self, img: Image.Image):
@@ -146,12 +148,12 @@ def main():
     print("実行したい番号を入力してください")
     print("1．ウマテンプレート作成")
     print("2．順位読み取り")
+    print("3．矩形サイズ表示")
 
     #inputNum = int(input('-> '))
     inputNum = 2
     snip_img = snipper.Snip()
-    MouseXYGetter().get(pil2cv(snip_img))
-    exit()
+
     # snip_img = Image.open('./resource/snip_img.png')
 
     start = time.time()
@@ -173,6 +175,8 @@ def main():
         print('num:', len(uma_rank_dict))
 
     elif inputNum == 3:
+        MouseXYGetter().get(pil2cv(snip_img))
+
     elapsed_time = time.time() - start
     print("elapsed_time:{0}", format(elapsed_time) + "[sec]")
 
