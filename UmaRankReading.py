@@ -46,10 +46,16 @@ class UmaRankReader:
         # cv2.imshow("divide_img", self.divide_img[i])
         # cv2.waitKey(0)
 
-    def _ReadUmaRank(self, src_img: np.array, uma_loc: Tuple, uma_name: str):
+    def _ReadUmaRank(self, uma_loc: Tuple, uma_name: str):
 
-        rank_img = src_img[uma_loc[0] + 50:uma_loc[0] +
-                           75, uma_loc[1]+22:uma_loc[1]+60]
+        print('src', self.src_region.shape)
+        print('loc', uma_loc)
+        print('name', uma_name)
+        rank_img = self.src_region[uma_loc[1] + 50:uma_loc[1] + 75,
+                                   uma_loc[0]+22:uma_loc[0]+60]
+        # cv2.imshow('src', self.src_region)
+        # cv2.imshow('rank', rank_img)
+        # cv2.waitKey(0)
         # rank_img = src_img[uma_loc[0]-5:uma_loc[0] +
         #                    80, uma_loc[1]-15:uma_loc[1]+75]
         #cv2.imshow(uma_name, rank_img)
@@ -83,42 +89,21 @@ class UmaRankReader:
         self.uma_rank_dict[uma_name] = rank
 
     def _FindUmaLoc(self, template: np.array):
-        def minloc_from_image(i):
-            img = self.divide_img[i]
-            method = cv2.TM_SQDIFF_NORMED
-
-            w, h, c = template.shape[: 3]
-
-            # Apply template Matching
-            res = cv2.matchTemplate(img, template, method)
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-
-            return min_val, min_loc
-
-        def minloc_from_list():
-            minloc_list = [minloc_from_image(i)
-                           for i in range(self.n_division)]
-            min_list = [minloc[0] for minloc in minloc_list]
-            loc_list = [minloc[1] for minloc in minloc_list]
-
-            min_value = min(min_list)
-            min_idx = min_list.index(min_value)
-            min_loc = loc_list[min_idx]
-
-            return min_value, min_idx, min_loc
-
-        min_value, min_idx, min_loc = minloc_from_list()
-
-        if min_value > 0.04:
+        method = cv2.TM_SQDIFF_NORMED
+        # Apply template Matching
+        res = cv2.matchTemplate(self.src_region, template, method)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+        if min_val > 0.04:
             return None
 
-        uma_loc = (min_loc[1] + self.division_upper_left_loc[0], min_loc[0] +
-                   self.division_upper_left_loc[1] + self.step_width * min_idx)
-        return uma_loc
+        # uma_loc = (min_loc[1] + self.division_upper_left_loc[0], min_loc[0] +
+        #           self.division_upper_left_loc[1] + self.step_width * min_idx)
+        return min_loc
 
-    def UmaRankListfromImage(self, src_img):
-        img = pil2cv(src_img)
-        self._DivideImg(img)
+    def UmaRankListfromImage(self, src_img: Image.Image):
+        img = pil2cv(src_img.convert('L'))
+        self.src_region = pil2cv(
+            src_img.crop((5, 350, 390, 630)).convert('L'))
 
         for uma_name, template in self.template_uma_dict.items():
             # self.uma_rank_dict[uma_name] = 1
