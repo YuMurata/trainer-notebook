@@ -67,7 +67,8 @@ class UmaRankReader:
             w, h, c = self.template_rank[i].shape[: 3]
 
             # Apply template Matching
-            res = cv2.matchTemplate(rank_img, self.template_rank[i], method)
+            res = cv2.matchTemplate(rank_img, cv2.cvtColor(
+                self.template_rank[i], cv2.COLOR_BGR2GRAY), method)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
             return min_val
@@ -108,7 +109,7 @@ class UmaRankReader:
         for uma_name, template in self.template_uma_dict.items():
             # self.uma_rank_dict[uma_name] = 1
             start = time.time()
-            uma_loc = self._FindUmaLoc(pil2cv(template))
+            uma_loc = self._FindUmaLoc(pil2cv(template.convert('L')))
             if uma_loc:
                 self._ReadUmaRank(img, uma_loc, uma_name)
             print(time.time()-start)
