@@ -15,6 +15,14 @@ class UmaInfo:
         self.name = name
         self.points = points
 
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, UmaInfo):
+            return False
+        return self.__hash__() == o.__hash__()
+
+    def __hash__(self) -> int:
+        return hash(f'{self.name}{self.points}')
+
     @property
     def Max(self) -> int:
         points = np.array(self.points)

@@ -47,6 +47,7 @@ class MetricsView(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
         self.uma_info_sorter = self.SortUmaInfo()
+        self.selected_item_dict: dict = None
         self.graph_updater = None
         self._create_widgets()
 
@@ -104,21 +105,34 @@ class MetricsView(ttk.Frame):
              self.treeview_score.winfo_rootx())
         column = int(self.treeview_score.identify_column(x)[1])
         self.uma_info_sorter.set_key(column)
+
+        self.treeview_score.selection_remove(self.treeview_score.selection())
         self.display()
+
+        if self.selected_item_dict:
+            selected_item_list = list(self.selected_item_dict.values())
+            self.treeview_score.selection_add(selected_item_list)
+
+            sorted_items = sorted(
+                self.selected_item_dict.items(), key=lambda x: x[1])
+            uma_info_list = [item[0] for item in sorted_items]
+
+            if self.graph_updater:
+                self.graph_updater(uma_info_list)
 
     def _click_view(self, event):
         uma_info_dict = UmaPointFileIO.Read()
 
         item_id_list = self.treeview_score.selection()
 
-        def func(item_id):
+        def func(item_id) -> UmaInfo:
             item = self.treeview_score.item(item_id)
             return uma_info_dict[item['values'][1]]
 
-        uma_info_list = [func(item_id) for item_id in item_id_list]
-
+        self.selected_item_dict = {
+            func(item_id): item_id for item_id in item_id_list}
         if self.graph_updater:
-            self.graph_updater(uma_info_list)
+            self.graph_updater(list(self.selected_item_dict.keys()))
 
     def set_graph_updater(self, graph_updater):
         self.graph_updater = graph_updater
@@ -132,6 +146,9 @@ class MetricsView(ttk.Frame):
         self._create_heading()
 
         for i, uma_info in enumerate(treeview_content):
+            if self.selected_item_dict and uma_info in self.selected_item_dict:
+                self.selected_item_dict[uma_info] = i
+
             if i < self.score_num:
                 self.treeview_score.set(i, 0, str(i+1))
                 self.treeview_score.set(i, 1, uma_info.name)
@@ -165,23 +182,17 @@ class Win1(tk.Frame):
         self.display()
 
         def lift_app(event):
-            if self.score_app:
-                self.score_app.lift()
-            if self.graph_app:
-                self.graph_app.lift()
+            self.score_app.lift()
+            self.graph_app.lift()
             master.lift()
 
         def icon_app(event):
-            if self.score_app:
-                self.score_app.iconify()
-            if self.graph_app:
-                self.graph_app.iconify()
+            self.score_app.iconify()
+            self.graph_app.iconify()
 
         def deicon_app(event):
-            if self.score_app:
-                self.score_app.deiconify()
-            if self.graph_app:
-                self.graph_app.deiconify()
+            self.score_app.deiconify()
+            self.graph_app.deiconify()
 
         master.bind('<FocusIn>', lift_app)
         master.bind('<Unmap>', icon_app)
