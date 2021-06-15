@@ -3,13 +3,11 @@ from Uma import UmaNameFileReader
 from snip import ImageSnipper
 from misc import concat_imshow, pil2cv, MouseXYGetter
 import cv2
-from PIL import Image, ImageEnhance
+from PIL import Image
 import time
 from pprint import pprint
 from pathlib import Path
 import numpy as np
-
-
 
 
 class UmaRankReader:
@@ -65,7 +63,6 @@ class UmaRankReader:
             method = cv2.TM_SQDIFF_NORMED
 
             w, h, c = self.template_rank[i].shape[: 3]
-
             # Apply template Matching
             res = cv2.matchTemplate(rank_img, cv2.cvtColor(
                 self.template_rank[i], cv2.COLOR_BGR2GRAY), method)
@@ -106,15 +103,18 @@ class UmaRankReader:
         self.src_region = pil2cv(
             src_img.crop((5, 350, 390, 630)).convert('L'))
 
+        all_start = time.time()
         for uma_name, template in self.template_uma_dict.items():
             # self.uma_rank_dict[uma_name] = 1
             start = time.time()
             uma_loc = self._FindUmaLoc(pil2cv(template.convert('L')))
             if uma_loc:
-                self._ReadUmaRank(img, uma_loc, uma_name)
-            print(time.time()-start)
                 concat_imshow(
                     'template', [self.src_region, pil2cv(template.convert('L'))])
+                self._ReadUmaRank(uma_loc, uma_name)
+                print(time.time()-start)
+        print(time.time()-all_start)
+
         return self.uma_rank_dict
 
     def CreateTemplateImg(self, img: Image.Image):
