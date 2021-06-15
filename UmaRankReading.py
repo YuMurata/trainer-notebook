@@ -1,7 +1,7 @@
 from typing import Tuple
 from Uma import UmaNameFileReader
 from snip import ImageSnipper
-from misc import pil2cv
+from misc import concat_imshow, pil2cv, MouseXYGetter
 import cv2
 from PIL import Image, ImageEnhance
 import time
@@ -10,60 +10,6 @@ from pathlib import Path
 import numpy as np
 
 
-class MouseXYGetter:
-    winname = 'mouse_xy'
-
-    def __init__(self) -> None:
-        self.is_draw = False
-        self.start_xy: tuple = None
-        self.org_image: np.ndarray = None
-        self.rect_image: np.ndarray = None
-
-    def _callback(self, event, x, y, flags, param):
-        if event == cv2.EVENT_LBUTTONDOWN:
-            self.is_draw = True
-            self.start_xy = x, y
-
-            self.rect_image = self.org_image.copy()
-            cv2.circle(self.rect_image, self.start_xy, 5, (0, 255, 0), -1)
-
-        if self.is_draw and event == cv2.EVENT_MOUSEMOVE:
-            self.rect_image = self.org_image.copy()
-            cv2.rectangle(self.rect_image, self.start_xy,
-                          (x, y), (255, 150, 150), 3)
-            cv2.circle(self.rect_image, self.start_xy, 5, (0, 255, 0), -1)
-
-        if self.is_draw and event == cv2.EVENT_LBUTTONUP:
-            self.rect_image = self.org_image.copy()
-            cv2.rectangle(self.rect_image, self.start_xy,
-                          (x, y), (255, 150, 155), 3)
-            cv2.circle(self.rect_image, self.start_xy, 5, (0, 255, 0), -1)
-            cv2.circle(self.rect_image, (x, y), 5, (0, 0, 255), -1)
-
-            self.is_draw = False
-
-            print('top-left:', self.start_xy)
-            print('bottom-right:', (x, y))
-            print('width, height:',
-                  (abs(x-self.start_xy[0]), abs(y-self.start_xy[1])))
-
-        if event == cv2.EVENT_RBUTTONDOWN:
-            self.rect_image = self.org_image.copy()
-
-    def get(self, image: np.ndarray):
-        self.org_image = image.copy()
-        self.rect_image = image.copy()
-
-        self.is_draw = False
-
-        cv2.namedWindow(self.winname)
-        cv2.setMouseCallback(self.winname, self._callback)
-        cv2.imshow(self.winname, self.rect_image)
-
-        while cv2.waitKey(1) != 27:
-            cv2.imshow(self.winname, self.rect_image)
-
-        cv2.destroyWindow(self.winname)
 
 
 class UmaRankReader:
@@ -241,6 +187,7 @@ def main():
         pprint(uma_rank_dict)
         print('num:', len(uma_rank_dict))
 
+    elif inputNum == 3:
     elapsed_time = time.time() - start
     print("elapsed_time:{0}", format(elapsed_time) + "[sec]")
 
