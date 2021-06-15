@@ -49,8 +49,14 @@ class UmaRankReader:
         print('src', self.src_region.shape)
         print('loc', uma_loc)
         print('name', uma_name)
-        rank_img = self.src_region[uma_loc[1] + 50:uma_loc[1] + 75,
-                                   uma_loc[0]+22:uma_loc[0]+60]
+
+        h, w, c = self.src_region.shape
+        start_y = max(uma_loc[1] + 50, 0)
+        end_y = min(uma_loc[1] + 75, h)
+        start_x = max(uma_loc[0]+22, 0)
+        end_x = min(uma_loc[0]+60, w)
+        rank_img = self.src_region[start_y:end_y, start_x:end_x]
+
         # cv2.imshow('src', self.src_region)
         # cv2.imshow('rank', rank_img)
         # cv2.waitKey(0)
@@ -64,8 +70,7 @@ class UmaRankReader:
 
             w, h, c = self.template_rank[i].shape[: 3]
             # Apply template Matching
-            res = cv2.matchTemplate(rank_img, cv2.cvtColor(
-                self.template_rank[i], cv2.COLOR_BGR2GRAY), method)
+            res = cv2.matchTemplate(rank_img, self.template_rank[i], method)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
             return min_val
@@ -79,11 +84,11 @@ class UmaRankReader:
         #     # return
         #     pass
 
-        if uma_name == "ビワハヤヒデ":
-            rank_img = src_img[uma_loc[0]-5:uma_loc[0] +
-                               80, uma_loc[1]-15:uma_loc[1]+75]
-            #cv2.imshow(uma_name, rank_img)
-            # cv2.waitKey(0)
+        # if uma_name == "ビワハヤヒデ":
+        #     rank_img = src_img[uma_loc[0]-5:uma_loc[0] +
+        #                        80, uma_loc[1]-15:uma_loc[1]+75]
+        #cv2.imshow(uma_name, rank_img)
+        # cv2.waitKey(0)
         self.uma_rank_dict[uma_name] = rank
 
     def _FindUmaLoc(self, template: np.array):
@@ -96,24 +101,48 @@ class UmaRankReader:
 
         # uma_loc = (min_loc[1] + self.division_upper_left_loc[0], min_loc[0] +
         #           self.division_upper_left_loc[1] + self.step_width * min_idx)
+        print(min_val)
         return min_loc
 
     def UmaRankListfromImage(self, src_img: Image.Image):
-        img = pil2cv(src_img.convert('L'))
         self.src_region = pil2cv(
-            src_img.crop((5, 350, 390, 630)).convert('L'))
+            src_img.crop((5, 350, 390, 630)))
 
         all_start = time.time()
-        for uma_name, template in self.template_uma_dict.items():
-            # self.uma_rank_dict[uma_name] = 1
-            start = time.time()
-            uma_loc = self._FindUmaLoc(pil2cv(template.convert('L')))
-            if uma_loc:
-                concat_imshow(
-                    'template', [self.src_region, pil2cv(template.convert('L'))])
-                self._ReadUmaRank(uma_loc, uma_name)
-                print(time.time()-start)
-        print(time.time()-all_start)
+
+        def match(template: Image.Image):
+            return cv2.matchTemplate(self.src_region,
+                                     pil2cv(template), cv2.TM_SQDIFF_NORMED)
+
+        res_array = np.stack([match(template)
+                              for template in self.template_uma_dict.values()])
+
+        h, w = res_array[0].shape
+
+        src_size = w*h
+
+        max_iter = 10
+        uma_name_list = list(self.template_uma_dict.keys())
+        uma_loc_dict = dict()
+
+        for _ in range(max_iter):
+            min_val = np.min(res_array)
+            min_idx = res_array.argmin()
+
+            if min_val > 0.05:
+                break
+
+            uma_num = int(min_idx/src_size)
+            uma_name = uma_name_list[uma_num]
+
+            flat_idx = min_idx % src_size
+            uma_loc_x = flat_idx % w
+            uma_loc_y = int(flat_idx/w)
+            uma_loc_dict[uma_name] = (uma_loc_x, uma_loc_y)
+
+            res_array[uma_num, :] = 1
+
+            self._ReadUmaRank((uma_loc_x, uma_loc_y), uma_name)
 
         return self.uma_rank_dict
 
@@ -155,7 +184,7 @@ def main():
     inputNum = 2
     snip_img = snipper.Snip()
 
-    # snip_img = Image.open('./resource/snip_img.png')
+    snip_img = Image.open('./resource/snip_img.png')
 
     start = time.time()
     if inputNum == 1:
