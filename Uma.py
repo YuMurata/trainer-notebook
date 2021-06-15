@@ -111,4 +111,4 @@ class UmaNameFileReader:
             raise FileNotFoundException(
                 f"can't load {UmaNameFileReader.resource_path}")
         with open(UmaNameFileReader.resource_path, 'r', encoding="utf-8_sig") as f:
-            return f.readlines()
+            return [uma_name.replace('\n', '') for uma_name in f.readlines()]
