@@ -146,25 +146,12 @@ class UmaRankReader:
 
         return self.uma_rank_dict
 
-    def CreateTemplateImg(self, img: Image.Image):
 
-        # template = Image.open('./resource/uma_template/ビワハヤヒデ.png')
-        # cv2.imshow("ビワハヤヒデ", pil2cv(template))
-        # cv2.waitKey(0)
-        template = img.crop((26, 70, 82, 129))
-        aspect_ratio = template.width / template.height
 
-        target_width = 69
 
-        target_height = (int)(target_width / aspect_ratio)
-        template = template.resize((target_width, target_height))
 
-        # print(template.size)
 
-        template = template.crop(
-            (15, 5, template.width - 15, template.height - 15))
 
-        return template
 
 
 def main():
