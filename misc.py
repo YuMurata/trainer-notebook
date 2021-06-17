@@ -91,9 +91,9 @@ def concat_imshow(winname: str, image_list: List[np.ndarray]):
 
     def add_border(image: np.ndarray):
         height_diff = max_height-image.shape[0]
-        return cv2.copyMakeBorder(image, 0, height_diff, 1, 1, cv2.BORDER_CONSTANT, (0, 0, 0))
+        return cv2.copyMakeBorder(image, 0, height_diff, 1, 1,
+                                  cv2.BORDER_CONSTANT, (0, 0, 0))
 
     concat_image = cv2.hconcat([add_border(image) for image in image_list])
 
     cv2.imshow(winname, concat_image)
-    cv2.waitKey(0)
