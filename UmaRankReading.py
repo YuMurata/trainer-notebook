@@ -1,3 +1,4 @@
+from threading import Thread, Lock
 from typing import Tuple
 from Uma import UmaNameFileReader
 from snip import ImageSnipper
@@ -10,65 +11,45 @@ from pathlib import Path
 import numpy as np
 
 
-class UmaRankReader:
+class UmaRankReadThread(Thread):
     rank_num = 12
 
-    def __init__(self, all_uma_name_list: list):
-        self.all_uma_name_list = all_uma_name_list
+    def __init__(self):
+        super().__init__()
+        self.snipper = ImageSnipper()
+        self.all_uma_name_list = UmaNameFileReader().Read()
+        self.lock = Lock()
         self.uma_rank_dict = dict()
 
-        self.rect_size = 285, 78
-        self.step_width = 75
-        self.division_upper_left_loc = 348, 14
-        self.n_division = 5
-        self.divide_img = [None] * self.n_division
         self.template_rank = [cv2.imread(
             f'./resource/rank/rank{i+1:02}.png') for i in range(self.rank_num)]
-        self.template_uma_dict = {path.stem: Image.open(path) for path in Path(
-            './resource/uma_template').iterdir()}
+        self.template_uma_dict = {
+            path.stem: pil2cv(Image.open(path))
+            for path in Path('./resource/uma_template').iterdir()}
 
-    def _DivideImg(self, src_img):
-        divide_y_start = self.division_upper_left_loc[0]
-        divide_y_end = self.division_upper_left_loc[0] + self.rect_size[0]
+        self.is_update = True
 
-        divide_x_start_list = [self.division_upper_left_loc[1] +
-                               self.step_width * i
-                               for i in range(self.n_division)]
-        divide_x_end_list = [self.division_upper_left_loc[1] +
-                             self.step_width * i + self.rect_size[1]
-                             for i in range(self.n_division)]
+    def stop(self):
+        self.is_update = False
 
-        self.divide_img = [src_img[divide_y_start:divide_y_end,
-                                   divide_x_start_list[i]:divide_x_end_list[i]]
-                           for i in range(self.n_division)]
-        # cv2.imshow("divide_img", self.divide_img[i])
-        # cv2.waitKey(0)
+    def run(self):
+        while self.is_update:
+            self._make_uma_rank_dict()
+            time.sleep(0.1)
 
-    def _ReadUmaRank(self, uma_loc: Tuple, uma_name: str):
+    def _read_uma_rank(self, src_region: np.ndarray,
+                       uma_loc: Tuple[int, int]) -> int:
 
-        print('src', self.src_region.shape)
-        print('loc', uma_loc)
-        print('name', uma_name)
-
-        h, w, c = self.src_region.shape
+        h, w, c = src_region.shape
         start_y = max(uma_loc[1] + 50, 0)
         end_y = min(uma_loc[1] + 75, h)
         start_x = max(uma_loc[0]+22, 0)
         end_x = min(uma_loc[0]+60, w)
-        rank_img = self.src_region[start_y:end_y, start_x:end_x]
-
-        # cv2.imshow('src', self.src_region)
-        # cv2.imshow('rank', rank_img)
-        # cv2.waitKey(0)
-        # rank_img = src_img[uma_loc[0]-5:uma_loc[0] +
-        #                    80, uma_loc[1]-15:uma_loc[1]+75]
-        #cv2.imshow(uma_name, rank_img)
-        # cv2.waitKey(0)
+        rank_img = src_region[start_y:end_y, start_x:end_x]
 
         def func(i):
             method = cv2.TM_SQDIFF_NORMED
 
-            w, h, c = self.template_rank[i].shape[: 3]
             # Apply template Matching
             res = cv2.matchTemplate(rank_img, self.template_rank[i], method)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
@@ -78,80 +59,56 @@ class UmaRankReader:
         min_values = [func(i) for i in range(self.rank_num)]
         min_idx = min_values.index(min(min_values))
         rank = min_idx + 1
-        # print("rank="+str(rank))
 
-        # if min_values[min_idx] > 0.03:
-        #     # return
-        #     pass
+        return rank
 
-        # if uma_name == "ビワハヤヒデ":
-        #     rank_img = src_img[uma_loc[0]-5:uma_loc[0] +
-        #                        80, uma_loc[1]-15:uma_loc[1]+75]
-        #cv2.imshow(uma_name, rank_img)
-        # cv2.waitKey(0)
-        self.uma_rank_dict[uma_name] = rank
+    def _make_uma_rank_dict(self):
+        src_image = self.snipper.Snip()
+        rank_rect = (5, 350, 390, 630)
+        src_region = pil2cv(src_image.crop(rank_rect))
 
-    def _FindUmaLoc(self, template: np.array):
-        method = cv2.TM_SQDIFF_NORMED
-        # Apply template Matching
-        res = cv2.matchTemplate(self.src_region, template, method)
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-        if min_val > 0.04:
-            return None
+        def match(template: np.ndarray):
+            return cv2.matchTemplate(src_region, template,
+                                     cv2.TM_SQDIFF_NORMED)
 
-        # uma_loc = (min_loc[1] + self.division_upper_left_loc[0], min_loc[0] +
-        #           self.division_upper_left_loc[1] + self.step_width * min_idx)
-        print(min_val)
-        return min_loc
+        match_array = np.stack(
+            [match(template) for template in self.template_uma_dict.values()])
 
-    def UmaRankListfromImage(self, src_img: Image.Image):
-        self.src_region = pil2cv(
-            src_img.crop((5, 350, 390, 630)))
+        h, w = match_array[0].shape
 
-        all_start = time.time()
-
-        def match(template: Image.Image):
-            return cv2.matchTemplate(self.src_region,
-                                     pil2cv(template), cv2.TM_SQDIFF_NORMED)
-
-        res_array = np.stack([match(template)
-                              for template in self.template_uma_dict.values()])
-
-        h, w = res_array[0].shape
-
-        src_size = w*h
+        match_size = w*h
 
         max_iter = 10
         uma_name_list = list(self.template_uma_dict.keys())
-        uma_loc_dict = dict()
 
-        for _ in range(max_iter):
-            min_val = np.min(res_array)
-            min_idx = res_array.argmin()
-
-            if min_val > 0.05:
-                break
-
-            uma_num = int(min_idx/src_size)
-            uma_name = uma_name_list[uma_num]
-
+        def get_uma_loc(min_idx: int, src_size: int) -> Tuple[int, int]:
             flat_idx = min_idx % src_size
             uma_loc_x = flat_idx % w
             uma_loc_y = int(flat_idx/w)
-            uma_loc_dict[uma_name] = (uma_loc_x, uma_loc_y)
+            return (uma_loc_x, uma_loc_y)
 
-            res_array[uma_num, :] = 1
+        for _ in range(max_iter):
+            min_val = np.min(match_array)
+            min_idx = match_array.argmin()
 
-            self._ReadUmaRank((uma_loc_x, uma_loc_y), uma_name)
+            if min_val > 0.04:
+                break
 
-        return self.uma_rank_dict
+            uma_num = int(min_idx/match_size)
+            uma_name = uma_name_list[uma_num]
 
+            uma_loc = get_uma_loc(min_idx, match_size)
+            # match_array = np.delete(match_array, uma_num, axis=0)
+            match_array[uma_num, :] = 1
 
+            uma_rank = self._read_uma_rank(src_region, uma_loc)
 
+            with self.lock:
+                self.uma_rank_dict[uma_name] = uma_rank
 
-
-
-
+    def get(self):
+        with self.lock:
+            return self.uma_rank_dict.copy()
 
 
 def main():
