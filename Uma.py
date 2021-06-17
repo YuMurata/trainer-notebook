@@ -3,7 +3,7 @@ import numpy as np
 from pathlib import Path
 from exception import FileNotFoundException, InvalidKeyException
 import json
-
+from threading import Lock
 from typing import List
 
 
@@ -87,36 +87,45 @@ class UmaInfoDict(UserDict):
 
 class UmaPointFileIO:
     resource_path = './resource/uma_pt_list.json'
+    lock = Lock()
 
     @staticmethod
     def Read() -> UmaInfoDict:
-        try:
-            if not Path(UmaPointFileIO.resource_path).exists():
-                raise FileNotFoundException(
-                    f"can't load {UmaPointFileIO.resource_path}")
+        with UmaPointFileIO.lock:
+            try:
+                if not Path(UmaPointFileIO.resource_path).exists():
+                    raise FileNotFoundException(
+                        f"can't load {UmaPointFileIO.resource_path}")
 
-            with open(UmaPointFileIO.resource_path, 'r', encoding="utf-8_sig") as f:
-                return UmaInfoDict([UmaInfo(name, points)
-                                    for name, points in json.load(f).items()])
-        except:
-            return UmaInfoDict()
+                with open(UmaPointFileIO.resource_path, 'r',
+                          encoding="utf-8_sig") as f:
+                    return UmaInfoDict([UmaInfo(name, points)
+                                        for name, points in json.load(f).items()])
+            except FileNotFoundException:
+                return UmaInfoDict()
 
     @staticmethod
     def Write(uma_info_dict: UmaInfoDict):
-        with open(UmaPointFileIO.resource_path, 'w', encoding="utf-8_sig") as f:
-            json.dump(
-                {uma_info.name: uma_info.points
-                 for uma_info in uma_info_dict.values()}, f, indent=2,
-                ensure_ascii=False)
+        with UmaPointFileIO.lock:
+            with open(UmaPointFileIO.resource_path, 'w',
+                      encoding="utf-8_sig") as f:
+                json.dump(
+                    {uma_info.name: uma_info.points
+                     for uma_info in uma_info_dict.values()}, f, indent=2,
+                    ensure_ascii=False)
 
 
 class UmaNameFileReader:
     resource_path = './resource/uma_name_list.txt'
+    lock = Lock()
 
     @staticmethod
     def Read() -> list:
-        if not Path(UmaNameFileReader.resource_path).exists():
-            raise FileNotFoundException(
-                f"can't load {UmaNameFileReader.resource_path}")
-        with open(UmaNameFileReader.resource_path, 'r', encoding="utf-8_sig") as f:
-            return [uma_name.replace('\n', '') for uma_name in f.readlines()]
+        with UmaNameFileReader.lock:
+            if not Path(UmaNameFileReader.resource_path).exists():
+                raise FileNotFoundException(
+                    f"can't load {UmaNameFileReader.resource_path}")
+            with open(UmaNameFileReader.resource_path, 'r',
+                      encoding="utf-8_sig") as f:
+                return [uma_name.replace('\n', '')
+                        for uma_name in f.readlines()]
