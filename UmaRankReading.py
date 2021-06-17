@@ -11,6 +11,57 @@ from pathlib import Path
 import numpy as np
 
 
+class debugger:
+    @staticmethod
+    def get_uma_range(uma_loc: Tuple[int, int]) -> Tuple[Tuple[int, int],
+                                                         Tuple[int, int]]:
+        '''
+        Args:
+            umaloc (tuple(left, top))
+        Returns:
+            tuple(tuple(left, top), tuple(right, bottom))
+        '''
+        return ((uma_loc[0], uma_loc[1]), (uma_loc[0]+40, uma_loc[1]+50))
+
+    @staticmethod
+    def get_uma_region(src_region: np.ndarray,
+                       uma_loc: Tuple[int, int]) -> np.ndarray:
+        ((left, top), (right, bottom)) = debugger.get_uma_range(uma_loc)
+        return src_region[top:bottom, left:right]
+
+    @staticmethod
+    def show_uma(src_region: np.ndarray, uma_loc: Tuple[int, int],
+                 uma_name: str):
+        '''
+        Args:
+            src_region (np.ndarray)
+            umaloc (tuple(left, top))
+        Returns:
+            None
+        '''
+        cv2.imshow(uma_name, debugger.get_uma_region(src_region, uma_loc))
+        cv2.waitKey(0)
+
+    @staticmethod
+    def show_detect_and_uma(src_region: np.ndarray, uma_loc: Tuple[int, int],
+                            uma_name: str):
+        '''
+        Args:
+            src_region (np.ndarray)
+            umaloc (tuple(left, top))
+        Returns:
+            None
+        '''
+
+        left_top, right_bottom = debugger.get_uma_range(uma_loc)
+        uma_region = debugger.get_uma_region(src_region, uma_loc)
+
+        detect_region = src_region.copy()
+        cv2.rectangle(detect_region, left_top, right_bottom, (0, 0, 255), 3)
+        concat_imshow(uma_name, [detect_region, uma_region])
+        cv2.waitKey(0)
+
+
 class UmaRankReadThread(Thread):
     rank_num = 12
 
