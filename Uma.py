@@ -3,6 +3,7 @@ import numpy as np
 from pathlib import Path
 from exception import FileNotFoundException, InvalidKeyException
 import json
+from threading import Lock
 from typing import List
 
 
