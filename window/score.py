@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from TeamStadiumInfoDetection import TeamStadiumInfoDetection, ScoreDispatcher
+from TeamStadiumInfoDetection import ScoreReadThread, RankReadThread, Dispatcher
 from window.app import BaseApp
 from threading import Thread
 
@@ -16,9 +16,17 @@ class ScoreWindow(tk.Toplevel):
 
         def generate_update_rank():
             self.treeview_score.event_generate('<<UpdateRank>>', when='tail')
+
+        self.score_dispatcher = Dispatcher(generate_update_score)
+        self.rank_dispatcher = Dispatcher(generate_update_rank)
+        self.rank_detection = RankReadThread(self.rank_dispatcher)
+        self.score_detection = ScoreReadThread(self.score_dispatcher)
+
         self._create_widgets()
-        self.info_detection.start()
+        self.score_detection.start()
+        self.rank_detection.start()
         self.master_updater = master_updater
+        self.content_dict: Dict[str, Dict[str, int]] = dict()
 
     def _clear_treeview(self):
         for i in range(15):
@@ -70,8 +78,10 @@ class ScoreWindow(tk.Toplevel):
         ret = super().destroy()
 
         def join():
-            self.info_detection.stop()
-            self.info_detection.join()
+            self.rank_detection.stop()
+            self.rank_detection.join()
+            self.score_detection.stop()
+            self.score_detection.join()
 
         Thread(daemon=True, target=join).start()
         return ret
@@ -84,13 +94,15 @@ class ScoreWindow(tk.Toplevel):
         frame.pack()
 
         self.treeview_score = ttk.Treeview(
-            frame, columns=['Rank', 'Name', 'Score'], height=15,
+            frame, columns=['Num', 'Rank', 'Name', 'Score'], height=15,
             show="headings")
+        self.treeview_score.column('Num', width=40)
         self.treeview_score.column('Rank', width=40)
         self.treeview_score.column('Name', width=120)
         self.treeview_score.column('Score', anchor='e', width=50)
 
         # Create Heading
+        self.treeview_score.heading('Num', text='Num', anchor='center')
         self.treeview_score.heading('Rank', text='Rank', anchor='center')
         self.treeview_score.heading('Name', text='Name', anchor='center')
         self.treeview_score.heading('Score', text='Score', anchor='center')
