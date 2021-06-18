@@ -1,9 +1,11 @@
+from typing import Tuple, Dict
 from TeamStadiumInfoDetection.dispatcher import BaseDispatched, Dispatcher
+from TeamStadiumInfoDetection.linked_reader import LinkedReader
 import os
 import pyocr
 import pyocr.builders
 import cv2
-from PIL import ImageDraw,  ImageEnhance
+from PIL import ImageDraw,  ImageEnhance, Image
 from enum import Enum
 from UmaPointReading import UmaPointReader
 from Uma import UmaNameFileReader, UmaPointFileIO
@@ -14,6 +16,8 @@ import time
 from snip import ImageSnipper
 from misc import pil2cv
 from logger import init_logger
+import difflib
+
 
 logger = init_logger(__name__)
 
@@ -80,21 +84,6 @@ class ScoreDispatched(BaseDispatched):
         return ScoreDispatched(self.score_dict)
 
 
-class ScoreReadThread(Thread):
-
-    # スコア読み取りモードに移行するために「スコア情報」と書いているかを確認する関数
-    # 戻り値 bool
-    def __init__(self, dispatcher: Dispatcher):
-        super().__init__(name='ScoreReadThread')
-        self.st = State.NONE_ST
-        self.snipper = ImageSnipper()
-        self.lock = RLock()
-        self.game_window_image = self.snipper.Snip()
-        self.all_uma_name_list = UmaNameFileReader.Read()  # 全てのウマ娘の名前のリスト
-        self.uma_info_dict = UmaPointFileIO.Read()
-            self.ocr_tool, self.all_uma_name_list)  # スコア情報読み取るやつ
-        self.dispatcher = dispatcher  # スコア情報を読み取った結果
-        self.score_dict = dict()
 def _get_OCR():
     # インストールしたTesseract-OCRのパスを環境変数「PATH」へ追記する。
     # OS自体に設定してあれば以下の2行は不要
@@ -107,33 +96,27 @@ def _get_OCR():
 
     return tools[0]
 
-        self.is_updating = True
 
-    def canReadScoreInfo(self):
-        # 「スコア情報」と書かれている部分を切り出す
+class ScoreReader(LinkedReader):
+    def __init__(self):
+        tool = _get_OCR()
         self.score_ocr = ScoreOCR(tool)
         self.score_scene_ocr = ScoreSceneOCR(tool)
 
-        if self.game_window_image is None:
-            return False
+    # 順位読み取りモードに移行するために「WIN」または「LOSE」と書いているかを確認する関数
+    # テンプレートマッチングを用いた
+    def can_read(self, snip_image: Image.Image):
+        # 「スコア情報」と書かれている部分を切り出す
 
-        img = self.game_window_image.copy()
-        # print(img.size)
-
-        img = img.convert(mode="L")
+        img = snip_image.convert(mode="L")
         img = ImageEnhance.Contrast(img).enhance(1.5)
-
         img = img.crop((150, 20, 255, 50))
 
         # 白抜き文字だから白黒反転
         img = img.point(lambda x: 255 if x < 200 else 0)
 
-
-    # 順位読み取りモードに移行するために「WIN」または「LOSE」と書いているかを確認する関数
-    # テンプレートマッチングを用いた
-    # 戻り値bool
-    def canReadRank(self):
-        if self.game_window_image is None:
+        score_scene_str = self.score_scene_ocr.get_score_scene(img)
+        if not score_scene_str:
             return False
 
         img = self.game_window_image.copy()
@@ -169,11 +152,10 @@ def _get_OCR():
 
         return min < 0.1
 
-
     # スコア情報を読み取るための前処理
-    def ReadScorePreProc(self, img):
 
-        proc_img = img.convert(mode="L")
+    def _pre_proc(self, snip_image: Image.Image):
+        proc_img = snip_image.convert(mode="L")
         proc_img = ImageEnhance.Contrast(proc_img).enhance(1.5)
         test_img = proc_img.point(lambda x: x if x < 80 else 255)
         width, height = test_img.size
@@ -184,57 +166,11 @@ def _get_OCR():
         draw.rectangle([(0, 0), (width, 50)], fill='white')
         draw.rectangle([(0, height - 80), (width, height)], fill='white')
 
-        # cv2.imshow("preproc", self.pil2cv(test_img))
-        # cv2.waitKey(0)
-
         return test_img
 
-    def CreateEvent(self):
-        with self.lock:
-            is_valid_num = len(self.score_dict) < 15
+    def read(self, snip_image: Image.Image):
 
-        if self.canReadScoreInfo() and is_valid_num:
-            return Event.READ_SCORE_START_EV
-
-        elif self.canReadRank():
-            return Event.READ_RANK_START_EV
-        else:
-            return Event.NONE_EV
-
-    def onNoneST(self, ev):
-        if ev == Event.NONE_EV:
-            pass
-        elif ev == Event.READ_SCORE_START_EV:
-            self.st = State.READ_SCORE_ST
-
-        elif ev == Event.READ_SCORE_END_EV:
-            pass
-
-        elif ev == Event.READ_RANK_START_EV:
-            self.st = State.READ_RANK_ST
-            pass
-
-        elif ev == Event.READ_RANK_END_EV:
-            pass
-
-    def onReadScoreST(self, ev):
-
-        img = self.ReadScorePreProc(self.game_window_image)
-
-        logger.debug('get lock')
-        with self.lock:
-        logger.debug('release lock')
-
-        if ev == Event.NONE_EV:
-            pass
-        elif ev == Event.READ_SCORE_START_EV:
-            pass
-        elif ev == Event.READ_SCORE_END_EV:
-            self.st = State.NONE_ST
-        elif ev == Event.READ_RANK_START_EV:
-            self.st = State.READ_RANK_ST
-        elif ev == Event.READ_RANK_END_EV:
-            self.st = State.NONE_ST
+        preproc_image = self._pre_proc(snip_image)
         return self.score_ocr.get_score(preproc_image)
 
     def onReadRankST(self, ev):
