@@ -14,6 +14,7 @@ class UmaInfo:
     def __init__(self, name: str, scores: List[int], ranks: List[int]):
         self.name = name
         self.scores = scores
+        self.ranks = ranks
 
     def __eq__(self, o: object) -> bool:
         if not isinstance(o, UmaInfo):
@@ -59,6 +60,9 @@ class UmaInfo:
     def add_score(self, score: int):
         self.scores.append(score)
 
+    def add_rank(self, rank: int):
+        self.ranks.append(rank)
+
     def __getitem__(self, key: str):
         item_list = ['Name'] + self.metrics_name_list
         if key not in item_list:
@@ -73,7 +77,7 @@ class UmaInfo:
 class UmaInfoDict(UserDict):
     def __init__(self, __list: List[UmaInfo] = None) -> None:
         __dict = {uma_info.name: uma_info
-                  for uma_info in __list} if __list is not None else None
+                  for uma_info in __list} if __list else None
         super().__init__(__dict)
 
     def add(self, uma_info: UmaInfo):
@@ -81,7 +85,7 @@ class UmaInfoDict(UserDict):
 
     def __getitem__(self, key: str) -> UmaInfo:
         if key not in self.data:
-            self.add(UmaInfo(key, []))
+            self.add(UmaInfo(key, [], []))
         return self.data[key]
 
 
@@ -99,9 +103,10 @@ class UmaPointFileIO:
 
                 with open(UmaPointFileIO.resource_path, 'r',
                           encoding="utf-8_sig") as f:
-            except FileNotFoundException:
                     return UmaInfoDict(
                         [UmaInfo(name, info['score'], info['rank'])
+                         for name, info in json.load(f).items()])
+            except (FileNotFoundException, TypeError):
                 return UmaInfoDict()
 
     @staticmethod
@@ -120,7 +125,7 @@ class UmaNameFileReader:
     resource_path = './resource/system/uma_name_list.txt'
     lock = Lock()
 
-    @staticmethod
+    @ staticmethod
     def Read() -> list:
         with UmaNameFileReader.lock:
             if not Path(UmaNameFileReader.resource_path).exists():
