@@ -2,6 +2,7 @@ from typing import List
 import cv2
 import numpy as np
 from PIL import Image
+import time
 
 
 def pil2cv(image: Image.Image) -> np.ndarray:
@@ -97,3 +98,15 @@ def concat_imshow(winname: str, image_list: List[np.ndarray]):
     concat_image = cv2.hconcat([add_border(image) for image in image_list])
 
     cv2.imshow(winname, concat_image)
+
+
+class StopWatch:
+    def __init__(self, title):
+        self.title = title
+
+    def __enter__(self):
+        self.start = time.time()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        print(f'{self.title}: {time.time()-self.start}')
