@@ -9,6 +9,7 @@ from typing import List
 
 class MetricsView(ttk.Frame):
     column_name_list = ['Num'] + UmaInfo.item_name_list
+    update_view_event = '<<UpdateView>>'
 
     class SortUmaInfo:
         class SortKey(IntEnum):
@@ -50,6 +51,7 @@ class MetricsView(ttk.Frame):
         self.selected_item_dict: dict = None
         self.graph_updater = None
         self._create_widgets()
+        self.bind(self.update_view_event, self._update_view)
 
     def _create_heading(self):
         for metrics_name in self.column_name_list:
@@ -107,7 +109,6 @@ class MetricsView(ttk.Frame):
         self.uma_info_sorter.set_key(column)
 
         self.treeview_score.selection_remove(self.treeview_score.selection())
-        self.display()
 
         if self.selected_item_dict:
             selected_item_list = list(self.selected_item_dict.values())
@@ -119,6 +120,8 @@ class MetricsView(ttk.Frame):
 
             if self.graph_updater:
                 self.graph_updater(uma_info_list)
+
+        self.generate_update()
 
     def _click_view(self, event):
         uma_info_dict = UmaPointFileIO.Read()
@@ -137,7 +140,7 @@ class MetricsView(ttk.Frame):
     def set_graph_updater(self, graph_updater):
         self.graph_updater = graph_updater
 
-    def display(self):
+    def _update_view(self, event):
         uma_info_dict = UmaPointFileIO.Read()
         treeview_content: List[UmaInfo] = list(uma_info_dict.values())
 
@@ -167,6 +170,9 @@ class MetricsView(ttk.Frame):
 
         self.treeview_score.tag_configure('odd', background='red')
 
+    def generate_update(self):
+        self.event_generate(self.update_view_event, when='tail')
+
 
 class Win1(tk.Frame):
     def __init__(self, master):
@@ -177,10 +183,10 @@ class Win1(tk.Frame):
         self.master.resizable(False, False)
         self.master.title("umauma drive")
         self.graph_view = GraphView()
-        self.score_app = ScoreApp(master, self.display)
+        self.metrics_view = MetricsView(self)
+        self.score_app = ScoreApp(master, self.metrics_view.generate_update)
         self.graph_app = GraphApp(master, self.graph_view)
         self.create_widgets()
-        self.display()
 
         def lift_app(event):
             self.score_app.lift()
@@ -199,9 +205,6 @@ class Win1(tk.Frame):
         master.bind('<Unmap>', icon_app)
         master.bind('<Map>', deicon_app)
 
-    def display(self):
-        self.metrics_view.display()
-
     def create_widgets(self):
         # Button
         self.button_new_win2 = ttk.Button(self)
@@ -216,7 +219,6 @@ class Win1(tk.Frame):
         self.button_new_win2.pack()
         self.button_new_win3.pack()
 
-        self.metrics_view = MetricsView(self)
         self.metrics_view.set_graph_updater(self.graph_app.update_canvas)
         self.metrics_view.pack()
 
