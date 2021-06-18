@@ -1,3 +1,4 @@
+from TeamStadiumInfoDetection.dispatcher import BaseDispatched, Dispatcher
 import os
 import pyocr
 import pyocr.builders
@@ -6,16 +7,19 @@ from PIL import ImageDraw,  ImageEnhance
 from enum import Enum
 from UmaPointReading import UmaPointReader
 from Uma import UmaNameFileReader, UmaPointFileIO
-from exception import FileNotFoundException
+from exception import FileNotFoundException, InvalidTypeException
 from pathlib import Path
-from threading import Thread
+from threading import Thread, RLock
 import time
 from snip import ImageSnipper
 from misc import pil2cv
+from logger import init_logger
+
+logger = init_logger(__name__)
 
 path = ";C:\\Program Files\\Tesseract-OCR"
 os.environ['PATH'] = os.environ['PATH'] + path
-print(os.environ['PATH'])
+logger.debug(os.environ['PATH'])
 
 
 class State(Enum):
@@ -50,21 +54,49 @@ class ScoreDispatcher:
         self.old_score = dict()
 
 
-class TeamStadiumInfoDetection(Thread):
+class ScoreDispatched(BaseDispatched):
+    def __init__(self, score_dict: dict) -> None:
+        super().__init__()
+        self.score_dict = score_dict.copy()
+
+    def init_item(self):
+        self.score_dict = dict()
+
+    def update_current(self, item: object):
+        if type(item) != type(self):
+            raise InvalidTypeException(f'except {str(type(self))}')
+
+        self.score_dict.update(item.score_dict)
+
+    def update_old(self, current_item: object):
+        self.score_dict = current_item.score_dict.copy()
+
+    def __ne__(self, item: object) -> bool:
+        if type(item) != type(self):
+            return False
+        return self.score_dict != item.score_dict
+
+    def copy(self):
+        return ScoreDispatched(self.score_dict)
+
+
+class ScoreReadThread(Thread):
 
     # スコア読み取りモードに移行するために「スコア情報」と書いているかを確認する関数
     # 戻り値 bool
-    def __init__(self, score_dispatcher: ScoreDispatcher):
-        super().__init__()
+    def __init__(self, dispatcher: Dispatcher):
+        super().__init__(name='ScoreReadThread')
         self.st = State.NONE_ST
         self.snipper = ImageSnipper()
+        self.lock = RLock()
         self.game_window_image = self.snipper.Snip()
         self.all_uma_name_list = UmaNameFileReader.Read()  # 全てのウマ娘の名前のリスト
         self.uma_info_dict = UmaPointFileIO.Read()
         self.ocr_tool = self.GetOCRTool()
         self.upr = UmaPointReader(
             self.ocr_tool, self.all_uma_name_list)  # スコア情報読み取るやつ
-        self.score_dispatcher = score_dispatcher  # スコア情報を読み取った結果
+        self.dispatcher = dispatcher  # スコア情報を読み取った結果
+        self.score_dict = dict()
 
         self.display_warning = False  # 画面が小さいことを警告したかどうか
 
@@ -79,7 +111,7 @@ class TeamStadiumInfoDetection(Thread):
             return False
 
         img = self.game_window_image.copy()
-        print(img.size)
+        # print(img.size)
 
         img = img.convert(mode="L")
         img = ImageEnhance.Contrast(img).enhance(1.5)
@@ -101,7 +133,7 @@ class TeamStadiumInfoDetection(Thread):
             return False
 
         scoreinfo_str = res[0].content.replace(' ', '')
-        print(scoreinfo_str)
+        # print(scoreinfo_str)
 
         return scoreinfo_str == 'スコア情報'
 
@@ -177,8 +209,10 @@ class TeamStadiumInfoDetection(Thread):
         return test_img
 
     def CreateEvent(self):
-        read_score = self.score_dispatcher.current_score
-        if self.canReadScoreInfo() and len(read_score) < 15:
+        with self.lock:
+            is_valid_num = len(self.score_dict) < 15
+
+        if self.canReadScoreInfo() and is_valid_num:
             return Event.READ_SCORE_START_EV
 
         elif self.canReadRank():
@@ -205,9 +239,11 @@ class TeamStadiumInfoDetection(Thread):
     def onReadScoreST(self, ev):
 
         img = self.ReadScorePreProc(self.game_window_image)
-        read_score = self.upr.UmaPtListfromImage(img)
-        print(f'from image: {read_score}')
-        self.score_dispatcher.update_score(read_score)
+
+        logger.debug('get lock')
+        with self.lock:
+            self.score_dict = self.upr.UmaPtListfromImage(img)
+        logger.debug('release lock')
 
         if ev == Event.NONE_EV:
             pass
@@ -234,7 +270,7 @@ class TeamStadiumInfoDetection(Thread):
 
     def TransitionST(self):
         ev = self.CreateEvent()
-        print('st:'+str(self.st)+'：ev:'+str(ev))
+        # print('st:'+str(self.st)+'：ev:'+str(ev))
         if self.st == State.NONE_ST:
             self.onNoneST(ev)
 
@@ -245,10 +281,13 @@ class TeamStadiumInfoDetection(Thread):
             self.onReadRankST(ev)
 
     def OverWriteUmaListFile(self):
-        for name, point in self.read_score.items():
-            self.uma_info_dict[name].AddPoint(point)
+        uma_info_dict = UmaPointFileIO.Read()
 
-        UmaPointFileIO.Write(self.uma_info_dict)
+        with self.lock:
+            for name, point in self.score_dict.items():
+                uma_info_dict[name].AddPoint(point)
+
+        UmaPointFileIO.Write(uma_info_dict)
 
     def stop(self):
         self.is_updating = False
@@ -259,4 +298,18 @@ class TeamStadiumInfoDetection(Thread):
             if self.game_window_image:
                 self.TransitionST()
 
+            logger.debug('get lock')
+            with self.lock:
+                self.dispatcher.update_item(
+                    ScoreDispatched(self.score_dict.copy()))
+            logger.debug('release lock')
+
             time.sleep(0.5)
+
+    def get(self):
+        logger.debug('get lock')
+        with self.lock:
+            logger.debug('copy score')
+            score_dict = self.score_dict.copy()
+        logger.debug('return')
+        return score_dict
