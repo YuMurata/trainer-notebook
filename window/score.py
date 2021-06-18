@@ -10,24 +10,61 @@ class ScoreWindow(tk.Toplevel):
         super().__init__(master)
         self.resizable(False, False)
         self.title("umauma score")
-        self.score_dispatcher = ScoreDispatcher(self.display)
-        self.info_detection = TeamStadiumInfoDetection(self.score_dispatcher)
+
+        def generate_update_score():
+            self.treeview_score.event_generate('<<UpdateScore>>', when='tail')
+
+        def generate_update_rank():
+            self.treeview_score.event_generate('<<UpdateRank>>', when='tail')
         self._create_widgets()
         self.info_detection.start()
         self.master_updater = master_updater
 
-    def display(self, score: dict):
-        print(f'disp: {score}')
-        # print('win2')
-        # treeviewでスコアを表示する
+    def _clear_treeview(self):
         for i in range(15):
             self.treeview_score.set(i, 1, '')
             self.treeview_score.set(i, 2, '')
-        score_list = sorted(score.items(),
-                            key=lambda x: x[1], reverse=True)
-        for i, (name, point) in enumerate(score_list):
-            self.treeview_score.set(i, 1, name)
-            self.treeview_score.set(i, 2, f'{point:,}')
+            self.treeview_score.set(i, 3, '')
+
+    def _fill_treeview(self):
+        def sort_key(x: Tuple[str, Dict[str, int]]):
+            if 'score' in x[1]:
+                return (-x[1]['score'], x[0])
+            return (0, x[0])
+
+        content_list = sorted(self.content_dict.items(), key=sort_key)
+        for i, (name, content) in enumerate(content_list):
+            if 'rank' in content:
+                self.treeview_score.set(i, 1, content['rank'])
+
+            if 'score' in content:
+                self.treeview_score.set(i, 3, content['score'])
+
+            self.treeview_score.set(i, 2, name)
+
+    def update_rank(self, event):
+        rank_dict = self.rank_detection.get()
+        for name, rank in rank_dict.items():
+            self.content_dict.setdefault(name, dict())
+            self.content_dict[name]['rank'] = rank
+
+        self._clear_treeview()
+        self._fill_treeview()
+
+    def update_score(self, event):
+        logger.debug('get score')
+        score_dict = self.score_detection.get()
+        for name, score in score_dict.items():
+            self.content_dict.setdefault(name, dict())
+            self.content_dict[name]['score'] = score
+
+        logger.debug('update content')
+
+        with StopWatch('clear'):
+            self._clear_treeview()
+
+        with StopWatch('fill'):
+            self._fill_treeview()
 
     def destroy(self) -> None:
         ret = super().destroy()
@@ -63,6 +100,8 @@ class ScoreWindow(tk.Toplevel):
             self.treeview_score.insert(
                 parent='', index='end', iid=i, values=(i+1, '', ''))
 
+        self.treeview_score.bind('<<UpdateScore>>', self.update_score)
+        self.treeview_score.bind('<<UpdateRank>>', self.update_rank)
         self.treeview_score.pack()
 
         return frame
