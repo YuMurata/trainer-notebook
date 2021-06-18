@@ -1,5 +1,5 @@
 from TeamStadiumInfoDetection.app_linked import AppLinkedThread
-from typing import Dict, Tuple
+from typing import Callable, Dict, Tuple
 import tkinter as tk
 from tkinter import ttk
 from TeamStadiumInfoDetection import Dispatcher
@@ -10,7 +10,7 @@ logger = init_logger(__name__)
 
 
 class ScoreWindow(tk.Toplevel):
-    def __init__(self, master, master_updater):
+    def __init__(self, master, metrics_updater: Callable[[], None]):
         super().__init__(master)
         self.resizable(False, False)
         self.title("umauma score")
@@ -22,7 +22,7 @@ class ScoreWindow(tk.Toplevel):
         self.linked_thread.start()
 
         self._create_widgets()
-        self.master_updater = master_updater
+        self.metrics_updater = metrics_updater
         self.content_dict: Dict[str, Dict[str, int]] = dict()
 
     def _clear_treeview(self):
@@ -109,7 +109,7 @@ class ScoreWindow(tk.Toplevel):
 
     def _regist(self):
         self.info_detection.OverWriteUmaListFile()
-        self.master_updater()
+        self.metrics_updater()
 
     def _create_widgets(self):
         self._create_treeview().pack()
