@@ -121,7 +121,7 @@ class TeamStadiumInfoDetection(Thread):
         # cv2.waitKey(0)
 
         def load_image():
-            resource_dir = './resource'
+            resource_dir = './resource/system/template'
             image_name_list = ['win.png', 'lose.png']
 
             def pred(image_name: str):
