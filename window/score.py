@@ -108,7 +108,7 @@ class ScoreWindow(tk.Toplevel):
         return frame
 
     def _regist(self):
-        self.info_detection.OverWriteUmaListFile()
+        self.linked_thread.overwrite_umainfo_file()
         self.metrics_updater()
 
     def _create_widgets(self):
