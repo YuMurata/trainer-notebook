@@ -1,17 +1,12 @@
-from threading import Thread, Lock
 from typing import Dict, Tuple
-from Uma import UmaNameFileReader
 from snip import ImageSnipper
 from misc import concat_imshow, pil2cv
 import cv2
 from PIL import Image
-import time
-from pprint import pprint
 from pathlib import Path
 import numpy as np
-from TeamStadiumInfoDetection.dispatcher import BaseDispatched, Dispatcher
 from TeamStadiumInfoDetection.linked_reader import LinkedReader
-from exception import InvalidTypeException, FileNotFoundException
+from exception import FileNotFoundException
 
 
 class debugger:
@@ -63,49 +58,6 @@ class debugger:
         cv2.rectangle(detect_region, left_top, right_bottom, (0, 0, 255), 3)
         concat_imshow(uma_name, [detect_region, uma_region])
         cv2.waitKey(0)
-
-
-class RankDispatcher:
-    def __init__(self, callback):
-        self.init_rank()
-        self.callback = callback
-
-    def update_rank(self, rank: dict):
-        self.current_rank.update(rank)
-        if self.current_rank != self.old_rank:
-            self.callback()
-
-        self.old_rank = self.current_rank.copy()
-
-    def init_rank(self):
-        self.current_rank = dict()
-        self.old_rank = dict()
-
-
-class RankDispatched(BaseDispatched):
-    def __init__(self, score_dict: dict) -> None:
-        super().__init__()
-        self.rank_dict = score_dict.copy()
-
-    def init_item(self):
-        self.rank_dict = dict()
-
-    def update_current(self, item: object):
-        if type(item) != type(self):
-            raise InvalidTypeException(f'except {str(type(self))}')
-
-        self.rank_dict.update(item.rank_dict)
-
-    def update_old(self, current_item: object):
-        self.rank_dict = current_item.rank_dict.copy()
-
-    def __ne__(self, item: object) -> bool:
-        if type(item) != type(self):
-            return False
-        return self.rank_dict != item.rank_dict
-
-    def copy(self):
-        return RankDispatched(self.rank_dict)
 
 
 class RankReader(LinkedReader):
@@ -236,16 +188,3 @@ class RankReader(LinkedReader):
             uma_rank_dict[uma_name] = uma_rank
 
         return uma_rank_dict
-
-
-if __name__ == "__main__":
-    rank_reader = RankReadThread()
-    rank_reader.start()
-
-    time.sleep(1)
-    res = rank_reader.get()
-    pprint(res)
-    print('num:', len(res))
-
-    rank_reader.stop()
-    rank_reader.join()
