@@ -92,20 +92,27 @@ class ScoreReadThread(Thread):
         self.game_window_image = self.snipper.Snip()
         self.all_uma_name_list = UmaNameFileReader.Read()  # 全てのウマ娘の名前のリスト
         self.uma_info_dict = UmaPointFileIO.Read()
-        self.ocr_tool = self.GetOCRTool()
-        self.upr = UmaPointReader(
             self.ocr_tool, self.all_uma_name_list)  # スコア情報読み取るやつ
         self.dispatcher = dispatcher  # スコア情報を読み取った結果
         self.score_dict = dict()
+def _get_OCR():
+    # インストールしたTesseract-OCRのパスを環境変数「PATH」へ追記する。
+    # OS自体に設定してあれば以下の2行は不要
+    # path=';C:\\tesseract-ocr'
+    # os.environ['PATH'] = os.environ['PATH'] + path
 
-        self.display_warning = False  # 画面が小さいことを警告したかどうか
+    tools = pyocr.get_available_tools()
+    if len(tools) == 0:
+        raise FileNotFoundException("No OCR tool found")
 
-        # EV_mat = [[None, ]]#状態遷移を2次元配列で作ろうとしたけどあきらめた
+    return tools[0]
 
         self.is_updating = True
 
     def canReadScoreInfo(self):
         # 「スコア情報」と書かれている部分を切り出す
+        self.score_ocr = ScoreOCR(tool)
+        self.score_scene_ocr = ScoreSceneOCR(tool)
 
         if self.game_window_image is None:
             return False
@@ -121,21 +128,6 @@ class ScoreReadThread(Thread):
         # 白抜き文字だから白黒反転
         img = img.point(lambda x: 255 if x < 200 else 0)
 
-        # cv2.imshow("score", self.pil2cv(img))
-        # cv2.waitKey(0)
-
-        builder = pyocr.builders.LineBoxBuilder(tesseract_layout=8)
-        res = self.ocr_tool.image_to_string(img,
-                                            lang="jpn",
-                                            builder=builder)
-
-        if len(res) == 0:
-            return False
-
-        scoreinfo_str = res[0].content.replace(' ', '')
-        # print(scoreinfo_str)
-
-        return scoreinfo_str == 'スコア情報'
 
     # 順位読み取りモードに移行するために「WIN」または「LOSE」と書いているかを確認する関数
     # テンプレートマッチングを用いた
@@ -177,17 +169,6 @@ class ScoreReadThread(Thread):
 
         return min < 0.1
 
-    def GetOCRTool(self):
-        # インストールしたTesseract-OCRのパスを環境変数「PATH」へ追記する。
-        # OS自体に設定してあれば以下の2行は不要
-        # path=';C:\\tesseract-ocr'
-        # os.environ['PATH'] = os.environ['PATH'] + path
-
-        tools = pyocr.get_available_tools()
-        if len(tools) == 0:
-            raise FileNotFoundException("No OCR tool found")
-
-        return tools[0]
 
     # スコア情報を読み取るための前処理
     def ReadScorePreProc(self, img):
@@ -242,7 +223,6 @@ class ScoreReadThread(Thread):
 
         logger.debug('get lock')
         with self.lock:
-            self.score_dict = self.upr.UmaPtListfromImage(img)
         logger.debug('release lock')
 
         if ev == Event.NONE_EV:
@@ -255,6 +235,7 @@ class ScoreReadThread(Thread):
             self.st = State.READ_RANK_ST
         elif ev == Event.READ_RANK_END_EV:
             self.st = State.NONE_ST
+        return self.score_ocr.get_score(preproc_image)
 
     def onReadRankST(self, ev):
         if ev == Event.NONE_EV:
@@ -313,3 +294,78 @@ class ScoreReadThread(Thread):
             score_dict = self.score_dict.copy()
         logger.debug('return')
         return score_dict
+
+
+class ScoreOCR:
+    def __init__(self, tool):
+        self.tool = tool
+        self.all_uma_name_list = UmaNameFileReader.Read()
+
+    def _get_OCR(self):
+        # インストールしたTesseract-OCRのパスを環境変数「PATH」へ追記する。
+        # OS自体に設定してあれば以下の2行は不要
+        # path=';C:\\tesseract-ocr'
+        # os.environ['PATH'] = os.environ['PATH'] + path
+
+        tools = pyocr.get_available_tools()
+        if len(tools) == 0:
+            raise FileNotFoundException("No OCR tool found")
+
+        return tools[0]
+
+    def _extract_score(self, line: str) -> int:
+        for word in line.split(' '):
+            if 'pt' in word:
+                if word.split('pt')[0].isdecimal():
+                    return int(word.split('pt')[0])
+                else:
+                    return None
+        return None
+
+    def _extract_name(self, line: str, score: int) -> str:
+        extract_name = line.replace(' ', '').split(str(score))[0]
+
+        def match(uma_name: str):
+            return difflib.SequenceMatcher(None, uma_name,
+                                           extract_name).ratio()
+
+        match_list = [(uma_name, match(uma_name))
+                      for uma_name in self.all_uma_name_list]
+
+        uma_name, max_match = max(match_list, key=lambda x: x[1])
+
+        if max_match < 0.6:
+            return None
+
+        return uma_name
+
+    def get_score(self, preproc_image: Image.Image) -> Dict[str, int]:
+        builder = pyocr.builders.LineBoxBuilder(tesseract_layout=6)
+        res = self.tool.image_to_string(
+            preproc_image, lang="jpn", builder=builder)
+
+        def rm_point(line: str):
+            return line.replace(',', '').replace('.', '').replace('、', '')
+
+        line_list = [rm_point(d.content) for d in res]
+        score_list = [self._extract_score(line) for line in line_list]
+        score_dict = {self._extract_name(line, score): score
+                      for score, line in zip(score_list, line_list) if score}
+
+        return score_dict
+
+
+class ScoreSceneOCR:
+    def __init__(self, tool):
+        self.tool = tool
+
+    def get_score_scene(self, preproc_image: Image.Image) -> str:
+        builder = pyocr.builders.LineBoxBuilder(tesseract_layout=8)
+        res = self.tool.image_to_string(preproc_image,
+                                        lang="jpn",
+                                        builder=builder)
+
+        if len(res) == 0:
+            return None
+
+        return res[0].content.replace(' ', '')
