@@ -1,5 +1,5 @@
 from threading import Thread, Lock
-from typing import Tuple
+from typing import Dict, Tuple
 from Uma import UmaNameFileReader
 from snip import ImageSnipper
 from misc import concat_imshow, pil2cv
@@ -10,7 +10,8 @@ from pprint import pprint
 from pathlib import Path
 import numpy as np
 from TeamStadiumInfoDetection.dispatcher import BaseDispatched, Dispatcher
-from exception import InvalidTypeException
+from TeamStadiumInfoDetection.linked_reader import LinkedReader
+from exception import InvalidTypeException, FileNotFoundException
 
 
 class debugger:
@@ -107,16 +108,11 @@ class RankDispatched(BaseDispatched):
         return RankDispatched(self.rank_dict)
 
 
-class RankReadThread(Thread):
+class RankReader(LinkedReader):
     rank_num = 12
 
-    def __init__(self, dispatcher: Dispatcher):
-        super().__init__(name='RankReadThread')
+    def __init__(self):
         self.snipper = ImageSnipper()
-        self.all_uma_name_list = UmaNameFileReader().Read()
-        self.lock = Lock()
-        self.uma_rank_dict = dict()
-        self.dispatcher = dispatcher
 
         self.template_rank = [cv2.imread(
             f'./resource/rank/rank{i+1:02}.png') for i in range(self.rank_num)]
@@ -126,15 +122,36 @@ class RankReadThread(Thread):
 
         self.is_update = True
 
-    def stop(self):
-        self.is_update = False
+    def can_read(self, snip_image: Image.Image):
+        img = pil2cv(snip_image)
 
-    def run(self):
-        while self.is_update:
-            self._make_uma_rank_dict()
-            with self.lock:
-                self.dispatcher.update_item(RankDispatched(self.uma_rank_dict))
-            time.sleep(0.1)
+        img = img[175:250, 130:265]
+
+        def load_image():
+            resource_dir = './resource'
+            image_name_list = ['win.png', 'lose.png']
+
+            def pred(image_name: str):
+                resource_path = Path(resource_dir)/image_name
+
+                if not resource_path.exists():
+                    raise FileNotFoundException(
+                        f"can't read {str(resource_path)}")
+                return cv2.imread(str(resource_path))
+
+            return [pred(image_name) for image_name in image_name_list]
+
+        win_lose_img = load_image()
+        method = cv2.TM_SQDIFF_NORMED
+
+        def match(template: np.ndarray):
+            temp_result = cv2.matchTemplate(img, template, method)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(temp_result)
+            return min_val
+
+        min_val = min([match(template) for template in win_lose_img])
+
+        return min_val < 0.1
 
     def _read_uma_rank(self, src_region: np.ndarray,
                        uma_loc: Tuple[int, int]) -> int:
@@ -171,13 +188,9 @@ class RankReadThread(Thread):
 
         return rank
 
-    def _make_uma_rank_dict(self):
-        src_image = self.snipper.Snip()
-        if not src_image:
-            return
-
+    def read(self, snip_image: Image.Image) -> Dict[str, int]:
         rank_rect = (5, 350, 390, 630)
-        src_region = pil2cv(src_image.crop(rank_rect))
+        src_region = pil2cv(snip_image.crop(rank_rect))
 
         def match(template: np.ndarray):
             return cv2.matchTemplate(src_region, template,
@@ -199,6 +212,8 @@ class RankReadThread(Thread):
             uma_loc_y = int(flat_idx/w)
             return (uma_loc_x, uma_loc_y)
 
+        uma_rank_dict = dict()
+
         for _ in range(max_iter):
             min_val = np.min(match_array)
             min_idx = match_array.argmin()
@@ -218,12 +233,9 @@ class RankReadThread(Thread):
             if not uma_rank:
                 break
 
-            with self.lock:
-                self.uma_rank_dict[uma_name] = uma_rank
+            uma_rank_dict[uma_name] = uma_rank
 
-    def get(self):
-        with self.lock:
-            return self.uma_rank_dict.copy()
+        return uma_rank_dict
 
 
 if __name__ == "__main__":
