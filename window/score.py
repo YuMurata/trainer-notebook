@@ -1,10 +1,9 @@
+from TeamStadiumInfoDetection.app_linked import AppLinkedThread
 from typing import Dict, Tuple
 import tkinter as tk
 from tkinter import ttk
-from TeamStadiumInfoDetection import ScoreReadThread, RankReadThread, Dispatcher
+from TeamStadiumInfoDetection import Dispatcher
 from window.app import BaseApp
-from threading import Thread, Lock
-from misc import StopWatch
 from logger import init_logger
 
 logger = init_logger(__name__)
@@ -16,20 +15,13 @@ class ScoreWindow(tk.Toplevel):
         self.resizable(False, False)
         self.title("umauma score")
 
-        def generate_update_score():
-            self.treeview_score.event_generate('<<UpdateScore>>', when='tail')
+        def generate_update_app():
+            self.treeview_score.event_generate('<<UpdateApp>>', when='tail')
 
-        def generate_update_rank():
-            self.treeview_score.event_generate('<<UpdateRank>>', when='tail')
-
-        self.score_dispatcher = Dispatcher(generate_update_score)
-        self.rank_dispatcher = Dispatcher(generate_update_rank)
-        self.rank_detection = RankReadThread(self.rank_dispatcher)
-        self.score_detection = ScoreReadThread(self.score_dispatcher)
+        self.linked_thread = AppLinkedThread(Dispatcher(generate_update_app))
+        self.linked_thread.start()
 
         self._create_widgets()
-        self.score_detection.start()
-        self.rank_detection.start()
         self.master_updater = master_updater
         self.content_dict: Dict[str, Dict[str, int]] = dict()
 
@@ -55,45 +47,19 @@ class ScoreWindow(tk.Toplevel):
 
             self.treeview_score.set(i, 2, name)
 
-    def update_rank(self, event):
-        rank_dict = self.rank_detection.get()
-        for name, rank in rank_dict.items():
-            self.content_dict.setdefault(name, dict())
-            self.content_dict[name]['rank'] = rank
+    def update_app(self, event):
+        logger.debug('update app')
+        self.content_dict = self.linked_thread.get()
 
         self._clear_treeview()
         self._fill_treeview()
 
-    def update_score(self, event):
-        logger.debug('get score')
-        score_dict = self.score_detection.get()
-        for name, score in score_dict.items():
-            self.content_dict.setdefault(name, dict())
-            self.content_dict[name]['score'] = score
-
-        logger.debug('update content')
-
-        with StopWatch('clear'):
-            self._clear_treeview()
-
-        with StopWatch('fill'):
-            self._fill_treeview()
-
     def destroy(self) -> None:
-        ret = super().destroy()
-
-        def join():
-            self.rank_detection.stop()
-            self.rank_detection.join()
-            self.score_detection.stop()
-            self.score_detection.join()
-
-        Thread(target=join).start()
-        return ret
+        self.linked_thread.stop()
+        return super().destroy()
 
     def deleteResultReadScore(self):
-        self.score_dispatcher.init_score()
-        self.rank_dispatcher.init_rank()
+        self.linked_thread.init_dict()
 
     def _create_treeview(self):
         frame = ttk.Frame(self)
@@ -118,8 +84,7 @@ class ScoreWindow(tk.Toplevel):
             self.treeview_score.insert(
                 parent='', index='end', iid=i, values=(i+1, '', ''))
 
-        self.treeview_score.bind('<<UpdateScore>>', self.update_score)
-        self.treeview_score.bind('<<UpdateRank>>', self.update_rank)
+        self.treeview_score.bind('<<UpdateApp>>', self.update_app)
         self.treeview_score.pack()
 
         return frame
