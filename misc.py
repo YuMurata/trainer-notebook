@@ -1,3 +1,4 @@
+from logging import Logger
 from typing import List
 import cv2
 import numpy as np
@@ -101,12 +102,13 @@ def concat_imshow(winname: str, image_list: List[np.ndarray]):
 
 
 class StopWatch:
-    def __init__(self, title):
+    def __init__(self, title: str, logger: Logger):
         self.title = title
+        self.logger = logger
 
     def __enter__(self):
         self.start = time.time()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        print(f'{self.title}: {time.time()-self.start}')
+        self.logger.info(f'{self.title}: {time.time()-self.start}')
