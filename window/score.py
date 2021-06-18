@@ -1,8 +1,13 @@
+from typing import Dict, Tuple
 import tkinter as tk
 from tkinter import ttk
 from TeamStadiumInfoDetection import ScoreReadThread, RankReadThread, Dispatcher
 from window.app import BaseApp
-from threading import Thread
+from threading import Thread, Lock
+from misc import StopWatch
+from logger import init_logger
+
+logger = init_logger(__name__)
 
 
 class ScoreWindow(tk.Toplevel):
@@ -83,11 +88,12 @@ class ScoreWindow(tk.Toplevel):
             self.score_detection.stop()
             self.score_detection.join()
 
-        Thread(daemon=True, target=join).start()
+        Thread(target=join).start()
         return ret
 
     def deleteResultReadScore(self):
         self.score_dispatcher.init_score()
+        self.rank_dispatcher.init_rank()
 
     def _create_treeview(self):
         frame = ttk.Frame(self)

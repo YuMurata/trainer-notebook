@@ -8,3 +8,11 @@ class FileNotFoundException(UmaUmaDriveException):
 
 class InvalidKeyException(UmaUmaDriveException):
     pass
+
+
+class InvalidTypeException(UmaUmaDriveException):
+    pass
+
+
+class InvalidValueException(UmaUmaDriveException):
+    pass
