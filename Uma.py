@@ -86,7 +86,7 @@ class UmaInfoDict(UserDict):
 
 
 class UmaPointFileIO:
-    resource_path = './resource/uma_pt_list.json'
+    resource_path = './resource/user/uma_pt_list.json'
 
     @staticmethod
     def Read() -> UmaInfoDict:
@@ -111,7 +111,7 @@ class UmaPointFileIO:
 
 
 class UmaNameFileReader:
-    resource_path = './resource/uma_name_list.txt'
+    resource_path = './resource/system/uma_name_list.txt'
 
     @staticmethod
     def Read() -> list:
