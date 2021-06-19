@@ -1,4 +1,4 @@
-import ctypes
+from ctypes import wintypes, pointer, windll
 from PIL import ImageGrab
 from tkinter import Image, messagebox
 
@@ -10,15 +10,15 @@ class ImageSnipper:
         pass
 
     def _GetWindowRectFromName(self, TargetWindowTitle: str) -> tuple:
-        TargetWindowHandle = ctypes.windll.user32.FindWindowW(
+        TargetWindowHandle = windll.user32.FindWindowW(
             0, TargetWindowTitle)
         if TargetWindowHandle == 0:
             return None
 
-        Rectangle = ctypes.wintypes.RECT()
+        Rectangle = wintypes.RECT()
 
-        ctypes.windll.user32.GetWindowRect(
-            TargetWindowHandle, ctypes.pointer(Rectangle))
+        windll.user32.GetWindowRect(
+            TargetWindowHandle, pointer(Rectangle))
         return (Rectangle.left + 8, Rectangle.top + 30,
                 Rectangle.right - 8, Rectangle.bottom - 8)
 
