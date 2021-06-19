@@ -3,6 +3,8 @@ from typing import List
 import cv2
 import numpy as np
 from PIL import Image
+from datetime import datetime
+from snip import ImageSnipper
 import time
 
 
@@ -64,8 +66,7 @@ class MouseXYGetter:
 
             self.is_draw = False
 
-            print('left-top:', self.start_xy)
-            print('right-bottom:', (x, y))
+            print('left-top, right-bottom:', f'{self.start_xy}, {(x,y)}')
             print('width, height:',
                   (abs(x-self.start_xy[0]), abs(y-self.start_xy[1])))
 
@@ -86,6 +87,29 @@ class MouseXYGetter:
             cv2.imshow(self.winname, self.rect_image)
 
         cv2.destroyWindow(self.winname)
+
+
+def screenshot():
+    snipper = ImageSnipper()
+
+    input_str = 'r'
+    while input_str not in ['s', 'c']:
+        snip_image = snipper.Snip()
+
+        cv_image = pil2cv(snip_image)
+
+        cv2.imshow('screenshot', cv_image)
+        cv2.waitKey(0)
+
+        input_str = input('save:retake:cancel (s/r/c) -> ')
+
+        if input_str == 's':
+            now = datetime.now().strftime('%Y%m%d-%H%M%S')
+            cv2.imwrite(f'./resource/screenshot/{now}.png', cv_image)
+            return
+
+        if input_str == 'c':
+            return
 
 
 def concat_imshow(winname: str, image_list: List[np.ndarray]):
