@@ -37,12 +37,13 @@ class Dispatcher:
     def update_item(self, item: BaseDispatched):
         if not self.current_item:
             self.current_item = item.copy()
+
+        self.current_item.update_current(item.copy())
+        if not self.old_item or self.current_item != self.old_item:
+            self.callback()
+
         if not self.old_item:
             self.old_item = item.copy()
-
-        self.current_item.update_current(item)
-        if self.current_item != self.old_item:
-            self.callback()
 
         self.old_item.update_old(self.current_item)
 
