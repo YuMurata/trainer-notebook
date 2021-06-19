@@ -60,6 +60,7 @@ class ScoreWindow(tk.Toplevel):
 
     def deleteResultReadScore(self):
         self.linked_thread.init_dict()
+        self.treeview_score.event_generate('<<UpdateApp>>', when='tail')
 
     def _create_treeview(self):
         frame = ttk.Frame(self)
