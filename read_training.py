@@ -10,6 +10,7 @@ import os
 import pyocr
 from exception import FileNotFoundException
 from difflib import SequenceMatcher
+from pathlib import Path
 
 
 class debugger:
@@ -31,8 +32,7 @@ class debugger:
         cv2.waitKey(0)
 
     @staticmethod
-    def show_region(src_region: np.ndarray,
-                    region_dict: Dict[str, np.ndarray]):
+    def show_region(region_dict: Dict[str, np.ndarray]):
         concat_imshow('region', list(region_dict.values()))
         cv2.waitKey(0)
 
@@ -58,15 +58,17 @@ class TrainingReader:
 
     def _read_status(self, region: Image.Image) -> List[int]:
         builder = pyocr.builders.LineBoxBuilder(tesseract_layout=6)
+        builder.tesseract_configs.append("digits")
         res = self.tool.image_to_string(region, lang="eng", builder=builder)
         read_list = [d.content.replace(' ', '') for d in res]
         status_list = [int(read) for read in read_list if read.isdecimal()]
-
         status_num = 5
         return status_list if len(status_list) == status_num else None
 
     def _read_season(self, region: Image.Image) -> str:
         builder = pyocr.builders.LineBoxBuilder(tesseract_layout=6)
+        tesseract_config = str(Path('./season').absolute())
+        builder.tesseract_configs.extend([tesseract_config])
         res = self.tool.image_to_string(region, lang="jpn", builder=builder)
         read = [d.content.replace(' ', '') for d in res][0]
 
