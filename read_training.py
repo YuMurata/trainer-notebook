@@ -119,6 +119,9 @@ class TrainingReader:
         with StopWatch('status'):
             status_list = self._read_status(cv2pil(concat_status_image))
 
+        if not status_list:
+            return None
+
         return {key: val for key, val in zip(['season']+status_key_list,
                                              [season]+status_list)}
 
