@@ -1,5 +1,5 @@
 from typing import Dict, List, Tuple
-from misc import StopWatch, cv2pil, pil2cv
+from misc import StopWatch, cv2pil, pil2cv, screenshot
 from snip import ImageSnipper
 from PIL import Image
 import cv2
@@ -143,7 +143,14 @@ def _get_OCR_tool():
 
 
 if __name__ == '__main__':
+    # screenshot()
+    # exit()
     shot_id = '20210619-020323'
     snip_image = Image.open(
         f'./resource/screenshot/{shot_id}.png').resize((404, 720))
-    print(TrainingReader(_get_OCR_tool()).read(snip_image))
+
+    snipper = ImageSnipper()
+
+    while input('continue ? (y/n) -> ') == 'y':
+        snip_image = snipper.Snip()
+        print(TrainingReader(_get_OCR_tool()).read(snip_image))
