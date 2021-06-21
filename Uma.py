@@ -8,7 +8,7 @@ from typing import List
 
 
 class UmaInfo:
-    metrics_name_list = ['Max', 'Min', 'Mean', 'Std']
+    metrics_name_list = ['RankMean', 'Max', 'Min', 'Mean', 'Std']
     item_name_list = ['Name'] + metrics_name_list
 
     def __init__(self, name: str, scores: List[int], ranks: List[int]):
@@ -53,6 +53,13 @@ class UmaInfo:
         return 0
 
     @property
+    def RankMean(self) -> float:
+        ranks = np.array(self.ranks)
+        if np.any(ranks > 0):
+            return np.mean(ranks[ranks > 0])
+        return 0
+
+    @property
     def NumRace(self) -> int:
         points = np.array(self.scores)
         return np.count_nonzero(points > 0)
@@ -69,7 +76,8 @@ class UmaInfo:
             raise InvalidKeyException(f'{key} is not metrics')
 
         return {name: metrics
-                for name, metrics in zip(item_list, [self.name, self.Max,
+                for name, metrics in zip(item_list, [self.name, self.RankMean,
+                                                     self.Max,
                                                      self.Min, self.Mean,
                                                      self.Std])}[key]
 

@@ -15,6 +15,7 @@ class MetricsView(ttk.Frame):
         class SortKey(IntEnum):
             NUM = 1
             NAME = 2
+            RANKMEAN = auto()
             MAX = auto()
             MIN = auto()
             MEAN = auto()
@@ -71,6 +72,7 @@ class MetricsView(ttk.Frame):
             self, columns=self.column_name_list, height=30, show="headings")
         self.treeview_score.column('Num', anchor='e', width=50)
         self.treeview_score.column('Name', anchor='w', width=120)
+        self.treeview_score.column('RankMean', anchor='e', width=80)
         self.treeview_score.column('Max', anchor='e', width=50)
         self.treeview_score.column('Min', anchor='e', width=50)
         self.treeview_score.column('Mean', anchor='e', width=50)
@@ -155,10 +157,11 @@ class MetricsView(ttk.Frame):
             if i < self.score_num:
                 self.treeview_score.set(i, 0, str(i+1))
                 self.treeview_score.set(i, 1, uma_info.name)
-                self.treeview_score.set(i, 2, f'{uma_info.Max:,}')
-                self.treeview_score.set(i, 3, f'{uma_info.Min:,}')
-                self.treeview_score.set(i, 4, f'{uma_info.Mean:,}')
-                self.treeview_score.set(i, 5, f'{uma_info.Std:,}')
+                self.treeview_score.set(i, 2, f'{uma_info.RankMean:.1f}')
+                self.treeview_score.set(i, 3, f'{uma_info.Max:,}')
+                self.treeview_score.set(i, 4, f'{uma_info.Min:,}')
+                self.treeview_score.set(i, 5, f'{uma_info.Mean:,}')
+                self.treeview_score.set(i, 6, f'{uma_info.Std:,}')
             else:
                 self.score_num += 1
 
@@ -179,7 +182,7 @@ class Win1(tk.Frame):
         super().__init__(master)
         self.pack()
 
-        self.master.geometry("400x400")
+        self.master.geometry("500x400")
         self.master.resizable(False, False)
         self.master.title("umauma drive")
         self.graph_view = GraphView()
@@ -204,6 +207,7 @@ class Win1(tk.Frame):
         master.bind('<FocusIn>', lift_app)
         master.bind('<Unmap>', icon_app)
         master.bind('<Map>', deicon_app)
+        self.metrics_view.generate_update()
 
     def create_widgets(self):
         # Button

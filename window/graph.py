@@ -41,8 +41,8 @@ class GraphView:
         if self.uma_info_list:
             h_diff = 1.0 / len(self.uma_info_list)
             for i, uma_info in enumerate(self.uma_info_list):
-                x = np.arange(len(uma_info.points))+1
-                y = np.array(uma_info.points)
+                x = np.arange(len(uma_info.scores))+1
+                y = np.array(uma_info.scores)
 
                 rgb = hsv_to_rgb(h_diff*i, 1, 0.8)
 
