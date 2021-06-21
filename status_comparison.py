@@ -4,6 +4,49 @@ from snip import ImageSnipper
 from misc import pil2cv
 from PIL import Image, ImageTk
 import tkinter as tk
+from tkinter import ttk
+
+
+class MetricsViewStatus(ttk.Frame):
+    column_name_list = ['Num', 'Status']
+
+    def __init__(self, master):
+        super().__init__(master)
+        self.selected_item_dict: dict = None
+        self._create_widgets()
+
+    def _create_heading(self):
+        for metrics_name in self.column_name_list:
+            metrics_text = metrics_name
+            self.treeview_status.heading(
+                metrics_name, text=metrics_text, anchor='center')
+
+    def _create_widgets(self):
+        self.treeview_status = ttk.Treeview(
+            self, columns=self.column_name_list, height=30)  # , show="headings")
+        self.treeview_status.heading('#0', text='test', anchor='center')
+        self.treeview_status.column('Num', anchor='e', width=50)
+        self.treeview_status.column('Status', anchor='w', width=120)
+
+        # Create Heading
+        self._create_heading()
+
+        self.vscroll = ttk.Scrollbar(
+            self, orient="vertical", command=self.treeview_status.yview)
+        self.treeview_status.configure(yscroll=self.vscroll.set)
+
+        # self.treeview_score.grid(row=0,column=0,columnspan=2,pady=10)
+        self.treeview_status.pack(side=tk.LEFT, pady=10)
+        self.vscroll.pack(side=tk.RIGHT, fill="y", pady=10)
+
+        # change to your file path
+        self._img = tk.PhotoImage(file="resource/lose.png")
+        self.treeview_status.insert('', 'end', image=self._img,
+                                    value=("A's value", "B's value"))
+
+        self._img = tk.PhotoImage(file="resource/win.png")
+        self.treeview_status.insert('', 'end', text='', image=tk.PhotoImage(file="resource/win.png"),
+                                    value=("A's value", "B's value"))
 
 
 class status_comparison():
@@ -89,6 +132,35 @@ class StatusComparisonApp():
         pressed_y = event.y
 
 
+class WinStatusComparison(tk.Frame):
+    def __init__(self, master):
+        super().__init__(master)
+        self.pack()
+
+        self.master.geometry("400x400")
+        self.master.resizable(False, False)
+        self.master.title("uma status")
+
+        self.create_widgets()
+
+    def create_widgets(self):
+        # Button
+        self.button_new_win2 = ttk.Button(self)
+        self.button_new_win2.configure(text="regist score")
+        # self.button_new_win2.configure(command=self.score_app.Activate)
+
+        self.button_new_win3 = ttk.Button(self)
+        self.button_new_win3.configure(text="disp graph")
+        # self.button_new_win3.configure(command=self.graph_app.Activate)
+
+        # self.treeview_score.grid(row=0,column=0,columnspan=2,pady=10)
+        self.button_new_win2.pack()
+        self.button_new_win3.pack()
+
+        self.metrics_view = MetricsViewStatus(self)
+        self.metrics_view.pack()
+
+
 def status_concat_main():
     # snipper = ImageSnipper()
     sc = status_comparison()
@@ -103,7 +175,12 @@ def status_concat_main():
 
 
 def status_window_main():
-    StatusComparisonApp()
+    root = tk.Tk()  # GUIのやつ
+
+    app = WinStatusComparison(master=root)
+
+    # 表示
+    root.mainloop()
 
 
 if __name__ == "__main__":
