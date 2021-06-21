@@ -9,11 +9,13 @@ from typing import List
 
 class MetricsView(ttk.Frame):
     column_name_list = ['Num'] + UmaInfo.item_name_list
+    update_view_event = '<<UpdateView>>'
 
     class SortUmaInfo:
         class SortKey(IntEnum):
             NUM = 1
             NAME = 2
+            RANKMEAN = auto()
             MAX = auto()
             MIN = auto()
             MEAN = auto()
@@ -50,6 +52,7 @@ class MetricsView(ttk.Frame):
         self.selected_item_dict: dict = None
         self.graph_updater = None
         self._create_widgets()
+        self.bind(self.update_view_event, self._update_view)
 
     def _create_heading(self):
         for metrics_name in self.column_name_list:
@@ -69,6 +72,7 @@ class MetricsView(ttk.Frame):
             self, columns=self.column_name_list, height=30, show="headings")
         self.treeview_score.column('Num', anchor='e', width=50)
         self.treeview_score.column('Name', anchor='w', width=120)
+        self.treeview_score.column('RankMean', anchor='e', width=80)
         self.treeview_score.column('Max', anchor='e', width=50)
         self.treeview_score.column('Min', anchor='e', width=50)
         self.treeview_score.column('Mean', anchor='e', width=50)
@@ -107,7 +111,6 @@ class MetricsView(ttk.Frame):
         self.uma_info_sorter.set_key(column)
 
         self.treeview_score.selection_remove(self.treeview_score.selection())
-        self.display()
 
         if self.selected_item_dict:
             selected_item_list = list(self.selected_item_dict.values())
@@ -119,6 +122,8 @@ class MetricsView(ttk.Frame):
 
             if self.graph_updater:
                 self.graph_updater(uma_info_list)
+
+        self.generate_update()
 
     def _click_view(self, event):
         uma_info_dict = UmaPointFileIO.Read()
@@ -137,7 +142,7 @@ class MetricsView(ttk.Frame):
     def set_graph_updater(self, graph_updater):
         self.graph_updater = graph_updater
 
-    def display(self):
+    def _update_view(self, event):
         uma_info_dict = UmaPointFileIO.Read()
         treeview_content: List[UmaInfo] = list(uma_info_dict.values())
 
@@ -152,10 +157,11 @@ class MetricsView(ttk.Frame):
             if i < self.score_num:
                 self.treeview_score.set(i, 0, str(i+1))
                 self.treeview_score.set(i, 1, uma_info.name)
-                self.treeview_score.set(i, 2, f'{uma_info.Max:,}')
-                self.treeview_score.set(i, 3, f'{uma_info.Min:,}')
-                self.treeview_score.set(i, 4, f'{uma_info.Mean:,}')
-                self.treeview_score.set(i, 5, f'{uma_info.Std:,}')
+                self.treeview_score.set(i, 2, f'{uma_info.RankMean:.1f}')
+                self.treeview_score.set(i, 3, f'{uma_info.Max:,}')
+                self.treeview_score.set(i, 4, f'{uma_info.Min:,}')
+                self.treeview_score.set(i, 5, f'{uma_info.Mean:,}')
+                self.treeview_score.set(i, 6, f'{uma_info.Std:,}')
             else:
                 self.score_num += 1
 
@@ -167,20 +173,23 @@ class MetricsView(ttk.Frame):
 
         self.treeview_score.tag_configure('odd', background='red')
 
+    def generate_update(self):
+        self.event_generate(self.update_view_event, when='tail')
+
 
 class Win1(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
         self.pack()
 
-        self.master.geometry("400x400")
+        self.master.geometry("500x400")
         self.master.resizable(False, False)
         self.master.title("umauma drive")
         self.graph_view = GraphView()
-        self.score_app = ScoreApp(master, self.display)
+        self.metrics_view = MetricsView(self)
+        self.score_app = ScoreApp(master, self.metrics_view.generate_update)
         self.graph_app = GraphApp(master, self.graph_view)
         self.create_widgets()
-        self.display()
 
         def lift_app(event):
             self.score_app.lift()
@@ -198,9 +207,7 @@ class Win1(tk.Frame):
         master.bind('<FocusIn>', lift_app)
         master.bind('<Unmap>', icon_app)
         master.bind('<Map>', deicon_app)
-
-    def display(self):
-        self.metrics_view.display()
+        self.metrics_view.generate_update()
 
     def create_widgets(self):
         # Button
@@ -216,7 +223,6 @@ class Win1(tk.Frame):
         self.button_new_win2.pack()
         self.button_new_win3.pack()
 
-        self.metrics_view = MetricsView(self)
         self.metrics_view.set_graph_updater(self.graph_app.update_canvas)
         self.metrics_view.pack()
 

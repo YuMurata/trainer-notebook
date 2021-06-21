@@ -1,4 +1,5 @@
 import ctypes
+from ctypes import wintypes
 from PIL import ImageGrab
 from tkinter import Image, messagebox
 
@@ -7,11 +8,10 @@ class ImageSnipper:
     def __init__(self, app_name='umamusume'):
         self.app_name = app_name
         self.display_warning = False
-        pass
 
-    def _GetWindowRectFromName(self, TargetWindowTitle: str) -> tuple:
+    def _GetWindowRectFromName(self) -> tuple:
         TargetWindowHandle = ctypes.windll.user32.FindWindowW(
-            0, TargetWindowTitle)
+            0, self.app_name)
         if TargetWindowHandle == 0:
             return None
 
@@ -23,7 +23,7 @@ class ImageSnipper:
                 Rectangle.right - 8, Rectangle.bottom - 8)
 
     def Snip(self) -> Image:
-        rect = self._GetWindowRectFromName(self.app_name)
+        rect = self._GetWindowRectFromName()
 
         if rect:
             game_window_image = ImageGrab.grab(rect)
