@@ -10,6 +10,7 @@ import numpy as np
 from Uma import UmaInfo
 from enum import Enum, auto
 from colorsys import hsv_to_rgb
+import mplcursors
 
 
 class GraphView:
@@ -22,7 +23,8 @@ class GraphView:
         self.ax = self.fig.add_subplot(111)
 
         self.fig.subplots_adjust(bottom=0.2, left=0.2)
-
+        plt.rcParams['font.family'][0] = ('Meiryo')
+        print(plt.rcParams)
         self.uma_info_list: List[UmaInfo] = None
         self.draw_target = self.DrawTarget.LINE
         self.update_line()
@@ -50,6 +52,7 @@ class GraphView:
 
             self.ax.legend(loc="lower right", fontsize=8,
                            prop={'family': 'Meiryo'})
+        mplcursors.cursor(self.ax, hover=True)
 
     def update_bar(self):
         self.ax.cla()
