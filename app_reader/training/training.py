@@ -1,16 +1,15 @@
 from typing import Dict, List, Tuple
-from misc import StopWatch, cv2pil, pil2cv, screenshot
+from misc import StopWatch, cv2pil, pil2cv
 from snip import ImageSnipper
 from PIL import Image
 import cv2
 import numpy as np
 from misc import concat_imshow
 from similarity import ccoeff_normed
-import os
 import pyocr
-from exception import FileNotFoundException
 from difflib import SequenceMatcher
 from pathlib import Path
+from app_reader.base_app_reader import BaseAppReader
 
 
 class debugger:
@@ -37,7 +36,7 @@ class debugger:
         cv2.waitKey(0)
 
 
-class TrainingReader:
+class TrainingReader(BaseAppReader):
     def __init__(self, tool):
         self.snipper = ImageSnipper()
         self.tool = tool
@@ -126,31 +125,3 @@ class TrainingReader:
 
         return {key: val for key, val in zip(['season']+status_key_list,
                                              [season]+status_list)}
-
-
-def _get_OCR_tool():
-    # インストールしたTesseract-OCRのパスを環境変数「PATH」へ追記する。
-    # OS自体に設定してあれば以下の2行は不要
-    path = ';C:\\tesseract-ocr'
-    path = ";C:\\Program Files\\Tesseract-OCR"
-    os.environ['PATH'] = os.environ['PATH'] + path
-
-    tools = pyocr.get_available_tools()
-    if len(tools) == 0:
-        raise FileNotFoundException("No OCR tool found")
-
-    return tools[0]
-
-
-if __name__ == '__main__':
-    # screenshot()
-    # exit()
-    shot_id = '20210619-020323'
-    snip_image = Image.open(
-        f'./resource/screenshot/{shot_id}.png').resize((404, 720))
-
-    snipper = ImageSnipper()
-
-    while input('continue ? (y/n) -> ') == 'y':
-        snip_image = snipper.Snip()
-        print(TrainingReader(_get_OCR_tool()).read(snip_image))

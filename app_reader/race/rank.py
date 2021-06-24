@@ -5,7 +5,7 @@ import cv2
 from PIL import Image
 from pathlib import Path
 import numpy as np
-from TeamStadiumInfoDetection.linked_reader import LinkedReader
+from app_reader.base_app_reader import BaseAppReader
 from exception import FileNotFoundException
 
 
@@ -60,7 +60,7 @@ class debugger:
         cv2.waitKey(0)
 
 
-class RankReader(LinkedReader):
+class RankReader(BaseAppReader):
     rank_num = 12
 
     def __init__(self):

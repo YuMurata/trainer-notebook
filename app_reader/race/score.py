@@ -1,41 +1,21 @@
 from typing import Dict
-from TeamStadiumInfoDetection.linked_reader import LinkedReader
-import os
+from app_reader.base_app_reader import BaseAppReader
 import pyocr
 import pyocr.builders
 from PIL import ImageDraw,  ImageEnhance, Image
-from Uma import UmaNameFileReader, UmaPointFileIO
-from exception import FileNotFoundException
-import time
+from Uma import UmaNameFileReader
 from logger import init_logger
 import difflib
+from misc import get_OCR
 
 
 logger = init_logger(__name__)
 
-path = ";C:\\Program Files\\Tesseract-OCR"
-os.environ['PATH'] = os.environ['PATH'] + path
-logger.debug(os.environ['PATH'])
 
-
-def _get_OCR():
-    # インストールしたTesseract-OCRのパスを環境変数「PATH」へ追記する。
-    # OS自体に設定してあれば以下の2行は不要
-    # path=';C:\\tesseract-ocr'
-    # os.environ['PATH'] = os.environ['PATH'] + path
-
-    tools = pyocr.get_available_tools()
-    if len(tools) == 0:
-        raise FileNotFoundException("No OCR tool found")
-
-    return tools[0]
-
-
-class ScoreReader(LinkedReader):
+class ScoreReader(BaseAppReader):
     def __init__(self):
-        tool = _get_OCR()
-        self.score_ocr = ScoreOCR(tool)
-        self.score_scene_ocr = ScoreSceneOCR(tool)
+        self.score_ocr = ScoreOCR()
+        self.score_scene_ocr = ScoreSceneOCR()
 
     # 順位読み取りモードに移行するために「WIN」または「LOSE」と書いているかを確認する関数
     # テンプレートマッチングを用いた
@@ -79,21 +59,9 @@ class ScoreReader(LinkedReader):
 
 
 class ScoreOCR:
-    def __init__(self, tool):
-        self.tool = tool
+    def __init__(self):
+        self.tool = get_OCR(logger)
         self.all_uma_name_list = UmaNameFileReader.Read()
-
-    def _get_OCR(self):
-        # インストールしたTesseract-OCRのパスを環境変数「PATH」へ追記する。
-        # OS自体に設定してあれば以下の2行は不要
-        # path=';C:\\tesseract-ocr'
-        # os.environ['PATH'] = os.environ['PATH'] + path
-
-        tools = pyocr.get_available_tools()
-        if len(tools) == 0:
-            raise FileNotFoundException("No OCR tool found")
-
-        return tools[0]
 
     def _extract_score(self, line: str) -> int:
         for word in line.split(' '):
@@ -138,8 +106,8 @@ class ScoreOCR:
 
 
 class ScoreSceneOCR:
-    def __init__(self, tool):
-        self.tool = tool
+    def __init__(self):
+        self.tool = get_OCR(logger)
 
     def get_score_scene(self, preproc_image: Image.Image) -> str:
         builder = pyocr.builders.LineBoxBuilder(tesseract_layout=8)
