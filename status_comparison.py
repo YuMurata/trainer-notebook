@@ -11,6 +11,237 @@ import copy
 
 class status_comparison():
 
+class ButtonFunc(NamedTuple):
+    status: Callable[[Image.Image], None]
+    add: Callable[[], None]
+    delete: Callable[[int], None]
+
+
+class UmaFrame(tk.Frame):
+
+    def __init__(self, master: tk.Widget, snipper: ImageSnipper,
+                 button_func: ButtonFunc):
+        super().__init__(master, relief='ridge')
+
+        status_frame = tk.Frame(self)
+        status_frame.pack(side=tk.LEFT, pady=5, fill=tk.Y)
+        self.status_button = ttk.Button(status_frame, text='status')
+        self.status_button.bind('<Button-1>', self.status_button_left_click)
+        self.status_button.pack(expand=True, fill=tk.Y)
+
+        controll_frame = tk.Frame(self)
+        controll_frame.pack(side=tk.RIGHT, pady=5)
+
+        add_button = ttk.Button(controll_frame, text='add')
+        add_button.bind('<Button-1>', self.add_button_left_click)
+        add_button.bind('<Button-3>', self.add_button_right_click)
+        delete_button = ttk.Button(controll_frame, text='delete')
+        delete_button.bind('<Button-1>', self.delete_button_left_click)
+
+        add_button.pack(fill=tk.X)
+        delete_button.pack(fill=tk.X)
+
+        self.snipper = snipper
+        self.image: Image.Image = None
+
+        self.status_rect = (0, 53, self.snipper.snip_size.width, 623)
+
+        self.add_flag = False
+        self.button_func = button_func
+
+        self.item_id: int = None
+
+    def set_item_id(self, item_id: int):
+        self.item_id = item_id
+
+    def status_button_left_click(self, event):
+        # 選択した表示エリアにステータスの画像を表示して
+        if self.image:
+            self.button_func.status(self.image)
+
+    def add_button_left_click(self, event):
+        # 画像を取得して
+        self.image = self.snipper.Snip()
+        self.image = self.image.crop(self.status_rect)
+        self.set_status_button_image()
+        if not self.add_flag:
+            self.button_func.add()
+            self.add_flag = True
+
+    def add_button_right_click(self, event):
+        # 画像を取得・結合して
+        if not self.image:
+            self.image = self.snipper.Snip()
+            self.image = self.image.crop(self.status_rect)
+            self.set_status_button_image()
+
+        if not self.add_flag:
+            self.add_uma_frame_func()
+            self.add_flag = True
+
+        else:
+            w = self.snipper.snip_size.width
+            snip_img2 = self.snipper.Snip()
+            snip_img2 = snip_img2.crop(self.status_rect)
+            # 592,622
+            template = self.image.crop(
+                (0, self.image.height - 31, self.image.width, self.image.height - 1))
+
+            res = cv2.matchTemplate(pil2cv(snip_img2), pil2cv(
+                template), cv2.TM_SQDIFF_NORMED)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+
+            top_left = min_loc
+            bottom_right = (top_left[0] + template.width,
+                            top_left[1]+template.height)
+
+            result = pil2cv(snip_img2)
+            cv2.rectangle(result, top_left, bottom_right, 255, 2)
+
+            dst = Image.new('RGB', (w, self.image.height - 31 +
+                            snip_img2.height - top_left[1]))
+            dst.paste(self.image, (0, 0))
+            dst.paste(snip_img2.crop((
+                0, top_left[1], w, snip_img2.height)), (0, self.image.height - 31))
+
+            plt.subplot(221).imshow(self.image)
+            plt.subplot(222).imshow(snip_img2)
+            plt.subplot(223).imshow(cv2pil(result))
+            plt.subplot(224).imshow(dst)
+            plt.show()
+            self.image = dst
+
+    def delete_button_left_click(self, event):
+        # 消して
+        self.button_func.delete(self.item_id)
+
+    def set_status_button_image(self):
+
+        self.bt_img = ImageTk.PhotoImage(image=self.image.crop(
+            (0, 117, self.snipper.snip_size.width, 177)))
+        self.status_button.configure(image=self.bt_img)
+
+
+class ListFrame(ttk.Frame):
+    def __init__(self, master: tk.Widget, snipper: ImageSnipper,
+                 show_image: Callable[[Image.Image], None]):
+        super().__init__(master, relief='ridge')
+        self.canvas = tk.Canvas(self, bg='red', width=500)
+        self.snipper = snipper
+        self.canvas.pack(side=tk.LEFT)
+        self.scroll = tk.Scrollbar(self, orient=tk.VERTICAL)
+        self.scroll.config(command=self.canvas.yview)
+        self.scroll.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.canvas.config(yscrollcommand=self.scroll.set)
+        self.set_mousewheel(self.canvas, self._scroll_y)
+
+        self.umaframe_dict: Dict[int, UmaFrame] = dict()
+        self.show_image = show_image
+        self.add_umaframe()
+        # self.add_umaframe()
+
+    def set_mousewheel(self, widget, command):
+        """Active / deactivate mousewheel scrolling when
+        cursor is over / not over the widget respectively."""
+        widget.bind("<Enter>", lambda e: widget.bind_all(
+            '<MouseWheel>', lambda e: command(e)))
+        widget.bind("<Leave>", lambda e: widget.unbind_all('<MouseWheel>'))
+
+    def add_umaframe(self):
+        button_func = ButtonFunc(
+            self.show_image, self.add_umaframe, self.delete_umaframe)
+        # self.frame = tk.Frame(self.canvas)
+        umaframe = UmaFrame(self.canvas, self.snipper,
+                            button_func)
+
+        item_id = self.canvas.create_window(
+            (0, len(self.umaframe_dict)*100), window=umaframe, anchor='nw')
+        umaframe.set_item_id(item_id)
+        # self.list_canvas.create_window((0, 0), window=self.frame, anchor=tk.NW,
+        #                                width=self.list_canvas.cget('width'))
+        self.umaframe_dict[item_id] = umaframe
+        # umaframe.pack()
+        self.canvas.update_idletasks()
+        self.canvas.config(
+            scrollregion=self.canvas.bbox("all"))  # スクロール範囲
+        logger.debug(self.canvas.bbox("all"))
+
+    def delete_umaframe(self, delete_id: int):
+        if len(self.umaframe_dict) <= 1:
+            return
+        self.umaframe_dict.pop(delete_id).destroy()
+
+        for i, item_id in enumerate(self.umaframe_dict.keys()):
+            self.canvas.moveto(item_id, 0, i*100)
+
+    def _scroll_y(self, event):
+        if event.delta > 0:
+            self.canvas.yview_scroll(-1, 'units')
+        elif event.delta < 0:
+            self.canvas.yview_scroll(1, 'units')
+
+
+class SelectFrame(ttk.Frame):
+    def __init__(self, master: tk.Widget, snipper: ImageSnipper,
+                 show_image: Callable[[Image.Image], None]):
+        super().__init__(master, relief='ridge')
+
+        list_frame = ListFrame(self, snipper, show_image)
+        list_frame.pack()
+
+        all_delete_button = ttk.Button(self, text='all_delete')
+        all_delete_button.pack()
+
+
+class StatusFrame(ttk.Frame):
+    def __init__(self, master: tk.Widget):
+        super().__init__(master, relief='ridge')
+        self.canvas = tk.Canvas(self, width=400, height=500)
+        self.canvas.pack(side=tk.LEFT)
+        self.photoimage: ImageTk.PhotoImage = None
+        self.image_id: int = None
+
+        self.scroll = tk.Scrollbar(self, orient=tk.VERTICAL)
+        self.scroll.config(command=self.canvas.yview)
+        self.scroll.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.canvas.config(yscrollcommand=self.scroll.set)
+        self.canvas.bind("<MouseWheel>", self._scroll_y)
+
+    def select_image(self, image: Image.Image):
+        self.photoimage = ImageTk.PhotoImage(image=image)
+
+        if not self.image_id:
+            self.canvas.create_image(
+                0, 0, anchor='nw', image=self.photoimage)
+        else:
+            self.canvas.itemconfig(self.image_id, image=self.photoimage)
+
+        self.canvas.update_idletasks()
+        self.canvas.config(
+            scrollregion=self.canvas.bbox("all"))  # スクロール範囲
+
+    def _scroll_y(self, event):
+        if event.delta > 0:
+            self.canvas.yview_scroll(-1, 'units')
+        elif event.delta < 0:
+            self.canvas.yview_scroll(1, 'units')
+
+
+class CompareFrame(ttk.Frame):
+    def __init__(self, master: tk.Widget):
+        super().__init__(master, relief='ridge')
+        self.canvas = tk.Canvas(self)
+        self.canvas.pack()
+        self.scroll = ttk.Scrollbar(self, orient='horizontal')
+        self.scroll.pack()
+
+    def add_image(self, image: Image.Image):
+        self.photoimage = ImageTk.PhotoImage(image=image)
+
+
+class status_comparison():
     def __init__(self) -> None:
         self.imgs = list()
         self.snipper = ImageSnipper()
