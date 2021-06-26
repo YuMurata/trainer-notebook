@@ -46,3 +46,7 @@ class ImageSnipper:
             return game_window_image.resize(self.snip_size)
 
         return None
+
+    @staticmethod
+    def get_aspect_ratio() -> float:
+        return ImageSnipper.snip_size.width/ImageSnipper.snip_size.height
