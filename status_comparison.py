@@ -1,6 +1,4 @@
-from collections import namedtuple
-from tkinter.constants import GROOVE, LEFT, X
-from typing import Callable, List, Dict, NamedTuple
+from typing import Callable,  Dict, NamedTuple
 import cv2
 import matplotlib.pyplot as plt
 from snip import ImageSnipper
@@ -8,7 +6,6 @@ from misc import cv2pil, pil2cv
 from PIL import Image, ImageTk
 import tkinter as tk
 from tkinter import ttk
-import copy
 from logger import init_logger
 
 logger = init_logger(__name__)
