@@ -2,12 +2,16 @@ import ctypes
 from ctypes import wintypes
 from PIL import ImageGrab
 from tkinter import Image, messagebox
+from collections import namedtuple
 
 
 class ImageSnipper:
     def __init__(self, app_name='umamusume'):
         self.app_name = app_name
         self.display_warning = False
+
+        SnipSize = namedtuple('snip_size', ['width', 'height'])
+        self.snip_size = SnipSize(404, 720)
 
     def _GetWindowRectFromName(self) -> tuple:
         TargetWindowHandle = ctypes.windll.user32.FindWindowW(
@@ -35,11 +39,6 @@ class ImageSnipper:
             if game_window_image.height == 0:
                 return None
 
-            aspect_ratio = game_window_image.width / game_window_image.height
-
-            target_height = 720
-
-            target_width = (int)(target_height * aspect_ratio)
-            return game_window_image.resize((target_width, target_height))
+            return game_window_image.resize(self.snip_size)
 
         return None
