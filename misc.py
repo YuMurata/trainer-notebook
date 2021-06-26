@@ -40,11 +40,12 @@ def cv2pil(image: np.ndarray) -> Image.Image:
 class MouseXYGetter:
     winname = 'mouse_xy'
 
-    def __init__(self) -> None:
+    def __init__(self, logger: Logger) -> None:
         self.is_draw = False
         self.start_xy: tuple = None
         self.org_image: np.ndarray = None
         self.rect_image: np.ndarray = None
+        self.logger = logger
 
     def _callback(self, event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
@@ -69,9 +70,14 @@ class MouseXYGetter:
 
             self.is_draw = False
 
-            print('left-top, right-bottom:', f'{self.start_xy}, {(x,y)}')
-            print('width, height:',
-                  (abs(x-self.start_xy[0]), abs(y-self.start_xy[1])))
+            left_top = self.start_xy
+            right_bottom = (x, y)
+            width = abs(x-self.start_xy[0])
+            height = abs(y-self.start_xy[1])
+
+            self.logger.info(
+                f'left-top, right-bottom: {left_top}, {right_bottom}')
+            self.logger.info(f'width, height: {width}, {height}')
 
         if event == cv2.EVENT_RBUTTONDOWN:
             self.rect_image = self.org_image.copy()
