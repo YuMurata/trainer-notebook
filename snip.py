@@ -1,17 +1,21 @@
 import ctypes
 from ctypes import wintypes
+from typing import NamedTuple
 from PIL import ImageGrab
 from tkinter import Image, messagebox
-from collections import namedtuple
+
+
+class SnipSize(NamedTuple):
+    width: int
+    height: int
 
 
 class ImageSnipper:
+    snip_size = SnipSize(404, 720)
+
     def __init__(self, app_name='umamusume'):
         self.app_name = app_name
         self.display_warning = False
-
-        SnipSize = namedtuple('snip_size', ['width', 'height'])
-        self.snip_size = SnipSize(404, 720)
 
     def _GetWindowRectFromName(self) -> tuple:
         TargetWindowHandle = ctypes.windll.user32.FindWindowW(
