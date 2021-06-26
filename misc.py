@@ -6,6 +6,9 @@ from PIL import Image
 from datetime import datetime
 from snip import ImageSnipper
 import time
+import os
+import pyocr
+from exception import FileNotFoundException
 
 
 def pil2cv(image: Image.Image) -> np.ndarray:
@@ -136,3 +139,20 @@ class StopWatch:
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.logger.info(f'{self.title}: {time.time()-self.start}')
+
+
+def get_OCR(logger: Logger):
+    # インストールしたTesseract-OCRのパスを環境変数「PATH」へ追記する。
+
+    ocr_path = r"C:\Program Files\Tesseract-OCR"
+    path_list = os.environ['PATH'].split(';')
+    if ocr_path not in path_list:
+        path_list.append(ocr_path)
+    os.environ['PATH'] = ';'.join(path_list)
+    logger.debug(os.environ['PATH'])
+
+    tools = pyocr.get_available_tools()
+    if len(tools) == 0:
+        raise FileNotFoundException("No OCR tool found")
+
+    return tools[0]
