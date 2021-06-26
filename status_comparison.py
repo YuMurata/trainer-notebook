@@ -1,4 +1,6 @@
+from collections import namedtuple
 from tkinter.constants import GROOVE, LEFT, X
+from typing import Callable, List, Dict, NamedTuple
 import cv2
 import matplotlib.pyplot as plt
 from snip import ImageSnipper
@@ -7,9 +9,10 @@ from PIL import Image, ImageTk
 import tkinter as tk
 from tkinter import ttk
 import copy
+from logger import init_logger
 
+logger = init_logger(__name__)
 
-class status_comparison():
 
 class ButtonFunc(NamedTuple):
     status: Callable[[Image.Image], None]
@@ -469,7 +472,7 @@ class WinStatusComparison(tk.Frame):
         cv2.rectangle(result, top_left, bottom_right, 255, 2)
 
         dst = Image.new('RGB', (img1.width, img1.height - 31 +
-                        img2.height - top_left[1]))
+                                img2.height - top_left[1]))
         dst.paste(img1, (0, 0))
         dst.paste(img2.crop((
             0, top_left[1], img1.width, img2.height)), (0, img1.height - 31))
@@ -563,7 +566,17 @@ class WinStatusComparison(tk.Frame):
 def status_window_main():
     root = tk.Tk()  # GUIのやつ
 
-    app = WinStatusComparison(master=root)
+    snipper = ImageSnipper()
+
+    # app = WinStatusComparison(master=root)
+    status_frame = StatusFrame(root)
+    compare_frame = CompareFrame(root)
+    select_frame = SelectFrame(
+        root, snipper, status_frame.select_image)
+
+    select_frame.pack(side=tk.LEFT)
+    status_frame.pack(side=tk.LEFT)
+    compare_frame.pack(side=tk.LEFT)
 
     # 表示
     root.mainloop()
@@ -593,7 +606,7 @@ def block_matching():
     cv2.rectangle(result, top_left, bottom_right, 255, 2)
 
     dst = Image.new('RGB', (w, snip_img1.height - 31 +
-                    snip_img2.height - top_left[1]))
+                            snip_img2.height - top_left[1]))
     dst.paste(snip_img1, (0, 0))
     dst.paste(snip_img2.crop((
         0, top_left[1], w, snip_img2.height)), (0, snip_img1.height - 31))
