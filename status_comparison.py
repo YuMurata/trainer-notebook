@@ -564,7 +564,19 @@ class WinStatusComparison(tk.Frame):
 def status_window_main():
     root = tk.Tk()  # GUIのやつ
 
-    app = WinStatusComparison(master=root)
+    snipper = ImageSnipper()
+
+    # app = WinStatusComparison(master=root)
+    frame = ttk.Frame(root)
+    status_frame = StatusFrame(frame)
+    compare_frame = CompareFrame(root)
+    select_frame = SelectFrame(
+        frame, snipper, status_frame.select_image)
+
+    frame.pack()
+    select_frame.pack(side=tk.LEFT, fill=tk.Y)
+    status_frame.pack(side=tk.LEFT, fill=tk.Y, expand=True)
+    compare_frame.pack()
 
     # 表示
     root.mainloop()
