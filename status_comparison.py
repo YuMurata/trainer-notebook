@@ -183,6 +183,22 @@ class ListFrame(ttk.Frame):
             self.canvas.moveto(item_id, 0, i*100)
 
         self._reconfig_scroll()
+
+    def all_delete_umaframe(self, event):
+        item_list = list(self.umaframe_dict.items())
+        for item_id, umaframe in item_list:
+            if len(self.umaframe_dict) == 1:
+                break
+
+            if umaframe.image:
+                self.umaframe_dict.pop(item_id)
+                self.canvas.delete(item_id)
+
+        for i, item_id in enumerate(self.umaframe_dict.keys()):
+            self.canvas.moveto(item_id, 0, i*100)
+
+        self._reconfig_scroll()
+
     def _scroll_y(self, event):
         if event.delta > 0:
             self.canvas.yview_scroll(-1, 'units')
@@ -200,6 +216,8 @@ class SelectFrame(ttk.Frame):
 
         all_delete_button = ttk.Button(self, text='all_delete')
         all_delete_button.pack()
+        all_delete_button.bind(
+            '<Button-1>', self.list_frame.all_delete_umaframe)
 
 
 class StatusFrame(ttk.Frame):
