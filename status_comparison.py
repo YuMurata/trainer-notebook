@@ -68,6 +68,8 @@ class UmaFrame(tk.Frame):
             self.button_func.add()
             self.add_flag = True
 
+        logger.debug(f'add size: {self.winfo_height()}')
+
     def add_button_right_click(self, event):
         # 画像を取得・結合して
         if not self.add_flag:
@@ -162,6 +164,13 @@ class ListFrame(ttk.Frame):
             '<MouseWheel>', lambda e: command(e)))
         widget.bind("<Leave>", lambda e: widget.unbind_all('<MouseWheel>'))
 
+    def _get_frame_xy(self, frame_idx: int):
+        x = 0
+        umaframe_height = 60
+        y = frame_idx*(umaframe_height+10)
+
+        return x, y
+
     def add_umaframe(self):
         button_func = ButtonFunc(
             self.show_image, self.add_umaframe, self.delete_umaframe)
@@ -169,7 +178,8 @@ class ListFrame(ttk.Frame):
                             button_func)
 
         item_id = self.canvas.create_window(
-            (0, len(self.umaframe_dict)*100), window=umaframe, anchor='nw')
+            self._get_frame_xy(len(self.umaframe_dict)), window=umaframe,
+            anchor='nw')
         umaframe.set_item_id(item_id)
 
         self._reconfig_scroll()
@@ -191,7 +201,7 @@ class ListFrame(ttk.Frame):
         self.canvas.delete(delete_id)
 
         for i, item_id in enumerate(self.umaframe_dict.keys()):
-            self.canvas.moveto(item_id, 0, i*100)
+            self.canvas.moveto(item_id, *self._get_frame_xy(i))
 
         self._reconfig_scroll()
 
@@ -206,7 +216,7 @@ class ListFrame(ttk.Frame):
                 self.canvas.delete(item_id)
 
         for i, item_id in enumerate(self.umaframe_dict.keys()):
-            self.canvas.moveto(item_id, 0, i*100)
+            self.canvas.moveto(item_id, *self._get_frame_xy(i))
 
         self._reconfig_scroll()
 
