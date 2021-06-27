@@ -85,7 +85,8 @@ class UmaFrame(tk.Frame):
             snip_img2 = snip_img2.crop(self.status_rect)
             # 592,622
             template = self.image.crop(
-                (0, self.image.height - 31, self.image.width, self.image.height - 1))
+                (0, self.image.height - 31, self.image.width,
+                 self.image.height - 1))
 
             res = cv2.matchTemplate(pil2cv(snip_img2), pil2cv(
                 template), cv2.TM_SQDIFF_NORMED)
@@ -102,7 +103,8 @@ class UmaFrame(tk.Frame):
                             snip_img2.height - top_left[1]))
             dst.paste(self.image, (0, 0))
             dst.paste(snip_img2.crop((
-                0, top_left[1], w, snip_img2.height)), (0, self.image.height - 31))
+                0, top_left[1], w, snip_img2.height)),
+                (0, self.image.height - 31))
 
             plt.subplot(221).imshow(self.image)
             plt.subplot(222).imshow(snip_img2)
@@ -139,7 +141,6 @@ class ListFrame(ttk.Frame):
         self.umaframe_dict: Dict[int, UmaFrame] = dict()
         self.show_image = show_image
         self.add_umaframe()
-        # self.add_umaframe()
 
     def set_mousewheel(self, widget, command):
         """Active / deactivate mousewheel scrolling when
@@ -151,18 +152,15 @@ class ListFrame(ttk.Frame):
     def add_umaframe(self):
         button_func = ButtonFunc(
             self.show_image, self.add_umaframe, self.delete_umaframe)
-        # self.frame = tk.Frame(self.canvas)
         umaframe = UmaFrame(self.canvas, self.snipper,
                             button_func)
 
         item_id = self.canvas.create_window(
             (0, len(self.umaframe_dict)*100), window=umaframe, anchor='nw')
         umaframe.set_item_id(item_id)
-        # self.list_canvas.create_window((0, 0), window=self.frame, anchor=tk.NW,
-        #                                width=self.list_canvas.cget('width'))
+
         self._reconfig_scroll()
         self.umaframe_dict[item_id] = umaframe
-        # umaframe.pack()
 
     def _reconfig_scroll(self):
         self.canvas.update_idletasks()
