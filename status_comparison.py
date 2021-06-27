@@ -160,8 +160,11 @@ class ListFrame(ttk.Frame):
         umaframe.set_item_id(item_id)
         # self.list_canvas.create_window((0, 0), window=self.frame, anchor=tk.NW,
         #                                width=self.list_canvas.cget('width'))
+        self._reconfig_scroll()
         self.umaframe_dict[item_id] = umaframe
         # umaframe.pack()
+
+    def _reconfig_scroll(self):
         self.canvas.update_idletasks()
         self.canvas.config(
             scrollregion=self.canvas.bbox("all"))  # スクロール範囲
@@ -179,6 +182,7 @@ class ListFrame(ttk.Frame):
         for i, item_id in enumerate(self.umaframe_dict.keys()):
             self.canvas.moveto(item_id, 0, i*100)
 
+        self._reconfig_scroll()
     def _scroll_y(self, event):
         if event.delta > 0:
             self.canvas.yview_scroll(-1, 'units')
