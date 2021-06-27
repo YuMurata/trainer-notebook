@@ -200,6 +200,8 @@ class ListFrame(ttk.Frame):
         self._reconfig_scroll()
 
     def _scroll_y(self, event):
+        if self.canvas.bbox("all")[3] < self.canvas.winfo_height():
+            return
         if event.delta > 0:
             self.canvas.yview_scroll(-1, 'units')
         elif event.delta < 0:
