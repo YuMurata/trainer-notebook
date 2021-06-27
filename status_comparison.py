@@ -21,7 +21,7 @@ class UmaFrame(tk.Frame):
 
     def __init__(self, master: tk.Widget, snipper: ImageSnipper,
                  button_func: ButtonFunc):
-        super().__init__(master, relief='ridge')
+        super().__init__(master)
 
         status_frame = tk.Frame(self)
         status_frame.pack(side=tk.LEFT, pady=5, fill=tk.Y)
@@ -125,8 +125,8 @@ class UmaFrame(tk.Frame):
 class ListFrame(ttk.Frame):
     def __init__(self, master: tk.Widget, snipper: ImageSnipper,
                  show_image: Callable[[Image.Image], None]):
-        super().__init__(master, relief='ridge')
-        self.canvas = tk.Canvas(self, bg='red', width=500)
+        super().__init__(master)
+        self.canvas = tk.Canvas(self, width=500, bg='white')
         self.snipper = snipper
         self.canvas.pack(side=tk.LEFT)
         self.scroll = tk.Scrollbar(self, orient=tk.VERTICAL)
@@ -185,7 +185,7 @@ class ListFrame(ttk.Frame):
 class SelectFrame(ttk.Frame):
     def __init__(self, master: tk.Widget, snipper: ImageSnipper,
                  show_image: Callable[[Image.Image], None]):
-        super().__init__(master, relief='ridge')
+        super().__init__(master)
 
         list_frame = ListFrame(self, snipper, show_image)
         list_frame.pack()
@@ -196,7 +196,7 @@ class SelectFrame(ttk.Frame):
 
 class StatusFrame(ttk.Frame):
     def __init__(self, master: tk.Widget):
-        super().__init__(master, relief='ridge')
+        super().__init__(master)
         self.canvas = tk.Canvas(self, width=400, height=500)
         self.canvas.pack(side=tk.LEFT)
         self.photoimage: ImageTk.PhotoImage = None
