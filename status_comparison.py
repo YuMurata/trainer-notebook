@@ -7,13 +7,8 @@ logger = init_logger(__name__)
 
 
 def status_window_main():
-    root = tk.Tk()
-    root.geometry('500x500')
-    ttk.Label(root, text='tabun main window').pack(
-        anchor=tk.CENTER, expand=True)
-    CompareApp(root)
+    CompareApp(None).mainloop()
     # 表示
-    root.mainloop()
 
 
 if __name__ == "__main__":

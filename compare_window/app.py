@@ -5,10 +5,16 @@ from compare_window.compare_frame import CompareFrame
 from compare_window.status_frame import StatusFrame
 from .select_frame import SelectFrame
 
+# 開発用にcompareappをメインウィンドウにしてる
+# 開発終わったらtoplevelに戻す
 
-class CompareApp(tk.Toplevel):
+# class CompareApp(tk.Toplevel):
+
+
+class CompareApp(tk.Tk):
     def __init__(self, master: tk.Widget):
-        super().__init__(master)
+        # super().__init__(master)
+        super().__init__()
         snipper = ImageSnipper()
 
         # app = WinStatusComparison(master=root)
