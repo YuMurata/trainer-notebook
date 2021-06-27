@@ -68,6 +68,8 @@ class UmaFrame(tk.Frame):
             self.button_func.add()
             self.add_flag = True
 
+        self.status_button.event_generate('<Button-1>')
+
         logger.debug(f'add size: {self.winfo_height()}')
 
     def add_button_right_click(self, event):
