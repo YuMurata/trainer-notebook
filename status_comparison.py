@@ -164,6 +164,14 @@ class ListFrame(ttk.Frame):
             '<MouseWheel>', lambda e: command(e)))
         widget.bind("<Leave>", lambda e: widget.unbind_all('<MouseWheel>'))
 
+    def _get_frame_y_end(self):
+        y_end = 0
+        bbox = self.canvas.bbox("all")
+        if bbox:
+            y_end = bbox[3]+10
+
+        return y_end
+
     def _get_frame_xy(self, frame_idx: int):
         x = 0
         umaframe_height = 60
@@ -221,7 +229,7 @@ class ListFrame(ttk.Frame):
         self._reconfig_scroll()
 
     def _scroll_y(self, event):
-        if self.canvas.bbox("all")[3] < self.canvas.winfo_height():
+        if self._get_frame_y_end() < self.canvas.winfo_height():
             return
         if event.delta > 0:
             self.canvas.yview_scroll(-1, 'units')
