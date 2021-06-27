@@ -1,19 +1,20 @@
 from typing import Callable
-from PIL import Image, ImageTk
+from PIL import Image
 import tkinter as tk
 from tkinter import ttk
 from logger import init_logger
+from .image import ImageStruct
 
 logger = init_logger(__name__)
 
 
 class StatusFrame(ttk.Frame):
     def __init__(self, master: tk.Widget,
-                 add_compare_image: Callable[[ImageTk.PhotoImage], None]):
+                 add_compare_image: Callable[[ImageStruct], None]):
         super().__init__(master)
         self.canvas = tk.Canvas(self, width=400, height=300)
         self.canvas.pack(side=tk.LEFT, fill=tk.Y, expand=True)
-        self.photoimage: ImageTk.PhotoImage = None
+        self.image_struct: ImageStruct = None
         self.image_id: int = None
 
         self.scroll = tk.Scrollbar(self, orient=tk.VERTICAL)
@@ -23,7 +24,7 @@ class StatusFrame(ttk.Frame):
         self.canvas.config(yscrollcommand=self.scroll.set)
         self.canvas.bind("<MouseWheel>", self._scroll_y)
         self.canvas.bind(
-            '<Button-1>', lambda _: add_compare_image(self.photoimage))
+            '<Button-1>', lambda _: add_compare_image(self.image_struct.copy()))
         self.canvas.bind(
             '<Button-3>', self._delete_image)
 
@@ -38,13 +39,14 @@ class StatusFrame(ttk.Frame):
         logger.debug('delete status')
 
     def select_image(self, image: Image.Image):
-        self.photoimage = ImageTk.PhotoImage(image=image)
+        self.image_struct = ImageStruct(image)
 
         if not self.image_id:
             self.image_id = self.canvas.create_image(
-                0, 0, anchor='nw', image=self.photoimage)
+                0, 0, anchor='nw', image=self.image_struct.photoimage)
         else:
-            self.canvas.itemconfig(self.image_id, image=self.photoimage)
+            self.canvas.itemconfig(
+                self.image_id, image=self.image_struct.photoimage)
 
         self.canvas.update_idletasks()
         self.canvas.config(
@@ -57,18 +59,19 @@ class StatusFrame(ttk.Frame):
             self.canvas.yview_scroll(1, 'units')
 
     def change_image(self,
-                     photoimage: ImageTk.PhotoImage) -> ImageTk.PhotoImage:
-        if not self.image_id or not self.photoimage:
+                     image_struct: ImageStruct) -> ImageStruct:
+        if not self.image_id or not self.image_struct:
             return None
 
-        change_image = self.photoimage
-        self.photoimage = photoimage
+        change_image = self.image_struct
+        self.image_struct = image_struct
 
         if not self.image_id:
             self.canvas.create_image(
-                0, 0, anchor='nw', image=self.photoimage)
+                0, 0, anchor='nw', image=self.image_struct.photoimage)
         else:
-            self.canvas.itemconfig(self.image_id, image=self.photoimage)
+            self.canvas.itemconfig(
+                self.image_id, image=self.image_struct.photoimage)
 
         self.canvas.update_idletasks()
         self.canvas.config(
