@@ -87,7 +87,8 @@ class CompareFrame(ttk.Frame):
         self._reconfig_scroll()
 
     def _delete_image(self, event: tk.Event):
-        item_id_list: List[int] = self.canvas.find_closest(event.x, event.y)
+        x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
+        item_id_list: List[int] = self.canvas.find_closest(x, y)
 
         if len(item_id_list) < 1:
             return
