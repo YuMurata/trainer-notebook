@@ -170,7 +170,11 @@ class ListFrame(ttk.Frame):
     def delete_umaframe(self, delete_id: int):
         if len(self.umaframe_dict) <= 1:
             return
-        self.umaframe_dict.pop(delete_id).destroy()
+        if not self.umaframe_dict[delete_id].image:
+            return
+
+        self.umaframe_dict.pop(delete_id)
+        self.canvas.delete(delete_id)
 
         for i, item_id in enumerate(self.umaframe_dict.keys()):
             self.canvas.moveto(item_id, 0, i*100)
