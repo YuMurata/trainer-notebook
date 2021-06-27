@@ -24,12 +24,24 @@ class StatusFrame(ttk.Frame):
         self.canvas.bind("<MouseWheel>", self._scroll_y)
         self.canvas.bind(
             '<Button-1>', lambda _: add_compare_image(self.photoimage))
+        self.canvas.bind(
+            '<Button-3>', self._delete_image)
+
+    def _delete_image(self, event):
+        logger.debug('call delete status')
+        if not self.image_id:
+            return
+
+        self.canvas.delete(self.image_id)
+        self.image_id = None
+
+        logger.debug('delete status')
 
     def select_image(self, image: Image.Image):
         self.photoimage = ImageTk.PhotoImage(image=image)
 
         if not self.image_id:
-            self.canvas.create_image(
+            self.image_id = self.canvas.create_image(
                 0, 0, anchor='nw', image=self.photoimage)
         else:
             self.canvas.itemconfig(self.image_id, image=self.photoimage)
@@ -46,6 +58,9 @@ class StatusFrame(ttk.Frame):
 
     def change_image(self,
                      photoimage: ImageTk.PhotoImage) -> ImageTk.PhotoImage:
+        if not self.image_id or not self.photoimage:
+            return None
+
         change_image = self.photoimage
         self.photoimage = photoimage
 
