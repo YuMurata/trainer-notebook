@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from snip import ImageSnipper
-from compare_window.compare_frame import CompareFrame
+from compare_window.compare_frame import CompareFrame, StatusFunc
 from compare_window.status_frame import StatusFrame
 from .select_frame import SelectFrame
 
@@ -23,6 +23,8 @@ class CompareApp(tk.Tk):
         status_frame = StatusFrame(frame, compare_frame.add_image)
         select_frame = SelectFrame(
             frame, snipper, status_frame.select_image)
+
+        compare_frame.set_status_func(StatusFunc(status_frame.change_image))
 
         frame.pack()
         select_frame.pack(side=tk.LEFT, fill=tk.Y)

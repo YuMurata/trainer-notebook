@@ -43,3 +43,20 @@ class StatusFrame(ttk.Frame):
             self.canvas.yview_scroll(-1, 'units')
         elif event.delta < 0:
             self.canvas.yview_scroll(1, 'units')
+
+    def change_image(self,
+                     photoimage: ImageTk.PhotoImage) -> ImageTk.PhotoImage:
+        change_image = self.photoimage
+        self.photoimage = photoimage
+
+        if not self.image_id:
+            self.canvas.create_image(
+                0, 0, anchor='nw', image=self.photoimage)
+        else:
+            self.canvas.itemconfig(self.image_id, image=self.photoimage)
+
+        self.canvas.update_idletasks()
+        self.canvas.config(
+            scrollregion=self.canvas.bbox("all"))  # スクロール範囲
+
+        return change_image
