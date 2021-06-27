@@ -5,7 +5,7 @@ from snip import ImageSnipper
 from misc import cv2pil, pil2cv
 from PIL import Image, ImageTk
 import tkinter as tk
-from tkinter import ttk
+from tkinter import PhotoImage, ttk
 from logger import init_logger
 
 logger = init_logger(__name__)
@@ -70,14 +70,14 @@ class UmaFrame(tk.Frame):
 
     def add_button_right_click(self, event):
         # 画像を取得・結合して
+        if not self.add_flag:
+            self.button_func.add()
+            self.add_flag = True
+
         if not self.image:
             self.image = self.snipper.Snip()
             self.image = self.image.crop(self.status_rect)
             self.set_status_button_image()
-
-        if not self.add_flag:
-            self.add_uma_frame_func()
-            self.add_flag = True
 
         else:
             w = self.snipper.snip_size.width
@@ -117,8 +117,21 @@ class UmaFrame(tk.Frame):
 
     def set_status_button_image(self):
 
-        self.bt_img = ImageTk.PhotoImage(image=self.image.crop(
-            (0, 117, self.snipper.snip_size.width, 177)))
+        status_img = self.image.crop(
+            (0, 117, self.snipper.snip_size.width, 167))
+
+        uma_img = self.image.crop((40, 20, 120, 100))
+        uma_img = uma_img.resize((int(uma_img.width/uma_img.height *
+                                      status_img.height), status_img.height))
+
+        concat_img = Image.new(
+            'RGB', (uma_img.width + status_img.width, status_img.height))
+        concat_img.paste(uma_img, (0, 0))
+        concat_img.paste(status_img, (uma_img.width, 0))
+        concat_img = concat_img.resize(
+            (int(concat_img.width/1.5), int(concat_img.height/1.5)))
+
+        self.bt_img = ImageTk.PhotoImage(image=concat_img)
         self.status_button.configure(image=self.bt_img)
 
 
