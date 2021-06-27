@@ -5,7 +5,7 @@ from snip import ImageSnipper
 from misc import cv2pil, pil2cv
 from PIL import Image, ImageTk
 import tkinter as tk
-from tkinter import PhotoImage, ttk
+from tkinter import ttk
 from logger import init_logger
 
 logger = init_logger(__name__)
@@ -252,7 +252,8 @@ class SelectFrame(ttk.Frame):
 
 
 class StatusFrame(ttk.Frame):
-    def __init__(self, master: tk.Widget):
+    def __init__(self, master: tk.Widget,
+                 add_compare_image: Callable[[ImageTk.PhotoImage], None]):
         super().__init__(master)
         self.canvas = tk.Canvas(self, width=400, height=500)
         self.canvas.pack(side=tk.LEFT, fill=tk.Y, expand=True)
@@ -265,6 +266,8 @@ class StatusFrame(ttk.Frame):
 
         self.canvas.config(yscrollcommand=self.scroll.set)
         self.canvas.bind("<MouseWheel>", self._scroll_y)
+        self.canvas.bind(
+            '<Button-1>', lambda _: add_compare_image(self.photoimage))
 
     def select_image(self, image: Image.Image):
         self.photoimage = ImageTk.PhotoImage(image=image)
@@ -288,14 +291,49 @@ class StatusFrame(ttk.Frame):
 
 class CompareFrame(ttk.Frame):
     def __init__(self, master: tk.Widget):
-        super().__init__(master, relief='ridge')
-        self.canvas = tk.Canvas(self)
-        self.canvas.pack()
-        self.scroll = ttk.Scrollbar(self, orient='horizontal')
-        self.scroll.pack()
+        super().__init__(master)
+        frame = ttk.Frame(self)
+        frame.pack(fill=tk.X, expand=True, side=tk.LEFT)
 
-    def add_image(self, image: Image.Image):
-        self.photoimage = ImageTk.PhotoImage(image=image)
+        self.canvas = tk.Canvas(frame, bg='blue')
+        self.canvas.pack(fill=tk.X, expand=True)
+
+        self.x_scroll = ttk.Scrollbar(frame, orient=tk.HORIZONTAL)
+        self.x_scroll.config(command=self.canvas.xview)
+        self.x_scroll.pack(fill=tk.X, expand=True)
+
+        self.y_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL)
+        self.y_scroll.config(command=self.canvas.yview)
+        self.y_scroll.pack(fill=tk.Y, expand=True, anchor=tk.E)
+
+        self.canvas.config(xscrollcommand=self.x_scroll.set,
+                           yscrollcommand=self.y_scroll.set)
+
+        self.image_dict: Dict[int, ImageTk.PhotoImage] = dict()
+
+    def _get_image_xy(self, image_idx: int):
+        image_width = 400  # temp
+        x = image_idx*(image_width+10)
+        y = 0
+
+        return x, y
+
+    def add_image(self, photoimage: ImageTk.PhotoImage):
+        if not photoimage:
+            return
+        item_id = self.canvas.create_image(
+            self._get_image_xy(len(self.image_dict)), anchor='nw',
+            image=photoimage)
+        logger.debug(f'image xy: {self._get_image_xy(len(self.image_dict))}')
+        self.image_dict[item_id] = photoimage
+
+        self._reconfig_scroll()
+
+    def _reconfig_scroll(self):
+        self.canvas.update_idletasks()
+        self.canvas.config(
+            scrollregion=self.canvas.bbox("all"))  # スクロール範囲
+        logger.debug(self.canvas.bbox("all"))
 
 
 class status_comparison():
@@ -625,15 +663,15 @@ def status_window_main():
 
     # app = WinStatusComparison(master=root)
     frame = ttk.Frame(root)
-    status_frame = StatusFrame(frame)
     compare_frame = CompareFrame(root)
+    status_frame = StatusFrame(frame, compare_frame.add_image)
     select_frame = SelectFrame(
         frame, snipper, status_frame.select_image)
 
     frame.pack()
     select_frame.pack(side=tk.LEFT, fill=tk.Y)
     status_frame.pack(side=tk.LEFT, fill=tk.Y, expand=True)
-    compare_frame.pack()
+    compare_frame.pack(fill=tk.X, expand=True)
 
     # 表示
     root.mainloop()
