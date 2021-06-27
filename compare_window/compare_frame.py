@@ -1,15 +1,17 @@
+from sys import setcheckinterval
 from exception import IllegalInitializeException
 from typing import Callable, Dict, List, NamedTuple
 from PIL import ImageTk
 import tkinter as tk
 from tkinter import ttk
 from logger import init_logger
+from .image import ImageStruct, ImageStructDict
 
 logger = init_logger(__name__)
 
 
 class StatusFunc(NamedTuple):
-    change: Callable[[ImageTk.PhotoImage], ImageTk.PhotoImage]
+    change: Callable[[ImageStruct], ImageStruct]
 
 
 class CompareFrame(ttk.Frame):
@@ -34,12 +36,27 @@ class CompareFrame(ttk.Frame):
 
         self.canvas.bind("<MouseWheel>", self._scroll_y)
         self.canvas.bind("<Shift-MouseWheel>", self._scroll_x)
+        self.canvas.bind('<Control-MouseWheel>', self._zoom)
 
         self.canvas.tag_bind('status', '<Button-1>', self._change_image)
         self.canvas.tag_bind('status', '<Button-3>', self._delete_image)
 
-        self.image_dict: Dict[int, ImageTk.PhotoImage] = dict()
+        self.image_dict = ImageStructDict()
         self.status_func: StatusFunc = None
+
+    def _zoom(self, event: tk.Event):
+        step = 0.5 if event.delta > 0 else -0.5
+
+        self.image_dict.step_scale(step)
+
+        old_item_id = None
+        for item_id in self.image_dict.keys():
+            photoimage = self.image_dict[item_id].photoimage
+            self.canvas.itemconfig(item_id, image=photoimage)
+            self.canvas.moveto(item_id, *self._get_image_xy(old_item_id))
+            old_item_id = item_id
+
+        self._reconfig_scroll()
 
     def set_status_func(self, status_func: StatusFunc):
         self.status_func = status_func
@@ -58,13 +75,14 @@ class CompareFrame(ttk.Frame):
         if item_id not in self.image_dict:
             return
 
-        photoimage = self.status_func.change(self.image_dict[item_id])
+        image_struct = self.status_func.change(
+            self.image_dict[item_id])
 
-        if not photoimage:
+        if not image_struct:
             return
 
-        self.canvas.itemconfig(item_id, image=photoimage)
-        self.image_dict[item_id] = photoimage
+        self.canvas.itemconfig(item_id, image=image_struct.photoimage)
+        self.image_dict[item_id] = image_struct
 
         self._reconfig_scroll()
 
@@ -82,26 +100,37 @@ class CompareFrame(ttk.Frame):
         self.image_dict.pop(item_id)
         self.canvas.delete(item_id)
 
+        old_item_id = None
         for i, item_id in enumerate(self.image_dict.keys()):
-            self.canvas.moveto(item_id, *self._get_image_xy(i))
+            self.canvas.moveto(item_id, *self._get_image_xy(old_item_id))
+            old_item_id = item_id
 
         self._reconfig_scroll()
 
-    def _get_image_xy(self, image_idx: int):
-        image_width = 400  # temp
-        x = image_idx*(image_width+10)
+    def _get_image_xy(self, item_id: int):
+        if not item_id:
+            return 0, 0
+
+        x = self.canvas.bbox(item_id)[2] + 10
         y = 0
 
         return x, y
 
-    def add_image(self, photoimage: ImageTk.PhotoImage):
-        if not photoimage:
+    def add_image(self, image_struct: ImageStruct):
+        if not image_struct:
             return
+
+        last_item_id = None
+        if len(self.image_dict) > 0:
+            last_item_id = self.image_dict.get_last_key()
+
+        image_struct.scale(self.image_dict.scale_ratio)
+
         item_id = self.canvas.create_image(
-            self._get_image_xy(len(self.image_dict)), anchor='nw',
-            image=photoimage, tags='status')
-        logger.debug(f'image xy: {self._get_image_xy(len(self.image_dict))}')
-        self.image_dict[item_id] = photoimage
+            self._get_image_xy(last_item_id), anchor='nw',
+            image=image_struct.photoimage, tags='status')
+        logger.debug(f'image xy: {self._get_image_xy(last_item_id)}')
+        self.image_dict[item_id] = image_struct
 
         self._reconfig_scroll()
 
