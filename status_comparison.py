@@ -21,21 +21,21 @@ class UmaFrame(tk.Frame):
 
     def __init__(self, master: tk.Widget, snipper: ImageSnipper,
                  button_func: ButtonFunc):
-        super().__init__(master)
+        super().__init__(master, bg='white')
 
         status_frame = tk.Frame(self)
-        status_frame.pack(side=tk.LEFT, pady=5, fill=tk.Y)
-        self.status_button = ttk.Button(status_frame, text='status')
+        status_frame.pack(side=tk.LEFT, pady=5, fill=tk.BOTH, expand=True)
+        self.status_button = ttk.Button(status_frame, text='画像取得ボタンを押してください')
         self.status_button.bind('<Button-1>', self.status_button_left_click)
-        self.status_button.pack(expand=True, fill=tk.Y)
+        self.status_button.pack(expand=True, fill=tk.BOTH)
 
         controll_frame = tk.Frame(self)
         controll_frame.pack(side=tk.RIGHT, pady=5)
 
-        add_button = ttk.Button(controll_frame, text='add')
+        add_button = ttk.Button(controll_frame, text='画像取得')
         add_button.bind('<Button-1>', self.add_button_left_click)
         add_button.bind('<Button-3>', self.add_button_right_click)
-        delete_button = ttk.Button(controll_frame, text='delete')
+        delete_button = ttk.Button(controll_frame, text='削除')
         delete_button.bind('<Button-1>', self.delete_button_left_click)
 
         add_button.pack(fill=tk.X)
@@ -56,6 +56,8 @@ class UmaFrame(tk.Frame):
 
     def status_button_left_click(self, event):
         # 選択した表示エリアにステータスの画像を表示して
+        print(self.winfo_width())
+        print(self.status_button.winfo_width())
         if self.image:
             self.button_func.status(self.image)
 
@@ -127,8 +129,17 @@ class UmaFrame(tk.Frame):
             'RGB', (uma_img.width + status_img.width, status_img.height))
         concat_img.paste(uma_img, (0, 0))
         concat_img.paste(status_img, (uma_img.width, 0))
-        concat_img = concat_img.resize(
-            (int(concat_img.width/1.5), int(concat_img.height/1.5)))
+        bt_width = self.status_button.winfo_width()-10
+        bt_height = self.status_button.winfo_height()-10
+        if bt_width/bt_height < concat_img.width/concat_img.height:
+            concat_img = concat_img.resize(
+                (bt_width, int(concat_img.height/concat_img.width*bt_width)))
+        else:
+            concat_img = concat_img.resize(
+                (int(concat_img.width/concat_img.height*bt_height), bt_height))
+
+        # concat_img = concat_img.resize(
+        #     (int(concat_img.width/1.5), int(concat_img.height/1.5)))
 
         self.bt_img = ImageTk.PhotoImage(image=concat_img)
         self.status_button.configure(image=self.bt_img)
@@ -138,7 +149,7 @@ class ListFrame(ttk.Frame):
     def __init__(self, master: tk.Widget, snipper: ImageSnipper,
                  show_image: Callable[[Image.Image], None]):
         super().__init__(master)
-        self.canvas = tk.Canvas(self, width=500, bg='white')
+        self.canvas = tk.Canvas(self, width=400, bg='white')
         self.snipper = snipper
         self.canvas.pack(side=tk.LEFT, fill=tk.Y, expand=True)
         self.scroll = tk.Scrollbar(self, orient=tk.VERTICAL)
@@ -170,7 +181,7 @@ class ListFrame(ttk.Frame):
     def _get_frame_xy(self, frame_idx: int):
         x = 0
         umaframe_height = 60
-        y = frame_idx*(umaframe_height+10)
+        y = frame_idx*(umaframe_height)
 
         return x, y
 
@@ -182,7 +193,7 @@ class ListFrame(ttk.Frame):
 
         item_id = self.canvas.create_window(
             self._get_frame_xy(len(self.umaframe_dict)), window=umaframe,
-            anchor='nw')
+            anchor='nw', width=self.canvas.cget("width"))
         umaframe.set_item_id(item_id)
 
         self._reconfig_scroll()
@@ -250,7 +261,7 @@ class StatusFrame(ttk.Frame):
     def __init__(self, master: tk.Widget,
                  add_compare_image: Callable[[ImageTk.PhotoImage], None]):
         super().__init__(master)
-        self.canvas = tk.Canvas(self, width=400, height=500)
+        self.canvas = tk.Canvas(self, width=400, height=300)
         self.canvas.pack(side=tk.LEFT, fill=tk.Y, expand=True)
         self.photoimage: ImageTk.PhotoImage = None
         self.image_id: int = None
@@ -290,7 +301,7 @@ class CompareFrame(ttk.Frame):
         frame = ttk.Frame(self)
         frame.pack(fill=tk.X, expand=True, side=tk.LEFT)
 
-        self.canvas = tk.Canvas(frame, bg='blue')
+        self.canvas = tk.Canvas(frame, bg='blue', height=300)
         self.canvas.pack(fill=tk.X, expand=True)
 
         self.x_scroll = ttk.Scrollbar(frame, orient=tk.HORIZONTAL)
@@ -303,6 +314,9 @@ class CompareFrame(ttk.Frame):
 
         self.canvas.config(xscrollcommand=self.x_scroll.set,
                            yscrollcommand=self.y_scroll.set)
+
+        self.canvas.bind("<MouseWheel>", self._scroll_y)
+        self.canvas.bind("<Shift-MouseWheel>", self._scroll_x)
 
         self.image_dict: Dict[int, ImageTk.PhotoImage] = dict()
 
@@ -329,6 +343,18 @@ class CompareFrame(ttk.Frame):
         self.canvas.config(
             scrollregion=self.canvas.bbox("all"))  # スクロール範囲
         logger.debug(self.canvas.bbox("all"))
+
+    def _scroll_y(self, event):
+        if event.delta > 0:
+            self.canvas.yview_scroll(-1, 'units')
+        elif event.delta < 0:
+            self.canvas.yview_scroll(1, 'units')
+
+    def _scroll_x(self, event):
+        if event.delta > 0:
+            self.canvas.xview_scroll(-1, 'units')
+        elif event.delta < 0:
+            self.canvas.xview_scroll(1, 'units')
 
 
 class status_comparison():
