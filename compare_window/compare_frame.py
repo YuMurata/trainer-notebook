@@ -59,6 +59,10 @@ class CompareFrame(ttk.Frame):
             return
 
         photoimage = self.status_func.change(self.image_dict[item_id])
+
+        if not photoimage:
+            return
+
         self.canvas.itemconfig(item_id, image=photoimage)
         self.image_dict[item_id] = photoimage
 
