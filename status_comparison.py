@@ -128,7 +128,7 @@ class ListFrame(ttk.Frame):
         super().__init__(master)
         self.canvas = tk.Canvas(self, width=500, bg='white')
         self.snipper = snipper
-        self.canvas.pack(side=tk.LEFT)
+        self.canvas.pack(side=tk.LEFT, fill=tk.Y, expand=True)
         self.scroll = tk.Scrollbar(self, orient=tk.VERTICAL)
         self.scroll.config(command=self.canvas.yview)
         self.scroll.pack(side=tk.RIGHT, fill=tk.Y)
@@ -187,8 +187,8 @@ class SelectFrame(ttk.Frame):
                  show_image: Callable[[Image.Image], None]):
         super().__init__(master)
 
-        list_frame = ListFrame(self, snipper, show_image)
-        list_frame.pack()
+        self.list_frame = ListFrame(self, snipper, show_image)
+        self.list_frame.pack(fill=tk.Y, expand=True)
 
         all_delete_button = ttk.Button(self, text='all_delete')
         all_delete_button.pack()
@@ -198,7 +198,7 @@ class StatusFrame(ttk.Frame):
     def __init__(self, master: tk.Widget):
         super().__init__(master)
         self.canvas = tk.Canvas(self, width=400, height=500)
-        self.canvas.pack(side=tk.LEFT)
+        self.canvas.pack(side=tk.LEFT, fill=tk.Y, expand=True)
         self.photoimage: ImageTk.PhotoImage = None
         self.image_id: int = None
 
