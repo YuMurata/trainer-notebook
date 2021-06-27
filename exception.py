@@ -16,3 +16,7 @@ class InvalidTypeException(UmaUmaDriveException):
 
 class InvalidValueException(UmaUmaDriveException):
     pass
+
+
+class IllegalInitializeException(UmaUmaDriveException):
+    pass

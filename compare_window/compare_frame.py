@@ -1,10 +1,15 @@
-from typing import Dict, List
+from exception import IllegalInitializeException
+from typing import Callable, Dict, List, NamedTuple
 from PIL import ImageTk
 import tkinter as tk
 from tkinter import ttk
 from logger import init_logger
 
 logger = init_logger(__name__)
+
+
+class StatusFunc(NamedTuple):
+    change: Callable[[ImageTk.PhotoImage], ImageTk.PhotoImage]
 
 
 class CompareFrame(ttk.Frame):
@@ -30,9 +35,34 @@ class CompareFrame(ttk.Frame):
         self.canvas.bind("<MouseWheel>", self._scroll_y)
         self.canvas.bind("<Shift-MouseWheel>", self._scroll_x)
 
+        self.canvas.tag_bind('status', '<Button-1>', self._change_image)
         self.canvas.tag_bind('status', '<Button-3>', self._delete_image)
 
         self.image_dict: Dict[int, ImageTk.PhotoImage] = dict()
+        self.status_func: StatusFunc = None
+
+    def set_status_func(self, status_func: StatusFunc):
+        self.status_func = status_func
+
+    def _change_image(self, event: tk.Event):
+        if not self.status_func:
+            raise IllegalInitializeException('status_func is not initialized')
+
+        item_id_list: List[int] = self.canvas.find_closest(event.x, event.y)
+
+        if len(item_id_list) < 1:
+            return
+
+        item_id = item_id_list[0]
+
+        if item_id not in self.image_dict:
+            return
+
+        photoimage = self.status_func.change(self.image_dict[item_id])
+        self.canvas.itemconfig(item_id, image=photoimage)
+        self.image_dict[item_id] = photoimage
+
+        self._reconfig_scroll()
 
     def _delete_image(self, event: tk.Event):
         item_id_list: List[int] = self.canvas.find_closest(event.x, event.y)
