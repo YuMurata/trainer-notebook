@@ -42,13 +42,16 @@ class CompareFrame(ttk.Frame):
 
         item_id = item_id_list[0]
 
-        self.image_dict[item_id]
+        if item_id not in self.image_dict:
+            return
 
-        # print(item)
-        # print(tag)
-        pressed_x = event.x
-        pressed_y = event.y
-        logger.debug(self.image_dict[event.widget])
+        self.image_dict.pop(item_id)
+        self.canvas.delete(item_id)
+
+        for i, item_id in enumerate(self.image_dict.keys()):
+            self.canvas.moveto(item_id, *self._get_image_xy(i))
+
+        self._reconfig_scroll()
 
     def _get_image_xy(self, image_idx: int):
         image_width = 400  # temp
