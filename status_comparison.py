@@ -108,11 +108,6 @@ class UmaFrame(tk.Frame):
                 0, top_left[1], w, snip_img2.height)),
                 (0, self.image.height - 31))
 
-            plt.subplot(221).imshow(self.image)
-            plt.subplot(222).imshow(snip_img2)
-            plt.subplot(223).imshow(cv2pil(result))
-            plt.subplot(224).imshow(dst)
-            plt.show()
             self.image = dst
 
     def delete_button_left_click(self, event):
@@ -246,7 +241,7 @@ class SelectFrame(ttk.Frame):
         self.list_frame.pack(fill=tk.Y, expand=True)
 
         all_delete_button = ttk.Button(self, text='all_delete')
-        all_delete_button.pack()
+        all_delete_button.pack(fill=tk.X)
         all_delete_button.bind(
             '<Button-1>', self.list_frame.all_delete_umaframe)
 
