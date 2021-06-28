@@ -65,7 +65,9 @@ class CompareFrame(ttk.Frame):
         if not self.status_func:
             raise IllegalInitializeException('status_func is not initialized')
 
-        item_id_list: List[int] = self.canvas.find_closest(event.x, event.y)
+        x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
+
+        item_id_list: List[int] = self.canvas.find_closest(x, y)
 
         if len(item_id_list) < 1:
             return
