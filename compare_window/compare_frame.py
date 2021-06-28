@@ -144,9 +144,11 @@ class CompareFrame(ttk.Frame):
 
     def _reconfig_scroll(self):
         self.canvas.update_idletasks()
-        self.canvas.config(
-            scrollregion=self.canvas.bbox("all"))  # スクロール範囲
-        logger.debug(self.canvas.bbox("all"))
+        scrollregion = self.canvas.bbox("all")
+        if not scrollregion:
+            scrollregion = (0, 0, 0, 0)
+        self.canvas.config(scrollregion=scrollregion)  # スクロール範囲
+        logger.debug(scrollregion)
 
     def _scroll_y(self, event):
         if event.delta > 0:
@@ -162,5 +164,11 @@ class CompareFrame(ttk.Frame):
 
     def clear(self, event):
         scale = self.image_dict.scale_ratio
+
+        for item_id in self.image_dict.keys():
+            self.canvas.delete(item_id)
+
         self.image_dict = ImageStructDict()
         self.image_dict.scale(scale)
+
+        self._reconfig_scroll()
