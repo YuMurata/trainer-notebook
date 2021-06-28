@@ -11,7 +11,8 @@ logger = init_logger(__name__)
 
 class ListFrame(ttk.Frame):
     def __init__(self, master: tk.Widget, snipper: ImageSnipper,
-                 show_image: Callable[[Image.Image], None]):
+                 show_image_status: Callable[[Image.Image], None],
+                 show_image_compare: Callable[[Image.Image], None]):
         super().__init__(master)
         self.canvas = tk.Canvas(self, width=400, bg='white')
         self.snipper = snipper
@@ -24,7 +25,8 @@ class ListFrame(ttk.Frame):
         self.set_mousewheel(self.canvas, self._scroll_y)
 
         self.umaframe_dict: Dict[int, UmaFrame] = dict()
-        self.show_image = show_image
+        self.show_image_status = show_image_status
+        self.show_image_compare = show_image_compare
         self.add_umaframe()
 
     def set_mousewheel(self, widget, command):
@@ -51,7 +53,7 @@ class ListFrame(ttk.Frame):
 
     def add_umaframe(self):
         button_func = ButtonFunc(
-            self.show_image, self.add_umaframe, self.delete_umaframe)
+            self.show_image_status, self.show_image_compare, self.add_umaframe, self.delete_umaframe)
         umaframe = UmaFrame(self.canvas, self.snipper,
                             button_func)
 

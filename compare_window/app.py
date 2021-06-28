@@ -22,7 +22,7 @@ class CompareApp(tk.Tk):
         compare_frame = CompareFrame(self)
         status_frame = StatusFrame(frame, compare_frame.add_image)
         select_frame = SelectFrame(
-            frame, snipper, status_frame.select_image)
+            frame, snipper, status_frame.select_image, compare_frame.add_image)
 
         compare_frame.set_status_func(StatusFunc(status_frame.change_image))
 
