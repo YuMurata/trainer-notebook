@@ -89,6 +89,9 @@ class StatusFrame(ttk.Frame):
     def _zoom(self, event: tk.Event):
         step = 0.25 if event.delta > 0 else -0.25
 
+        if not self.image_struct:
+            return
+
         self.image_struct.step_scale(step)
         self.canvas.itemconfig(
             self.image_id, image=self.image_struct.photoimage)
