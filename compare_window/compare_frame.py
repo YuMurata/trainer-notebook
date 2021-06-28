@@ -157,3 +157,8 @@ class CompareFrame(ttk.Frame):
             self.canvas.xview_scroll(-1, 'units')
         elif event.delta < 0:
             self.canvas.xview_scroll(1, 'units')
+
+    def clear(self, event):
+        scale = self.image_dict.scale_ratio
+        self.image_dict = ImageStructDict()
+        self.image_dict.scale(scale)

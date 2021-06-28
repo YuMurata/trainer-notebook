@@ -28,6 +28,7 @@ class StatusFrame(ttk.Frame):
             '<Button-1>', lambda _: add_compare_image(self.image_struct))
         self.canvas.bind(
             '<Button-3>', self._delete_image)
+        self.scale = 1.0
 
     def _delete_image(self, event):
         logger.debug('call delete status')
@@ -42,7 +43,7 @@ class StatusFrame(ttk.Frame):
 
     def select_image(self, image: Image.Image):
         self.image_struct = ImageStruct(image)
-
+        self.image_struct.scale(self.scale)
         if not self.image_id:
             self.image_id = self.canvas.create_image(
                 0, 0, anchor='nw', image=self.image_struct.photoimage)
@@ -89,14 +90,7 @@ class StatusFrame(ttk.Frame):
         self.image_struct.step_scale(step)
         self.canvas.itemconfig(
             self.image_id, image=self.image_struct.photoimage)
-        # self.canvas.moveto(self.image_id, (0, 0))
-
-        # old_item_id = None
-        # for item_id in self.image_dict.keys():
-        #     photoimage = self.image_dict[item_id].photoimage
-        #     self.canvas.itemconfig(item_id, image=photoimage)
-        #     self.canvas.moveto(item_id, *self._get_image_xy(old_item_id))
-        #     old_item_id = item_id
+        self.scale = self.image_struct.scale_ratio
 
         self._reconfig_scroll()
 
@@ -105,3 +99,7 @@ class StatusFrame(ttk.Frame):
         self.canvas.config(
             scrollregion=self.canvas.bbox("all"))  # スクロール範囲
         # logger.debug(self.canvas.bbox("all"))
+
+    def clear(self, event):
+        self.image_struct = None
+        self.image_id = None

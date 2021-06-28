@@ -1,8 +1,11 @@
 import tkinter as tk
 from tkinter import ttk
+
+from numpy import delete, select
 from snip import ImageSnipper
 from compare_window.compare_frame import CompareFrame, StatusFunc
 from compare_window.status_frame import StatusFrame
+from .delete_frame import DeleteFrame, DeleteFunc
 from .select_frame import SelectFrame
 
 # 開発用にcompareappをメインウィンドウにしてる
@@ -23,6 +26,8 @@ class CompareApp(tk.Tk):
         status_frame = StatusFrame(frame, compare_frame.add_image)
         select_frame = SelectFrame(
             frame, snipper, status_frame.select_image, compare_frame.add_image)
+        delete_frame = DeleteFrame(self, DeleteFunc(
+            select_frame.all_delete_umaframe, status_frame.clear, compare_frame.clear))
 
         compare_frame.set_status_func(StatusFunc(status_frame.change_image))
 
@@ -30,3 +35,4 @@ class CompareApp(tk.Tk):
         select_frame.pack(side=tk.LEFT, fill=tk.Y)
         status_frame.pack(side=tk.LEFT, fill=tk.Y, expand=True)
         compare_frame.pack(fill=tk.X, expand=True)
+        delete_frame.pack(fill=tk.X, expand=True)
