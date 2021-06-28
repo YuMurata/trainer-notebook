@@ -24,14 +24,14 @@ class UmaFrame(tk.Frame):
         super().__init__(master, bg='white')
 
         status_frame = tk.Frame(self)
-        status_frame.pack(side=tk.LEFT, pady=5, fill=tk.BOTH, expand=True)
+        status_frame.pack(side=tk.LEFT, pady=1, fill=tk.BOTH, expand=True)
         self.status_button = ttk.Button(status_frame, text='画像取得ボタンを押してください')
         self.status_button.bind('<Button-1>', self.status_button_left_click)
         self.status_button.bind('<Button-3>', self.status_button_right_click)
         self.status_button.pack(expand=True, fill=tk.BOTH)
 
         controll_frame = tk.Frame(self)
-        controll_frame.pack(side=tk.RIGHT, pady=5)
+        controll_frame.pack(side=tk.RIGHT, pady=1)
 
         add_button = ttk.Button(controll_frame, text='画像取得')
         add_button.bind('<Button-1>', self.add_button_left_click)
