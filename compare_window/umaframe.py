@@ -6,12 +6,14 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Callable, NamedTuple
 from logger import init_logger
+from compare_window.image import ImageStruct
 
 logger = init_logger(__name__)
 
 
 class ButtonFunc(NamedTuple):
     status: Callable[[Image.Image], None]
+    compare: Callable[[Image.Image], None]
     add: Callable[[], None]
     delete: Callable[[int], None]
 
@@ -25,6 +27,7 @@ class UmaFrame(tk.Frame):
         status_frame.pack(side=tk.LEFT, pady=5, fill=tk.BOTH, expand=True)
         self.status_button = ttk.Button(status_frame, text='画像取得ボタンを押してください')
         self.status_button.bind('<Button-1>', self.status_button_left_click)
+        self.status_button.bind('<Button-3>', self.status_button_right_click)
         self.status_button.pack(expand=True, fill=tk.BOTH)
 
         controll_frame = tk.Frame(self)
@@ -54,10 +57,17 @@ class UmaFrame(tk.Frame):
 
     def status_button_left_click(self, event):
         # 選択した表示エリアにステータスの画像を表示して
-        print(self.winfo_width())
-        print(self.status_button.winfo_width())
+        # print(self.winfo_width())
+        # print(self.status_button.winfo_width())
         if self.image:
             self.button_func.status(self.image)
+
+    def status_button_right_click(self, event):
+        # 選択した表示エリアにステータスの画像を表示して
+        # print(self.winfo_width())
+        # print(self.status_button.winfo_width())
+        if self.image:
+            self.button_func.compare(ImageStruct(self.image))
 
     def add_button_left_click(self, event):
         # 画像を取得して

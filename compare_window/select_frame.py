@@ -11,10 +11,12 @@ logger = init_logger(__name__)
 
 class SelectFrame(ttk.Frame):
     def __init__(self, master: tk.Widget, snipper: ImageSnipper,
-                 show_image: Callable[[Image.Image], None]):
+                 show_image_status: Callable[[Image.Image], None],
+                 show_image_compare: Callable[[Image.Image], None]):
         super().__init__(master)
 
-        self.list_frame = ListFrame(self, snipper, show_image)
+        self.list_frame = ListFrame(
+            self, snipper, show_image_status, show_image_compare)
         self.list_frame.pack(fill=tk.Y, expand=True)
 
         all_delete_button = ttk.Button(self, text='all_delete')

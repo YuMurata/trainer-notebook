@@ -23,8 +23,9 @@ class StatusFrame(ttk.Frame):
 
         self.canvas.config(yscrollcommand=self.scroll.set)
         self.canvas.bind("<MouseWheel>", self._scroll_y)
+        self.canvas.bind('<Control-MouseWheel>', self._zoom)
         self.canvas.bind(
-            '<Button-1>', lambda _: add_compare_image(self.image_struct.copy()))
+            '<Button-1>', lambda _: add_compare_image(self.image_struct))
         self.canvas.bind(
             '<Button-3>', self._delete_image)
 
@@ -35,6 +36,7 @@ class StatusFrame(ttk.Frame):
 
         self.canvas.delete(self.image_id)
         self.image_id = None
+        self.image_struct = None
 
         logger.debug('delete status')
 
@@ -63,8 +65,10 @@ class StatusFrame(ttk.Frame):
         if not self.image_id or not self.image_struct:
             return None
 
+        scale = self.image_struct.scale_ratio
         change_image = self.image_struct
         self.image_struct = image_struct
+        self.image_struct.scale(scale)
 
         if not self.image_id:
             self.canvas.create_image(
@@ -78,3 +82,26 @@ class StatusFrame(ttk.Frame):
             scrollregion=self.canvas.bbox("all"))  # スクロール範囲
 
         return change_image
+
+    def _zoom(self, event: tk.Event):
+        step = 0.25 if event.delta > 0 else -0.25
+
+        self.image_struct.step_scale(step)
+        self.canvas.itemconfig(
+            self.image_id, image=self.image_struct.photoimage)
+        # self.canvas.moveto(self.image_id, (0, 0))
+
+        # old_item_id = None
+        # for item_id in self.image_dict.keys():
+        #     photoimage = self.image_dict[item_id].photoimage
+        #     self.canvas.itemconfig(item_id, image=photoimage)
+        #     self.canvas.moveto(item_id, *self._get_image_xy(old_item_id))
+        #     old_item_id = item_id
+
+        self._reconfig_scroll()
+
+    def _reconfig_scroll(self):
+        self.canvas.update_idletasks()
+        self.canvas.config(
+            scrollregion=self.canvas.bbox("all"))  # スクロール範囲
+        # logger.debug(self.canvas.bbox("all"))

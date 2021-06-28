@@ -45,7 +45,7 @@ class CompareFrame(ttk.Frame):
         self.status_func: StatusFunc = None
 
     def _zoom(self, event: tk.Event):
-        step = 0.5 if event.delta > 0 else -0.5
+        step = 0.25 if event.delta > 0 else -0.25
 
         self.image_dict.step_scale(step)
 
@@ -71,12 +71,15 @@ class CompareFrame(ttk.Frame):
             return
 
         item_id = item_id_list[0]
+        # print(item_id_list)
 
         if item_id not in self.image_dict:
             return
 
+        scale = self.image_dict.scale_ratio
         image_struct = self.status_func.change(
             self.image_dict[item_id])
+        image_struct.scale(scale)
 
         if not image_struct:
             return
@@ -121,17 +124,19 @@ class CompareFrame(ttk.Frame):
         if not image_struct:
             return
 
+        img = image_struct.copy()
+
         last_item_id = None
         if len(self.image_dict) > 0:
             last_item_id = self.image_dict.get_last_key()
 
-        image_struct.scale(self.image_dict.scale_ratio)
+        img.scale(self.image_dict.scale_ratio)
 
         item_id = self.canvas.create_image(
             self._get_image_xy(last_item_id), anchor='nw',
-            image=image_struct.photoimage, tags='status')
+            image=img.photoimage, tags='status')
         logger.debug(f'image xy: {self._get_image_xy(last_item_id)}')
-        self.image_dict[item_id] = image_struct
+        self.image_dict[item_id] = img
 
         self._reconfig_scroll()
 
