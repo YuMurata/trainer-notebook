@@ -1,10 +1,10 @@
 from logger import init_logger
-from TeamStadiumInfoDetection.dispatcher import BaseDispatched, Dispatcher
-from TeamStadiumInfoDetection.linked_reader import LinkedReader
+from app_reader import BaseDispatched, Dispatcher
+from app_reader.base_app_reader import BaseAppReader
+from app_reader.race.rank import RankReader
+from app_reader.race.score import ScoreReader
 from threading import Thread, Lock
 from snip import ImageSnipper
-from TeamStadiumInfoDetection.rank import RankReader
-from TeamStadiumInfoDetection.score import ScoreReader
 from typing import Dict, Tuple
 from time import sleep
 from PIL import Image
@@ -45,7 +45,7 @@ class AppLinkedThread(Thread):
         self.dispatcher = dispatcher
         self.is_update = True
         self.linked_dict = dict()
-        self.reader_dict: Dict[str, LinkedReader] = {
+        self.reader_dict: Dict[str, BaseAppReader] = {
             'rank': RankReader(), 'score': ScoreReader()}
 
     def stop(self):

@@ -3,7 +3,7 @@ from typing import Dict
 from PIL import Image
 
 
-class LinkedReader(metaclass=ABCMeta):
+class BaseAppReader(metaclass=ABCMeta):
     @abstractmethod
     def can_read(self, snip_image: Image.Image) -> bool:
         pass

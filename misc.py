@@ -3,7 +3,12 @@ from typing import List
 import cv2
 import numpy as np
 from PIL import Image
+from datetime import datetime
+from snip import ImageSnipper
 import time
+import os
+import pyocr
+from exception import FileNotFoundException
 
 
 def pil2cv(image: Image.Image) -> np.ndarray:
@@ -35,11 +40,12 @@ def cv2pil(image: np.ndarray) -> Image.Image:
 class MouseXYGetter:
     winname = 'mouse_xy'
 
-    def __init__(self) -> None:
+    def __init__(self, logger: Logger) -> None:
         self.is_draw = False
         self.start_xy: tuple = None
         self.org_image: np.ndarray = None
         self.rect_image: np.ndarray = None
+        self.logger = logger
 
     def _callback(self, event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
@@ -64,10 +70,14 @@ class MouseXYGetter:
 
             self.is_draw = False
 
-            print('left-top:', self.start_xy)
-            print('right-bottom:', (x, y))
-            print('width, height:',
-                  (abs(x-self.start_xy[0]), abs(y-self.start_xy[1])))
+            left_top = self.start_xy
+            right_bottom = (x, y)
+            width = abs(x-self.start_xy[0])
+            height = abs(y-self.start_xy[1])
+
+            self.logger.info(
+                f'left-top, right-bottom: {left_top}, {right_bottom}')
+            self.logger.info(f'width, height: {width}, {height}')
 
         if event == cv2.EVENT_RBUTTONDOWN:
             self.rect_image = self.org_image.copy()
@@ -86,6 +96,29 @@ class MouseXYGetter:
             cv2.imshow(self.winname, self.rect_image)
 
         cv2.destroyWindow(self.winname)
+
+
+def screenshot():
+    snipper = ImageSnipper()
+
+    input_str = 'r'
+    while input_str not in ['s', 'c']:
+        snip_image = snipper.Snip()
+
+        cv_image = pil2cv(snip_image)
+
+        cv2.imshow('screenshot', cv_image)
+        cv2.waitKey(0)
+
+        input_str = input('save:retake:cancel (s/r/c) -> ')
+
+        if input_str == 's':
+            now = datetime.now().strftime('%Y%m%d-%H%M%S')
+            cv2.imwrite(f'./resource/screenshot/{now}.png', cv_image)
+            return
+
+        if input_str == 'c':
+            return
 
 
 def concat_imshow(winname: str, image_list: List[np.ndarray]):
@@ -112,3 +145,20 @@ class StopWatch:
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.logger.info(f'{self.title}: {time.time()-self.start}')
+
+
+def get_OCR(logger: Logger):
+    # インストールしたTesseract-OCRのパスを環境変数「PATH」へ追記する。
+
+    ocr_path = r"C:\Program Files\Tesseract-OCR"
+    path_list = os.environ['PATH'].split(';')
+    if ocr_path not in path_list:
+        path_list.append(ocr_path)
+    os.environ['PATH'] = ';'.join(path_list)
+    logger.debug(os.environ['PATH'])
+
+    tools = pyocr.get_available_tools()
+    if len(tools) == 0:
+        raise FileNotFoundException("No OCR tool found")
+
+    return tools[0]
