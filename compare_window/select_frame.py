@@ -48,8 +48,9 @@ class SelectFrame(ttk.Frame):
         x = 0
         height = 0
 
-        print('------------------------------------------', frame_idx)
-        for umaframe in self.umaframe_dict.values():
+        for i, umaframe in enumerate(self.umaframe_dict.values()):
+            if i == frame_idx:
+                break
             height += umaframe.winfo_height()
         y = height
         return x, y
