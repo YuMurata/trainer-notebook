@@ -72,6 +72,10 @@ class UmaFrame(tk.Frame):
     def add_button_left_click(self, event):
         # 画像を取得して
         self.image = self.snipper.Snip()
+
+        if not self.image:
+            return
+
         self.image = self.image.crop(self.status_rect)
         self.set_status_button_image()
         if not self.add_flag:
