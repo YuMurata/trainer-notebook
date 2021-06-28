@@ -39,6 +39,8 @@ class StatusFrame(ttk.Frame):
         self.image_id = None
         self.image_struct = None
 
+        self._reconfig_scroll()
+
         logger.debug('delete status')
 
     def select_image(self, image: Image.Image):
@@ -96,10 +98,10 @@ class StatusFrame(ttk.Frame):
 
     def _reconfig_scroll(self):
         self.canvas.update_idletasks()
-        self.canvas.config(
-            scrollregion=self.canvas.bbox("all"))  # スクロール範囲
-        # logger.debug(self.canvas.bbox("all"))
+        scrollregion = self.canvas.bbox("all")
+        if not scrollregion:
+            scrollregion = (0, 0, 0, 0)
+        self.canvas.config(scrollregion=scrollregion)  # スクロール範囲
 
     def clear(self, event):
-        self.image_struct = None
-        self.image_id = None
+        self._delete_image(event)
