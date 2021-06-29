@@ -180,15 +180,25 @@ class MetricsView(ttk.Frame):
 class Win1(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
-        self.pack()
 
         self.master.geometry("500x400")
         self.master.resizable(False, False)
         self.master.title("umauma drive")
+
+        self.tab = ttk.Notebook(self, height=-1, width=-1)
+        self.tab.pack(fill=tk.BOTH, expand=True)
+
         self.graph_view = GraphView()
         self.metrics_view = MetricsView(self)
-        self.score_app = ScoreApp(
-            master, self.metrics_view.generate_update)
+        self.tab.add(self.metrics_view, text='Metrics')
+        team_stadium = ttk.Notebook(self, height=-1, width=-1)
+        team_stadium.add(ttk.Label(self, text='rank-score'), text='rank-score')
+        team_stadium.add(ttk.Label(self, text='metrics'), text='metrics')
+        team_stadium.add(ttk.Label(self, text='graph'), text='graph')
+        self.tab.add(team_stadium, text='TeamStadium')
+        self.tab.add(ttk.Label(self, text='Status'), text='Status')
+        self.tab.add(ttk.Label(self, text='Screenshot'), text='Screenshot')
+        self.score_app = ScoreApp(master, self.metrics_view.generate_update)
         self.graph_app = GraphApp(master, self.graph_view)
         self.create_widgets()
 
@@ -225,7 +235,7 @@ class Win1(tk.Frame):
         self.button_new_win3.pack()
 
         self.metrics_view.set_graph_updater(self.graph_app.update_canvas)
-        self.metrics_view.pack()
+        # self.metrics_view.pack()
 
     def destroy(self) -> None:
         ret = super().destroy()
