@@ -57,7 +57,8 @@ class SelectFrame(ttk.Frame):
 
     def add_umaframe(self):
         button_func = ButtonFunc(
-            self.show_image_status, self.show_image_compare, self.add_umaframe, self.delete_umaframe)
+            self.show_image_status, self.show_image_compare, self.add_umaframe,
+            self.delete_umaframe)
         umaframe = UmaFrame(self.canvas, self.snipper,
                             button_func)
 
