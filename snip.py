@@ -1,10 +1,18 @@
 import ctypes
 from ctypes import wintypes
+from typing import NamedTuple
 from PIL import ImageGrab
 from tkinter import Image, messagebox
 
 
+class SnipSize(NamedTuple):
+    width: int
+    height: int
+
+
 class ImageSnipper:
+    snip_size = SnipSize(404, 720)
+
     def __init__(self, app_name='umamusume'):
         self.app_name = app_name
         self.display_warning = False
@@ -35,11 +43,10 @@ class ImageSnipper:
             if game_window_image.height == 0:
                 return None
 
-            aspect_ratio = game_window_image.width / game_window_image.height
-
-            target_height = 720
-
-            target_width = (int)(target_height * aspect_ratio)
-            return game_window_image.resize((target_width, target_height))
+            return game_window_image.resize(self.snip_size)
 
         return None
+
+    @staticmethod
+    def get_aspect_ratio() -> float:
+        return ImageSnipper.snip_size.width/ImageSnipper.snip_size.height
