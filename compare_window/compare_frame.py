@@ -20,7 +20,7 @@ class CompareFrame(ttk.Frame):
         frame = ttk.Frame(self)
         frame.pack(fill=tk.X, expand=True, side=tk.LEFT)
 
-        self.canvas = tk.Canvas(frame, bg='blue', height=300)
+        self.canvas = tk.Canvas(frame, bg='white', height=300)
         self.canvas.pack(fill=tk.X, expand=True)
 
         self.x_scroll = ttk.Scrollbar(frame, orient=tk.HORIZONTAL)
