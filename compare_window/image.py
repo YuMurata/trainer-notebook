@@ -1,5 +1,5 @@
 from collections import UserDict
-from typing import Dict, NamedTuple
+from typing import NamedTuple
 from PIL import Image, ImageTk
 from logger import init_logger
 

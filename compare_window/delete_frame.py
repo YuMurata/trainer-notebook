@@ -1,12 +1,6 @@
-import cv2
-from snip import ImageSnipper
-from misc import pil2cv
-from PIL import Image, ImageTk
 import tkinter as tk
 from tkinter import ttk
-from typing import Callable, NamedTuple, List
-from logger import init_logger
-from compare_window.image import ImageStruct
+from typing import Callable, NamedTuple
 
 
 class DeleteFunc(NamedTuple):

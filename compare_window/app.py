@@ -1,7 +1,5 @@
 import tkinter as tk
 from tkinter import ttk
-
-from numpy import delete, select
 from snip import ImageSnipper
 from compare_window.compare_frame import CompareFrame, StatusFunc
 from compare_window.status_frame import StatusFrame

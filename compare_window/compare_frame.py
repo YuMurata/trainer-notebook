@@ -1,7 +1,5 @@
-from sys import setcheckinterval
 from exception import IllegalInitializeException
-from typing import Callable, Dict, List, NamedTuple
-from PIL import ImageTk
+from typing import Callable, List, NamedTuple
 import tkinter as tk
 from tkinter import ttk
 from logger import init_logger
