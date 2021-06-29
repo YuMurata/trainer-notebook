@@ -71,16 +71,16 @@ class UmaFrame(tk.Frame):
 
     def add_button_left_click(self, event):
         # 画像を取得して
-        self.image = self.snipper.Snip()
+        # image = self.snipper.Snip()
 
-        if not self.image:
-            return
+        # if not image:
+        #     return
 
-        self.image = self.image.crop(self.status_rect)
+        # self.image = image.crop(self.status_rect)
         self.set_status_button_image()
-        if not self.add_flag:
-            self.button_func.add()
-            self.add_flag = True
+        # if not self.add_flag:
+        #     self.button_func.add()
+        #     self.add_flag = True
 
         self.status_button.event_generate('<Button-1>')
 
@@ -88,13 +88,7 @@ class UmaFrame(tk.Frame):
 
     def add_button_right_click(self, event):
         # 画像を取得・結合して
-        if not self.add_flag:
-            self.button_func.add()
-            self.add_flag = True
-
         if not self.image:
-            self.image = self.snipper.Snip()
-            self.image = self.image.crop(self.status_rect)
             self.set_status_button_image()
 
         else:
@@ -110,12 +104,14 @@ class UmaFrame(tk.Frame):
                 template), cv2.TM_SQDIFF_NORMED)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
+            if min_val > 0.01:
+                return
             top_left = min_loc
-            bottom_right = (top_left[0] + template.width,
-                            top_left[1]+template.height)
+            # bottom_right = (top_left[0] + template.width,
+            #                 top_left[1]+template.height)
 
-            result = pil2cv(snip_img2)
-            cv2.rectangle(result, top_left, bottom_right, 255, 2)
+            # result = pil2cv(snip_img2)
+            # cv2.rectangle(result, top_left, bottom_right, 255, 2)
 
             dst = Image.new('RGB', (w, self.image.height - 31 +
                             snip_img2.height - top_left[1]))
@@ -126,11 +122,21 @@ class UmaFrame(tk.Frame):
 
             self.image = dst
 
+        self.status_button.event_generate('<Button-1>')
+
     def delete_button_left_click(self, event):
         # 消して
         self.button_func.delete(self.item_id)
 
     def set_status_button_image(self):
+        image = self.snipper.Snip()
+        if not image:
+            return
+        self.image = image.crop(self.status_rect)
+
+        if not self.add_flag:
+            self.button_func.add()
+            self.add_flag = True
 
         status_img = self.image.crop(
             (0, 117, self.snipper.snip_size.width, 167))
