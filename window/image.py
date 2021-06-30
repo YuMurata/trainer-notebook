@@ -1,7 +1,7 @@
 from collections import UserDict
 from exception import InvalidTypeException
-from typing import NamedTuple
-from PIL import Image, ImageTk
+from typing import NamedTuple, Tuple
+from PIL import Image, ImageTk, ImageDraw
 from logger import init_logger
 
 logger = init_logger(__name__)
@@ -21,22 +21,41 @@ class RatioClipper:
                    RatioClipper.ratio_range.min)
 
 
+class Emphasis(NamedTuple):
+    width: int
+    outline: Tuple[int, int, int]
+
+
 class ImageStruct:
     def __init__(self, image: Image.Image) -> None:
         self.image = image
         self.photoimage = ImageTk.PhotoImage(image)
         self.scale_ratio = 1.0
+        self.emphasis: Emphasis = None
 
     def step_scale(self, step: float) -> ImageTk.PhotoImage:
         return self.scale(self.scale_ratio+step)
 
     def scale(self, scale_ratio: float) -> ImageTk.PhotoImage:
         self.scale_ratio = RatioClipper.clip(scale_ratio)
-        logger.debug(f'scale: {self.scale_ratio}')
         x, y = self.image.size
         x, y = int(x*self.scale_ratio), int(y*self.scale_ratio)
-        self.photoimage = ImageTk.PhotoImage(self.image.resize((x, y)))
+
+        image = self.image.resize((x, y))
+
+        if self.emphasis:
+            w, h = image.size
+            draw = ImageDraw.Draw(image)
+
+            draw.rectangle((0, 0, w-1, h-1), width=self.emphasis.width,
+                           outline=self.emphasis.outline)
+
+        self.photoimage = ImageTk.PhotoImage(image)
         return self.photoimage
+
+    def set_emphasis(self, emphasis: Emphasis):
+        self.emphasis = emphasis
+        self.scale(self.scale_ratio)
 
     def copy(self):
         return ImageStruct(self.image.copy())

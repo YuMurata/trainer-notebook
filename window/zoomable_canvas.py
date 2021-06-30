@@ -28,3 +28,6 @@ class ZoomableCanvasFrame(ScrollableCanvasFrame):
             old_item_id = item_id
 
         self.reconfig_scroll()
+
+    def canvas_xy(self, event: tk.Event) -> Tuple[int, int]:
+        return self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
