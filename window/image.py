@@ -1,4 +1,5 @@
 from collections import UserDict
+from exception import InvalidTypeException
 from typing import NamedTuple
 from PIL import Image, ImageTk
 from logger import init_logger
@@ -45,6 +46,15 @@ class ImageStructDict(UserDict):
     def __init__(self) -> None:
         super().__init__()
         self.scale_ratio = 1.0
+
+    def __setitem__(self, key: str, item: ImageStruct) -> None:
+        if type(item) != ImageStruct:
+            raise InvalidTypeException(
+                f'set allow only ImageStruct, got {type(item)}')
+        return super().__setitem__(key, item)
+
+    def __getitem__(self, key: str) -> ImageStruct:
+        return super().__getitem__(key)
 
     def step_scale(self, step: float):
         self.scale(self.scale_ratio+step)
