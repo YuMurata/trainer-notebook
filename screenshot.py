@@ -1,5 +1,5 @@
 import tkinter as tk
-from window.screenshot.screenshot import ScreenShotFrame
+from window.screenshot import ScreenShotFrame
 root = tk.Tk()
 ScreenShotFrame(root).pack()
 root.mainloop()
