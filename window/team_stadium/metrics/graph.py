@@ -85,24 +85,11 @@ class GraphView:
         self.draw_target = draw_target
 
 
-class GraphWindow(tk.Toplevel):
-    window_name = 'umauma graph'
-
+class GraphWindow(ttk.Frame):
     def __init__(self, master, graph_view: GraphView):
-        super().__init__(master)
-        self.resizable(False, False)
-        self.title(self.window_name)
+        super().__init__(master, name='umauma graph')
         self.graph_view = graph_view
         self._create_widgets()
-
-    def _create_canvas(self):
-        frame = ttk.Frame(self)
-
-        # Generate canvas instance, Embedding fig in root
-        self.canvas = FigureCanvasTkAgg(self.graph_view.fig, master=frame)
-        self.canvas.get_tk_widget().pack()
-
-        return frame
 
     def _create_buttons(self):
         frame = ttk.Frame(self)
@@ -118,8 +105,11 @@ class GraphWindow(tk.Toplevel):
         return frame
 
     def _create_widgets(self):
-        self._create_canvas().pack()
-        self._create_buttons().pack(pady=10, side=BOTTOM)
+        self.canvas = FigureCanvasTkAgg(self.graph_view.fig, master=self)
+        self.canvas.get_tk_widget().pack()
+
+        button_frame = self._create_buttons()
+        button_frame.pack(pady=10, side=BOTTOM)
 
     def _click_draw_line(self):
         self.graph_view.update_target(GraphView.DrawTarget.LINE)
