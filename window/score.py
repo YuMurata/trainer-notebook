@@ -9,6 +9,23 @@ from logger import init_logger
 logger = init_logger(__name__)
 
 
+class FixScoreFrame(ttk.Frame):
+    def __init__(self, master: tk.Widget):
+        super().__init__(master=master)
+        self._create_rank().pack(side=tk.LEFT)
+        self._create_rank().pack(side=tk.LEFT)
+
+    def _create_rank(self):
+        frame = ttk.Frame(self)
+        label = ttk.Label(frame, text='rank')
+        entry = ttk.Entry(frame)
+
+        label.pack()
+        entry.pack()
+
+        return frame
+
+
 class ScoreWindow(tk.Toplevel):
     def __init__(self, master, metrics_updater: Callable[[], None]):
         super().__init__(master)
@@ -114,6 +131,7 @@ class ScoreWindow(tk.Toplevel):
 
     def _create_widgets(self):
         self._create_treeview().pack()
+        FixScoreFrame(self).pack()
         self._create_button().pack()
 
 
