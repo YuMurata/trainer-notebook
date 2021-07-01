@@ -38,12 +38,7 @@ class ScoreWindow(tk.Toplevel):
                 return (-x[1]['score'], x[0])
             return (0, x[0])
 
-        logger.debug(self.content_dict)
         content_list = sorted(self.content_dict.items(), key=sort_key)
-        tree_length = 15
-        if len(content_list) > tree_length:
-            logger.debug(content_list)
-            return
 
         for i, (name, content) in enumerate(content_list):
             if 'rank' in content:
@@ -56,6 +51,12 @@ class ScoreWindow(tk.Toplevel):
 
     def update_app(self, event):
         self.content_dict = self.linked_thread.get()
+
+        tree_length = 15
+        if len(self.content_dict) > tree_length:
+            logger.debug('幻の16人目')
+            logger.debug(self.content_dict)
+            return
 
         self._clear_treeview()
         self._fill_treeview()
