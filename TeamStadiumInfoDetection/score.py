@@ -105,6 +105,9 @@ class ScoreOCR:
         return None
 
     def _extract_name(self, line: str, score: int) -> str:
+        if not score:
+            return None
+
         extract_name = line.replace(' ', '').split(str(score))[0]
 
         def match(uma_name: str):
@@ -116,7 +119,9 @@ class ScoreOCR:
 
         uma_name, max_match = max(match_list, key=lambda x: x[1])
 
-        if max_match < 0.6:
+        if max_match < 0.5:
+            logger.debug(
+                f'max match: {max_match}, regret name: {uma_name}, extract name: {extract_name}')
             return None
 
         return uma_name
@@ -131,8 +136,11 @@ class ScoreOCR:
 
         line_list = [rm_point(d.content) for d in res]
         score_list = [self._extract_score(line) for line in line_list]
-        score_dict = {self._extract_name(line, score): score
-                      for score, line in zip(score_list, line_list) if score}
+        name_list = [self._extract_name(line, score) for score, line in zip(
+            score_list, line_list)]
+        score_dict = {name: score
+                      for name, score in zip(name_list, score_list)
+                      if score and name}
 
         return score_dict
 
