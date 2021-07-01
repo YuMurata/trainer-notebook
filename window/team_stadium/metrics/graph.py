@@ -85,7 +85,7 @@ class GraphView:
         self.draw_target = draw_target
 
 
-class GraphWindow(ttk.Frame):
+class GraphFrame(ttk.Frame):
     def __init__(self, master, graph_view: GraphView):
         super().__init__(master, name='umauma graph')
         self.graph_view = graph_view

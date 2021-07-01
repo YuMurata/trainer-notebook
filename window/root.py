@@ -190,11 +190,10 @@ class Win1(tk.Frame):
 
         self.graph_view = GraphView()
         team_stadium = ttk.Notebook(self, height=-1, width=-1)
-        self.metrics_view = MetricsView(team_stadium)
+        self.metrics_view = MetricsFrame(team_stadium)
         # self.tab.add(self.metrics_view, text='Metrics')
         team_stadium.add(ttk.Label(self, text='rank-score'), text='rank-score')
         team_stadium.add(self.metrics_view, text='metrics')
-        team_stadium.add(ttk.Label(self, text='graph'), text='graph')
         self.tab.add(team_stadium, text='TeamStadium')
         self.tab.add(ttk.Label(self, text='Status'), text='Status')
         self.tab.add(ttk.Label(self, text='Screenshot'), text='Screenshot')
