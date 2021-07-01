@@ -1,12 +1,11 @@
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 from snip import ImageSnipper
 from misc import concat_imshow, pil2cv
 import cv2
 from PIL import Image
-from pathlib import Path
 import numpy as np
 from TeamStadiumInfoDetection.linked_reader import LinkedReader
-from exception import FileNotFoundException
+from .define import template_dir
 
 
 class debugger:
@@ -66,11 +65,15 @@ class RankReader(LinkedReader):
     def __init__(self):
         self.snipper = ImageSnipper()
 
+        rank_template_dir = template_dir/'rank'
         self.template_rank = [cv2.imread(
-            f'./resource/rank/rank{i+1:02}.png') for i in range(self.rank_num)]
+            str(rank_template_dir/f'rank{i+1:02}.png'))
+            for i in range(self.rank_num)]
+
+        uma_template_dir = template_dir/'uma'
         self.template_uma_dict = {
-            path.stem: pil2cv(Image.open(path))
-            for path in Path('./resource/uma_template').iterdir()}
+            path.stem: cv2.imread(str(path))
+            for path in uma_template_dir.iterdir()}
 
         self.is_update = True
 
@@ -79,19 +82,10 @@ class RankReader(LinkedReader):
 
         img = img[175:250, 130:265]
 
-        def load_image():
-            resource_dir = './resource'
-            image_name_list = ['win.png', 'lose.png']
-
-            def pred(image_name: str):
-                resource_path = Path(resource_dir)/image_name
-
-                if not resource_path.exists():
-                    raise FileNotFoundException(
-                        f"can't read {str(resource_path)}")
-                return cv2.imread(str(resource_path))
-
-            return [pred(image_name) for image_name in image_name_list]
+        def load_image() -> List[np.ndarray]:
+            result_template_dir = template_dir/'race_result'
+            return [cv2.imread(str(path))
+                    for path in result_template_dir.iterdir()]
 
         win_lose_img = load_image()
         method = cv2.TM_SQDIFF_NORMED
