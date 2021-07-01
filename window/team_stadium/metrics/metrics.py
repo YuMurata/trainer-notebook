@@ -1,45 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
-from enum import IntEnum, auto
 from Uma import UmaInfo, UmaPointFileIO
 from typing import List
-
-
-class SortKey(IntEnum):
-    NUM = 1
-    NAME = 2
-    RANKMEAN = auto()
-    MAX = auto()
-    MIN = auto()
-    MEAN = auto()
-    STD = auto()
-
-
-class SortUmaInfo:
-    def __init__(self):
-        self.key = self.SortKey.NAME
-        self.is_reverse = False
-        self.key_dict = {key: value for key, value in zip(
-            self.SortKey, MetricsView.column_name_list)}
-
-    def sort(self, uma_info: UmaInfo):
-        return uma_info[UmaInfo.item_name_list[int(self.key)-2]]
-
-    def set_key(self, x: int):
-        key = self.SortKey(x)
-        if key == self.SortKey.NUM:
-            return
-
-        if key == self.key:
-            self.is_reverse = not self.is_reverse
-        else:
-            self.is_reverse = False
-
-        self.key = key
-
-    @property
-    def key_to_str(self):
-        return self.key_dict[self.key]
+from .sort import SortUmaInfo
 
 
 class MetricsView(ttk.Frame):
@@ -48,7 +11,7 @@ class MetricsView(ttk.Frame):
 
     def __init__(self, master):
         super().__init__(master)
-        self.uma_info_sorter = self.SortUmaInfo()
+        self.uma_info_sorter = SortUmaInfo()
         self.selected_item_dict: dict = None
         self.graph_updater = None
         self._create_widgets()
@@ -70,13 +33,17 @@ class MetricsView(ttk.Frame):
     def _create_widgets(self):
         self.treeview_score = ttk.Treeview(
             self, columns=self.column_name_list, height=30, show="headings")
-        self.treeview_score.column('Num', anchor='e', width=50)
-        self.treeview_score.column('Name', anchor='w', width=120)
-        self.treeview_score.column('RankMean', anchor='e', width=80)
-        self.treeview_score.column('Max', anchor='e', width=50)
-        self.treeview_score.column('Min', anchor='e', width=50)
-        self.treeview_score.column('Mean', anchor='e', width=50)
-        self.treeview_score.column('Std', anchor='e', width=50)
+
+        column_dict = {'Num': dict(anchor=tk.E, width=50),
+                       'Name': dict(anchor=tk.W, width=120),
+                       'RankMean': dict(anchor=tk.E, width=80),
+                       'Max': dict(anchor=tk.E, width=50),
+                       'Min': dict(anchor=tk.E, width=50),
+                       'Mean': dict(anchor=tk.E, width=50),
+                       'Std': dict(anchor=tk.E, width=50)}
+
+        for name, option in column_dict.items():
+            self.treeview_score.column(name, **option)
 
         # Create Heading
         self._create_heading()
@@ -98,9 +65,8 @@ class MetricsView(ttk.Frame):
         self.treeview_score.tag_configure(
             'odd', background='red', foreground='blue')
 
-        # self.treeview_score.grid(row=0,column=0,columnspan=2,pady=10)
         self.treeview_score.pack(side=tk.LEFT, pady=10)
-        self.vscroll.pack(side=tk.RIGHT, fill="y", pady=10)
+        self.vscroll.pack(side=tk.RIGHT, fill=tk.Y, pady=10)
 
         self.treeview_score.bind('<<TreeviewSelect>>', self._click_view)
 
@@ -130,12 +96,13 @@ class MetricsView(ttk.Frame):
 
         item_id_list = self.treeview_score.selection()
 
-        def func(item_id) -> UmaInfo:
+        def get_uma_info(item_id) -> UmaInfo:
             item = self.treeview_score.item(item_id)
-            return uma_info_dict[item['values'][1]]
+            uma_name = item['values'][1]
+            return uma_info_dict[uma_name]
 
-        self.selected_item_dict = {
-            func(item_id): item_id for item_id in item_id_list}
+        self.selected_item_dict = {get_uma_info(item_id): item_id
+                                   for item_id in item_id_list}
         if self.graph_updater:
             self.graph_updater(list(self.selected_item_dict.keys()))
 
