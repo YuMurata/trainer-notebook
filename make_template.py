@@ -19,6 +19,11 @@ def create_template_img(img: Image.Image):
 
 
 if __name__ == '__main__':
+    '''
+    メニュー→ウマ娘名鑑→トレーナーノート→任意のうま娘→ボイス
+    の画面で実行
+    '''
+
     all_uma_name_list = UmaNameFileReader.Read()
     uma_name = None
     while uma_name not in all_uma_name_list:
