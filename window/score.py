@@ -12,13 +12,16 @@ logger = init_logger(__name__)
 class FixScoreFrame(ttk.Frame):
     def __init__(self, master: tk.Widget):
         super().__init__(master=master)
-        self._create_rank().pack(side=tk.LEFT)
-        self._create_rank().pack(side=tk.LEFT)
 
-    def _create_rank(self):
+        key_list = ['rank', 'name', 'score']
+        self.entry_var_dict = {key: tk.StringVar(self) for key in key_list}
+        for key in key_list:
+            self._create_entry(key).pack(side=tk.LEFT)
+
+    def _create_entry(self, key: str):
         frame = ttk.Frame(self)
-        label = ttk.Label(frame, text='rank')
-        entry = ttk.Entry(frame)
+        label = ttk.Label(frame, text=key)
+        entry = ttk.Entry(frame, textvariable=self.entry_var_dict[key])
 
         label.pack()
         entry.pack()
@@ -29,7 +32,7 @@ class FixScoreFrame(ttk.Frame):
 class ScoreWindow(tk.Toplevel):
     def __init__(self, master, metrics_updater: Callable[[], None]):
         super().__init__(master)
-        self.resizable(False, False)
+        # self.resizable(False, False)
         self.title("umauma score")
 
         def generate_update_app():
@@ -145,5 +148,5 @@ class ScoreApp(BaseApp):
     def __init__(self, master_widget: tk.Toplevel, master_updater) -> None:
         def generator():
             return ScoreWindow(master_widget, master_updater)
-        target_size = (300, 380)
+        target_size = (300, 500)
         super().__init__(generator, master_widget, target_size)
