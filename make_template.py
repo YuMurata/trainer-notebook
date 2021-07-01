@@ -27,8 +27,8 @@ if __name__ == '__main__':
     all_uma_name_list = UmaNameFileReader.Read()
     uma_name = None
     while uma_name not in all_uma_name_list:
-        uma_name = input("作成するウマ娘の名前を入力してください\n->") + '\n'
+        uma_name = input("作成するウマ娘の名前を入力してください\n->")
 
     snip_img = ImageSnipper().Snip()
     template = create_template_img(snip_img)
-    template.save(f"./resource/uma_template/{uma_name}.png")
+    template.save(f"./resource/system/template/uma/{uma_name}.png")
