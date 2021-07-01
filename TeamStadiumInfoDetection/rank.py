@@ -6,6 +6,8 @@ from PIL import Image
 import numpy as np
 from TeamStadiumInfoDetection.linked_reader import LinkedReader
 from .define import template_dir
+from logger import init_logger
+logger = init_logger(__name__)
 
 
 class debugger:
@@ -72,7 +74,7 @@ class RankReader(LinkedReader):
 
         uma_template_dir = template_dir/'uma'
         self.template_uma_dict = {
-            path.stem: cv2.imread(str(path))
+            path.stem: pil2cv(Image.open(path))
             for path in uma_template_dir.iterdir()}
 
         self.is_update = True
