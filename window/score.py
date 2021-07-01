@@ -33,11 +33,18 @@ class ScoreWindow(tk.Toplevel):
 
     def _fill_treeview(self):
         def sort_key(x: Tuple[str, Dict[str, int]]):
+            logger.debug(f'name: {x[0]}, val: {x[1]}')
             if 'score' in x[1]:
                 return (-x[1]['score'], x[0])
             return (0, x[0])
 
+        logger.debug(self.content_dict)
         content_list = sorted(self.content_dict.items(), key=sort_key)
+        tree_length = 15
+        if len(content_list) > tree_length:
+            logger.debug(content_list)
+            return
+
         for i, (name, content) in enumerate(content_list):
             if 'rank' in content:
                 self.treeview_score.set(i, 1, content['rank'])
@@ -48,7 +55,6 @@ class ScoreWindow(tk.Toplevel):
             self.treeview_score.set(i, 2, name)
 
     def update_app(self, event):
-        logger.debug('update app')
         self.content_dict = self.linked_thread.get()
 
         self._clear_treeview()
