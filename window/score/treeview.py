@@ -1,66 +1,17 @@
-from TeamStadiumInfoDetection.app_linked import AppLinkedThread
-from typing import Callable, Dict, Tuple
 import tkinter as tk
 from tkinter import ttk
-from TeamStadiumInfoDetection import Dispatcher
-from window.app import BaseApp
-from logger import init_logger
-
-logger = init_logger(__name__)
 
 
-class FixScoreFrame(ttk.Frame):
+class ScoreTree(ttk.Treeview):
     def __init__(self, master: tk.Widget):
-        super().__init__(master=master)
+        option_dict = dict(columns=['Num', 'Rank', 'Name', 'Score'],
+                           height=15, show='headings')
 
-        option_dict = {'rank': dict(width=10),
-                       'name': dict(width=20),
-                       'score': dict(width=10), }
+        super().__init__(master=master, **option_dict)
+        self.tree_length = 15
 
-        key_list = list(option_dict.keys())
-        self.entry_var_dict = {key: tk.StringVar(self) for key in key_list}
-
-        entry_frame = ttk.Frame(self)
-        for key, option in option_dict.items():
-            self._create_entry(entry_frame, key, option).pack(
-                side=tk.LEFT, padx=3)
-        entry_frame.pack()
-
-        button = ttk.Button(self, text='fix')
-        button.pack()
-
-    def _create_entry(self, master: tk.Widget, key: str, option: dict):
-        frame = ttk.Frame(master)
-        label = ttk.Label(frame, text=key, **option)
-        entry = ttk.Entry(
-            frame, textvariable=self.entry_var_dict[key], **option)
-
-        label.pack()
-        entry.pack()
-
-        return frame
-
-
-class ScoreWindow(tk.Toplevel):
-    def __init__(self, master, metrics_updater: Callable[[], None]):
-        super().__init__(master)
-        # self.resizable(False, False)
-        self.title("umauma score")
-
-        def generate_update_app():
-            self.treeview_score.event_generate('<<UpdateApp>>', when='tail')
-
-        self.linked_thread = AppLinkedThread(Dispatcher(generate_update_app))
-        self.linked_thread.start()
-
-        self.treeview_height = 15
-
-        self._create_widgets()
-        self.metrics_updater = metrics_updater
-        self.content_dict: Dict[str, Dict[str, int]] = dict()
-
-    def _clear_treeview(self):
-        for i in range(self.treeview_height):
+    def clear(self):
+        for i in range(self.tree_length):
             self.treeview_score.set(i, 1, '')
             self.treeview_score.set(i, 2, '')
             self.treeview_score.set(i, 3, '')
@@ -72,7 +23,12 @@ class ScoreWindow(tk.Toplevel):
                 return (-x[1]['score'], x[0])
             return (0, x[0])
 
+        logger.debug(self.content_dict)
         content_list = sorted(self.content_dict.items(), key=sort_key)
+        tree_length = 15
+        if len(content_list) > tree_length:
+            logger.debug(content_list)
+            return
 
         for i, (name, content) in enumerate(content_list):
             if 'rank' in content:
@@ -85,12 +41,6 @@ class ScoreWindow(tk.Toplevel):
 
     def update_app(self, event):
         self.content_dict = self.linked_thread.get()
-
-        # tree_length = 15
-        # if len(self.content_dict) > tree_length:
-        #     logger.debug('幻の16人目')
-        #     logger.debug(self.content_dict)
-        #     return
 
         self._clear_treeview()
         self._fill_treeview()
@@ -108,7 +58,7 @@ class ScoreWindow(tk.Toplevel):
         frame.pack()
 
         self.treeview_score = ttk.Treeview(
-            frame, columns=['Num', 'Rank', 'Name', 'Score'], height=self.treeview_height,
+            frame, columns=['Num', 'Rank', 'Name', 'Score'], height=15,
             show="headings")
         self.treeview_score.column('Num', width=40)
         self.treeview_score.column('Rank', width=40)
@@ -122,7 +72,7 @@ class ScoreWindow(tk.Toplevel):
         self.treeview_score.heading('Score', text='Score', anchor='center')
 
         # Add data
-        for i in range(self.treeview_height):
+        for i in range(15):
             self.treeview_score.insert(
                 parent='', index='end', iid=i, values=(i+1, '', ''))
 
@@ -157,11 +107,3 @@ class ScoreWindow(tk.Toplevel):
         self._create_treeview().pack()
         FixScoreFrame(self).pack(expand=True, fill=tk.BOTH)
         self._create_button().pack()
-
-
-class ScoreApp(BaseApp):
-    def __init__(self, master_widget: tk.Toplevel, master_updater) -> None:
-        def generator():
-            return ScoreWindow(master_widget, master_updater)
-        target_size = (300, 500)
-        super().__init__(generator, master_widget, target_size)
