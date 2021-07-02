@@ -1,12 +1,12 @@
 from TeamStadiumInfoDetection.app_linked import AppLinkedThread
-from typing import Callable, Dict, Tuple
+from typing import Callable, Dict
 import tkinter as tk
 from tkinter import ttk
 from TeamStadiumInfoDetection import Dispatcher
 from window.app import BaseApp
-from .treeview import ScoreTree
 from .treeview import ScoreTree, Content
 from .fix_frame import FixScoreFrame
+from . import fix_frame
 from logger import init_logger
 
 logger = init_logger(__name__)
@@ -15,6 +15,9 @@ logger = init_logger(__name__)
 class ScoreFrame(ttk.Frame):
     def __init__(self, master: tk.Widget, metrics_updater: Callable[[], None]):
         super().__init__(master)
+
+        self.metrics_updater = metrics_updater
+        self.content_dict: Dict[str, Dict[str, int]] = dict()
 
         self.treeview_score = ScoreTree(self)
         self.treeview_score.bind('<<UpdateApp>>', self.update_app)
@@ -31,15 +34,8 @@ class ScoreFrame(ttk.Frame):
 
         def generate_update_app():
             self.treeview_score.event_generate('<<UpdateApp>>', when='tail')
-
         self.linked_thread = AppLinkedThread(Dispatcher(generate_update_app))
         self.linked_thread.start()
-
-        self.treeview_height = 15
-
-        self._create_widgets()
-        self.metrics_updater = metrics_updater
-        self.content_dict: Dict[str, Dict[str, int]] = dict()
 
     def _fix_content(self, content: Content):
         id_list = self.treeview_score.selection()
