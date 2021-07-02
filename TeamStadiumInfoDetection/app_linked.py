@@ -2,7 +2,7 @@ from logger import init_logger
 from TeamStadiumInfoDetection.dispatcher import BaseDispatched, Dispatcher
 from TeamStadiumInfoDetection.linked_reader import LinkedReader
 from threading import Thread, Lock
-from snip import ImageSnipper
+from snip import ImageSnipper, DebugSnipperType
 from TeamStadiumInfoDetection.rank import RankReader
 from TeamStadiumInfoDetection.score import ScoreReader
 from typing import Dict, Tuple
@@ -10,7 +10,6 @@ from time import sleep
 from PIL import Image
 from copy import deepcopy
 from Uma import UmaPointFileIO
-from threading import active_count
 import threading
 logger = init_logger(__name__)
 
@@ -42,6 +41,7 @@ class AppLinkedThread(Thread):
         super().__init__(name='AppLinkedThread')
 
         self.snipper = ImageSnipper()
+        self.snipper = DebugSnipperType.RaceScore.value(__name__)
         self.lock = Lock()
         self.dispatcher = dispatcher
         self.is_update = True
@@ -69,7 +69,7 @@ class AppLinkedThread(Thread):
                 if read_item:
                     key = read_item[0]
                     read_dict = read_item[1]
-                    logger.debug(f'key: {key}')
+
                     with self.lock:
                         for name in read_dict.keys():
                             self.linked_dict.setdefault(name, dict())
