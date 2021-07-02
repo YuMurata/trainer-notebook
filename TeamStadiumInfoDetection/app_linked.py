@@ -10,7 +10,8 @@ from time import sleep
 from PIL import Image
 from copy import deepcopy
 from Uma import UmaPointFileIO
-
+from threading import active_count
+import threading
 logger = init_logger(__name__)
 
 
@@ -59,6 +60,9 @@ class AppLinkedThread(Thread):
             return None
 
         while self.is_update:
+            if not threading.main_thread().is_alive():
+                return
+
             snip_image = self.snipper.Snip()
             if snip_image:
                 read_item = each_read(snip_image)
