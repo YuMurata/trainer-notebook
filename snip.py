@@ -6,6 +6,7 @@ from tkinter import messagebox
 from pathlib import Path
 from logger import init_logger
 import random
+from enum import Enum
 
 logger = init_logger(__name__)
 
@@ -57,14 +58,22 @@ class ImageSnipper:
         return ImageSnipper.snip_size.width/ImageSnipper.snip_size.height
 
 
-class DebugSnipper:
-    class RaceScore(ImageSnipper):
-        def __init__(self, called: str):
-            image_dir = Path('./resource/other/debug/race')
-            self.image_list = [Image.open(path)
-                               for path in image_dir.iterdir()]
-            logger.info(f'debug snipper is called from {called}')
+class BaseDebugSnipper(ImageSnipper):
+    def __init__(self, called: str, image_dir: Path):
+        self.image_list = [Image.open(path)
+                           for path in image_dir.iterdir()]
+        logger.info(f'debug snipper is called from {called}')
 
-        def Snip(self) -> Image.Image:
-            image = random.choice(self.image_list)
-            return image.resize(self.snip_size)
+    def Snip(self) -> Image.Image:
+        image = random.choice(self.image_list)
+        return image.resize(self.snip_size)
+
+
+class RaceScoreSnipper(BaseDebugSnipper):
+    def __init__(self, called: str) -> None:
+        image_dir = Path('./resource/other/debug/race/score')
+        super().__init__(called, image_dir)
+
+
+class DebugSnipperType(Enum):
+    RaceScore = RaceScoreSnipper
