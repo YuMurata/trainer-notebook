@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from typing import List, NamedTuple
+from typing import Dict, List, NamedTuple
 from logger import init_logger
 
 logger = init_logger(__name__)
@@ -14,12 +14,11 @@ class Content(NamedTuple):
 
 class ScoreTree(ttk.Treeview):
     def __init__(self, master: tk.Widget):
-        option_dict = dict(columns=['Num', 'Rank', 'Name', 'Score'],
-                           height=15, show='headings')
-
-        super().__init__(master=master, **option_dict)
+        super().__init__(master=master, columns=['Num', 'Rank', 'Name', 'Score'],
+                         height=15, show='headings', selectmode=tk.BROWSE)
 
         self.tree_length = 15
+        self.item_dict: Dict[str, Dict[str, str]] = dict()
 
         self._init_column()
         self._init_heading()
@@ -27,9 +26,11 @@ class ScoreTree(ttk.Treeview):
 
     def clear(self):
         for i in range(self.tree_length):
-            self.treeview_score.set(i, 1, '')
-            self.treeview_score.set(i, 2, '')
-            self.treeview_score.set(i, 3, '')
+            self.set(i, 1, '')
+            self.set(i, 2, '')
+            self.set(i, 3, '')
+
+            self.item_dict[str(i)] = self.set(i)
 
     def fill(self, content_list: List[Content]):
         if len(content_list) > self.tree_length:
@@ -37,11 +38,14 @@ class ScoreTree(ttk.Treeview):
             return
 
         for i, content in enumerate(content_list):
-            raw_list = [(1, content.rank), (2, content.name),
+            raw_list = [(1, content.rank),
+                        (2, content.name),
                         (3, content.score)]
             for column, value in raw_list:
                 if value:
                     self.set(i, column=column, value=value)
+
+            self.item_dict[str(i)] = self.set(i)
 
     def fix(self, item_id: str, content: Content):
         rank = content.rank if content.rank else ''
@@ -51,6 +55,9 @@ class ScoreTree(ttk.Treeview):
         self.set(item_id, 1, rank)
         self.set(item_id, 2, name)
         self.set(item_id, 3, score)
+
+        self.item_dict[item_id] = self.set(item_id)
+
     def _init_column(self):
         self.column('Num', width=40)
         self.column('Rank', width=40)
@@ -72,3 +79,4 @@ class ScoreTree(ttk.Treeview):
             value = (num, rank, name, score)
 
             self.insert(parent='', index='end', iid=i, values=value)
+            self.item_dict[str(i)] = self.set(i)
