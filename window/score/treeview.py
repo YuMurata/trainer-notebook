@@ -43,6 +43,14 @@ class ScoreTree(ttk.Treeview):
                 if value:
                     self.set(i, column=column, value=value)
 
+    def fix(self, item_id: str, content: Content):
+        rank = content.rank if content.rank else ''
+        name = content.name if content.name else ''
+        score = content.score if content.score else ''
+
+        self.set(item_id, 1, rank)
+        self.set(item_id, 2, name)
+        self.set(item_id, 3, score)
     def _init_column(self):
         self.column('Num', width=40)
         self.column('Rank', width=40)

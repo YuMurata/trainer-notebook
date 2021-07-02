@@ -20,6 +20,15 @@ class ScoreFrame(ttk.Frame):
         self.treeview_score.bind('<<UpdateApp>>', self.update_app)
         self.treeview_score.bind('<<TreeviewSelect>>', self._select_item)
 
+        self.treeview_score.pack()
+
+        self.fix_score_frame = FixScoreFrame(self)
+        self.fix_score_frame.set_callback(
+            self.fix_frame.Callback(self._fix_content))
+        self.fix_score_frame.pack(expand=True, fill=tk.BOTH)
+
+        self._create_button().pack()
+
         def generate_update_app():
             self.treeview_score.event_generate('<<UpdateApp>>', when='tail')
 
@@ -32,8 +41,44 @@ class ScoreFrame(ttk.Frame):
         self.metrics_updater = metrics_updater
         self.content_dict: Dict[str, Dict[str, int]] = dict()
 
+    def _fix_content(self, content: Content):
+        id_list = self.treeview_score.selection()
+
+        if not id_list or len(id_list) <= 0:
+            return
+
+        select_id = id_list[0]
+        self.treeview_score.fix(select_id, content)
+
+    def _select_item(self, event: tk.Event):
+        id_list = self.treeview_score.selection()
+
+        if not id_list or len(id_list) <= 0:
+            return
+
+        select_id = id_list[0]
+        select_item = self.treeview_score.set(select_id)
+
+        content = Content(name=select_item['Name'],
+                          rank=select_item['Rank'],
+                          score=select_item['Score'])
+        self.fix_score_frame.set_value(content)
+
     def update_app(self, event):
         self.content_dict = self.linked_thread.get()
+
+        def sort_key(content: Content):
+            score = -content.score if content.score else 0
+            name = content.name if content.name else 0
+            return (score, name)
+
+        content_list = [Content(name, content.get('rank', None),
+                                content.get('score', None))
+                        for name, content in self.content_dict.items()]
+        sorted_list = sorted(content_list, key=sort_key)
+
+        self.treeview_score.clear()
+        self.treeview_score.fill(sorted_list)
 
     def destroy(self) -> None:
         self.linked_thread.stop()
