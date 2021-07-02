@@ -98,20 +98,39 @@ class FixScoreFrame(ttk.Frame):
         frame = ttk.Frame(self)
         frame.pack()
 
+        bind_return_cmd = ('<Return>', self._fix_content)
 
         self.rank_frame = RankFrame(frame)
+        self.rank_frame.combo.bind(*bind_return_cmd)
         self.rank_frame.pack(side=tk.LEFT, padx=3)
 
         self.name_frame = NameFrame(frame)
+        self.name_frame.entry.bind(*bind_return_cmd)
         self.name_frame.pack(side=tk.LEFT, padx=3)
 
         self.score_frame = ScoreFrame(frame)
+        self.score_frame.combo.bind(*bind_return_cmd)
         self.score_frame.pack(side=tk.LEFT, padx=3)
 
         button = ttk.Button(self, text='fix')
+        button.bind('<Button-1>', self._fix_content)
         button.pack()
 
         self.callback: Callback = None
 
+    def set_value(self, content: Content):
+        self.rank_frame.set_text(content.rank)
+        self.name_frame.set_text(content.name)
+        self.score_frame.set_text(content.score)
 
-        return frame
+    def set_callback(self, callback: Callback):
+        self.callback = callback
+
+    def _fix_content(self, event: tk.Widget):
+        if not self.callback:
+            raise IllegalInitializeException('not set callback')
+
+        content = Content(name=self.name_frame.get_text(),
+                          rank=self.rank_frame.get_text(),
+                          score=self.score_frame.get_text())
+        self.callback.fix(content)
