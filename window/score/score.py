@@ -4,48 +4,16 @@ import tkinter as tk
 from tkinter import ttk
 from TeamStadiumInfoDetection import Dispatcher
 from window.app import BaseApp
+from .treeview import ScoreTree
+from .fix_frame import FixScoreFrame
 from logger import init_logger
 
 logger = init_logger(__name__)
 
 
-class FixScoreFrame(ttk.Frame):
-    def __init__(self, master: tk.Widget):
-        super().__init__(master=master)
-
-        option_dict = {'rank': dict(width=10),
-                       'name': dict(width=20),
-                       'score': dict(width=10), }
-
-        key_list = list(option_dict.keys())
-        self.entry_var_dict = {key: tk.StringVar(self) for key in key_list}
-
-        entry_frame = ttk.Frame(self)
-        for key, option in option_dict.items():
-            self._create_entry(entry_frame, key, option).pack(
-                side=tk.LEFT, padx=3)
-        entry_frame.pack()
-
-        button = ttk.Button(self, text='fix')
-        button.pack()
-
-    def _create_entry(self, master: tk.Widget, key: str, option: dict):
-        frame = ttk.Frame(master)
-        label = ttk.Label(frame, text=key, **option)
-        entry = ttk.Entry(
-            frame, textvariable=self.entry_var_dict[key], **option)
-
-        label.pack()
-        entry.pack()
-
-        return frame
-
-
-class ScoreWindow(tk.Toplevel):
-    def __init__(self, master, metrics_updater: Callable[[], None]):
+class ScoreFrame(ttk.Frame):
+    def __init__(self, master: tk.Widget, metrics_updater: Callable[[], None]):
         super().__init__(master)
-        # self.resizable(False, False)
-        self.title("umauma score")
 
         def generate_update_app():
             self.treeview_score.event_generate('<<UpdateApp>>', when='tail')
@@ -154,14 +122,19 @@ class ScoreWindow(tk.Toplevel):
         self.metrics_updater()
 
     def _create_widgets(self):
-        self._create_treeview().pack()
+        # self._create_treeview().pack()
+        self.treeview_score = ScoreTree(self)
+        self.treeview_score.pack()
         FixScoreFrame(self).pack(expand=True, fill=tk.BOTH)
         self._create_button().pack()
 
 
 class ScoreApp(BaseApp):
-    def __init__(self, master_widget: tk.Toplevel, master_updater) -> None:
+    def __init__(self, master: tk.Toplevel, master_updater) -> None:
         def generator():
-            return ScoreWindow(master_widget, master_updater)
+            window = tk.Toplevel(master)
+            frame = ScoreFrame(window, master_updater)
+            frame.pack()
+            return window
         target_size = (300, 500)
-        super().__init__(generator, master_widget, target_size)
+        super().__init__(generator, master, target_size)

@@ -39,7 +39,7 @@ class BaseApp:
                 self.window_pos = x, y
                 print('pos:', self.window_pos)
 
-            self._set_geometry()
+            # self._set_geometry()
 
             def memory_pos(event: tk.Event):
                 self.window_pos = (self.window.winfo_rootx()-8,

@@ -1,8 +1,13 @@
 import ctypes
 from ctypes import wintypes
 from typing import NamedTuple
-from PIL import ImageGrab
-from tkinter import Image, messagebox
+from PIL import ImageGrab, Image
+from tkinter import messagebox
+from pathlib import Path
+from logger import init_logger
+import random
+
+logger = init_logger(__name__)
 
 
 class SnipSize(NamedTuple):
@@ -50,3 +55,16 @@ class ImageSnipper:
     @staticmethod
     def get_aspect_ratio() -> float:
         return ImageSnipper.snip_size.width/ImageSnipper.snip_size.height
+
+
+class DebugSnipper:
+    class RaceScore(ImageSnipper):
+        def __init__(self, called: str):
+            image_dir = Path('./resource/other/debug/race')
+            self.image_list = [Image.open(path)
+                               for path in image_dir.iterdir()]
+            logger.info(f'debug snipper is called from {called}')
+
+        def Snip(self) -> Image.Image:
+            image = random.choice(self.image_list)
+            return image.resize(self.snip_size)
