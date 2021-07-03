@@ -21,23 +21,27 @@ class ScoreWindow(tk.Toplevel):
         self.linked_thread = AppLinkedThread(Dispatcher(generate_update_app))
         self.linked_thread.start()
 
+        self.treeview_height = 15
+
         self._create_widgets()
         self.metrics_updater = metrics_updater
         self.content_dict: Dict[str, Dict[str, int]] = dict()
 
     def _clear_treeview(self):
-        for i in range(15):
+        for i in range(self.treeview_height):
             self.treeview_score.set(i, 1, '')
             self.treeview_score.set(i, 2, '')
             self.treeview_score.set(i, 3, '')
 
     def _fill_treeview(self):
         def sort_key(x: Tuple[str, Dict[str, int]]):
+            logger.debug(f'name: {x[0]}, val: {x[1]}')
             if 'score' in x[1]:
                 return (-x[1]['score'], x[0])
             return (0, x[0])
 
         content_list = sorted(self.content_dict.items(), key=sort_key)
+
         for i, (name, content) in enumerate(content_list):
             if 'rank' in content:
                 self.treeview_score.set(i, 1, content['rank'])
@@ -48,8 +52,13 @@ class ScoreWindow(tk.Toplevel):
             self.treeview_score.set(i, 2, name)
 
     def update_app(self, event):
-        logger.debug('update app')
         self.content_dict = self.linked_thread.get()
+
+        # tree_length = 15
+        # if len(self.content_dict) > tree_length:
+        #     logger.debug('幻の16人目')
+        #     logger.debug(self.content_dict)
+        #     return
 
         self._clear_treeview()
         self._fill_treeview()
@@ -67,7 +76,7 @@ class ScoreWindow(tk.Toplevel):
         frame.pack()
 
         self.treeview_score = ttk.Treeview(
-            frame, columns=['Num', 'Rank', 'Name', 'Score'], height=15,
+            frame, columns=['Num', 'Rank', 'Name', 'Score'], height=self.treeview_height,
             show="headings")
         self.treeview_score.column('Num', width=40)
         self.treeview_score.column('Rank', width=40)
@@ -81,7 +90,7 @@ class ScoreWindow(tk.Toplevel):
         self.treeview_score.heading('Score', text='Score', anchor='center')
 
         # Add data
-        for i in range(15):
+        for i in range(self.treeview_height):
             self.treeview_score.insert(
                 parent='', index='end', iid=i, values=(i+1, '', ''))
 

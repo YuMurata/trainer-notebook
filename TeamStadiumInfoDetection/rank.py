@@ -1,12 +1,13 @@
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 from snip import ImageSnipper
 from misc import concat_imshow, pil2cv
 import cv2
 from PIL import Image
-from pathlib import Path
 import numpy as np
 from TeamStadiumInfoDetection.linked_reader import LinkedReader
-from exception import FileNotFoundException
+from .define import template_dir
+from logger import init_logger
+logger = init_logger(__name__)
 
 
 class debugger:
@@ -66,11 +67,15 @@ class RankReader(LinkedReader):
     def __init__(self):
         self.snipper = ImageSnipper()
 
+        rank_template_dir = template_dir/'rank'
         self.template_rank = [cv2.imread(
-            f'./resource/rank/rank{i+1:02}.png') for i in range(self.rank_num)]
+            str(rank_template_dir/f'rank{i+1:02}.png'))
+            for i in range(self.rank_num)]
+
+        uma_template_dir = template_dir/'uma'
         self.template_uma_dict = {
             path.stem: pil2cv(Image.open(path))
-            for path in Path('./resource/uma_template').iterdir()}
+            for path in uma_template_dir.iterdir()}
 
         self.is_update = True
 
@@ -79,19 +84,10 @@ class RankReader(LinkedReader):
 
         img = img[175:250, 130:265]
 
-        def load_image():
-            resource_dir = './resource'
-            image_name_list = ['win.png', 'lose.png']
-
-            def pred(image_name: str):
-                resource_path = Path(resource_dir)/image_name
-
-                if not resource_path.exists():
-                    raise FileNotFoundException(
-                        f"can't read {str(resource_path)}")
-                return cv2.imread(str(resource_path))
-
-            return [pred(image_name) for image_name in image_name_list]
+        def load_image() -> List[np.ndarray]:
+            result_template_dir = template_dir/'race_result'
+            return [cv2.imread(str(path))
+                    for path in result_template_dir.iterdir()]
 
         win_lose_img = load_image()
         method = cv2.TM_SQDIFF_NORMED
@@ -102,8 +98,12 @@ class RankReader(LinkedReader):
             return min_val
 
         min_val = min([match(template) for template in win_lose_img])
+        # if(min_val < 0.05):
+        #     print("minval", min_val)
+        #     cv2.imshow("test", img)
+        #     cv2.waitKey(0)
 
-        return min_val < 0.1
+        return min_val < 0.05
 
     def _read_uma_rank(self, src_region: np.ndarray,
                        uma_loc: Tuple[int, int]) -> int:
@@ -152,6 +152,7 @@ class RankReader(LinkedReader):
             [match(template) for template in self.template_uma_dict.values()])
 
         h, w = match_array[0].shape
+        # print(match_array.shape)
 
         match_size = w*h
 
@@ -170,7 +171,7 @@ class RankReader(LinkedReader):
             min_val = np.min(match_array)
             min_idx = match_array.argmin()
 
-            if min_val > 0.04:
+            if min_val > 0.05:
                 break
 
             uma_num = int(min_idx/match_size)
@@ -178,7 +179,13 @@ class RankReader(LinkedReader):
 
             uma_loc = get_uma_loc(min_idx, match_size)
             # match_array = np.delete(match_array, uma_num, axis=0)
+
+            # 毎回テンプレートのサイズ計算するの無駄だから何とかして
+            th, tw, _ = self.template_uma_dict[uma_name].shape
+
             match_array[uma_num, :] = 1
+            match_array[:, uma_loc[1] - th//2:uma_loc[1] +
+                        th//2, uma_loc[0]-tw//2:uma_loc[0]+tw//2] = 1
 
             uma_rank = self._read_uma_rank(src_region, uma_loc)
 
