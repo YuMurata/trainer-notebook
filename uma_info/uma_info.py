@@ -1,14 +1,70 @@
-from collections import UserDict
+from collections import UserDict, UserList
+from os import stat
 import numpy as np
 from exception import InvalidKeyException
-from typing import List
+from typing import Any, Callable, Iterable, List, Optional
+
+
+class MetricCalculator:
+    @staticmethod
+    def _base(value_list: List[int], calc: Callable[[np.ndarray], int]):
+        value_array = np.array(value_list)
+        if np.any(value_array > 0):
+            return int(calc(value_array[value_array > 0]))
+        return 0
+
+    @staticmethod
+    def max(value_list: List[int]) -> int:
+        return MetricCalculator._base(value_list, np.max)
+
+    @staticmethod
+    def min(value_list: List[int]) -> int:
+        return MetricCalculator._base(value_list, np.min)
+
+    @staticmethod
+    def mean(value_list: List[int]) -> int:
+        return MetricCalculator._base(value_list, np.mean)
+
+    @staticmethod
+    def std(value_list: List[int]) -> int:
+        return MetricCalculator._base(value_list, np.std)
+
+
+class MetricList(UserList):
+    def __init__(self, initlist: Optional[Iterable[int]]) -> None:
+        super().__init__(initlist=initlist)
+
+    def _base(self, calc: Callable[[np.ndarray], int]) -> int:
+        value_array = np.array(self.data)
+        if np.any(value_array > 0):
+            return int(calc(value_array[value_array > 0]))
+        return 0
+
+    @property
+    def max(self) -> int:
+        return self._base(np.max)
+
+    @property
+    def min(self) -> int:
+        return self._base(np.min)
+
+    @property
+    def mean(self) -> int:
+        return self._base(np.mean)
+
+    @property
+    def std(self) -> int:
+        return self._base(np.std)
+
+    def __getitems__(self, i: int) -> int:
+        return self.data[i]
 
 
 class UmaInfo:
     metrics_name_list = ['RankMean', 'Max', 'Min', 'Mean', 'Std']
     item_name_list = ['Name'] + metrics_name_list
 
-    def __init__(self, name: str, scores: List[int], ranks: List[int]):
+    def __init__(self, name: str, scores: MetricList, ranks: MetricList):
         self.name = name
         self.scores = scores
         self.ranks = ranks
