@@ -40,6 +40,7 @@ class ManageImageFrame(ttk.Frame):
             raise IllegalInitializeException('load_image not set')
 
         if not self.org_image_name:
+            messagebox.showerror('error', 'not select image')
             return
 
         image_name = self.image_name_var.get()
