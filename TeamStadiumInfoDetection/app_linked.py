@@ -10,6 +10,7 @@ from time import sleep
 from PIL import Image
 from copy import deepcopy
 from uma_info import UmaPointFileIO
+import threading
 
 logger = init_logger(__name__)
 

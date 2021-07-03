@@ -6,6 +6,7 @@ from uma_info import UmaInfo, UmaPointFileIO
 from typing import List
 from .screenshot import ScreenShotFrame
 from .compare import CompareStatusFrame
+from .score import ScoreFrame
 
 
 class MetricsView(ttk.Frame):
@@ -193,7 +194,8 @@ class Win1(tk.Frame):
         team_stadium = ttk.Notebook(self, height=-1, width=-1)
         self.metrics_view = MetricsView(team_stadium)
         # self.tab.add(self.metrics_view, text='Metrics')
-        team_stadium.add(ttk.Label(self, text='rank-score'), text='rank-score')
+        team_stadium.add(ScoreFrame(
+            self, self.metrics_view.generate_update), text='rank-score')
         team_stadium.add(self.metrics_view, text='metrics')
         team_stadium.add(ttk.Label(self, text='graph'), text='graph')
         self.tab.add(team_stadium, text='TeamStadium')
