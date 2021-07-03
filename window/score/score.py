@@ -1,7 +1,7 @@
 from TeamStadiumInfoDetection.app_linked import AppLinkedThread
 from typing import Callable, Dict
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from TeamStadiumInfoDetection import Dispatcher
 from window.app import BaseApp
 from .treeview import ScoreTree, Content
@@ -38,6 +38,10 @@ class ScoreFrame(ttk.Frame):
         self.linked_thread.start()
 
     def _fix_content(self, content: Content):
+        if not content.name:
+            messagebox.showerror('error', '名前が入力されていません！')
+            return
+
         id_list = self.treeview_score.selection()
 
         if not id_list or len(id_list) <= 0:
