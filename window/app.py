@@ -1,5 +1,7 @@
 import tkinter as tk
 from typing import Tuple
+from logger import init_logger
+logger = init_logger(__name__)
 
 
 class BaseApp:
@@ -31,13 +33,13 @@ class BaseApp:
                 master_x = self.master_widget.winfo_rootx()
                 master_y = self.master_widget.winfo_rooty()
                 width = self.window.winfo_width()
-                print('master_x:', master_x)
-                print('width:', width)
+                logger.debug('master_x:', master_x)
+                logger.debug('width:', width)
                 x = master_x - width
                 y = master_y
 
                 self.window_pos = x, y
-                print('pos:', self.window_pos)
+                logger.debug(f'pos: {self.window_pos}')
 
             # self._set_geometry()
 
@@ -49,7 +51,7 @@ class BaseApp:
             self.window.protocol('WM_DELETE_WINDOW', self.close_window)
 
         else:
-            print('has window')
+            logger.debug('has window')
             self.window.deiconify()
             self.window.lift()
 
