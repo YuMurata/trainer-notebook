@@ -2,7 +2,7 @@ from pathlib import Path
 from exception import FileNotFoundException
 import json
 from threading import Lock
-from .uma_info import UmaInfoDict, UmaInfo
+from .uma_info import UmaInfoDict, UmaInfo, MetricList
 
 
 class UmaPointFileIO:
