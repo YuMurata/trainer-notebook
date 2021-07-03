@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from Uma import UmaInfo, UmaPointFileIO
+from uma_info import UmaInfo, UmaPointFileIO
 from typing import List
 from .sort import SortUmaInfo
 
@@ -11,7 +11,7 @@ class MetricsView(ttk.Frame):
 
     def __init__(self, master):
         super().__init__(master)
-        self.uma_info_sorter = SortUmaInfo()
+        self.uma_info_sorter = SortUmaInfo(UmaInfo.item_name_list)
         self.selected_item_dict: dict = None
         self.graph_updater = None
         self._create_widgets()
@@ -20,7 +20,7 @@ class MetricsView(ttk.Frame):
     def _create_heading(self):
         for metrics_name in self.column_name_list:
             metrics_text = metrics_name
-            if metrics_name == self.uma_info_sorter.key_to_str:
+            if metrics_name == self.uma_info_sorter.sort_key:
                 if self.uma_info_sorter.is_reverse:
                     metrics_text += ' ↓'
                 else:

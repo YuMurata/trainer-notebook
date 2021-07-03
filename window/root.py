@@ -197,27 +197,27 @@ class Win1(tk.Frame):
         self.tab.add(team_stadium, text='TeamStadium')
         self.tab.add(ttk.Label(self, text='Status'), text='Status')
         self.tab.add(ttk.Label(self, text='Screenshot'), text='Screenshot')
-        self.score_app = ScoreApp(master, self.metrics_view.generate_update)
-        self.graph_app = GraphApp(master, self.graph_view)
-        self.create_widgets()
+        # self.score_app = ScoreApp(master, self.metrics_view.generate_update)
+        # self.graph_app = GraphApp(master, self.graph_view)
+        # self.create_widgets()
 
-        def lift_app(event):
-            self.score_app.lift()
-            self.graph_app.lift()
-            master.lift()
+        # def lift_app(event):
+        #     self.score_app.lift()
+        #     self.graph_app.lift()
+        #     master.lift()
 
-        def icon_app(event):
-            self.score_app.iconify()
-            self.graph_app.iconify()
+        # def icon_app(event):
+        #     self.score_app.iconify()
+        #     self.graph_app.iconify()
 
-        def deicon_app(event):
-            self.score_app.deiconify()
-            self.graph_app.deiconify()
+        # def deicon_app(event):
+        #     self.score_app.deiconify()
+        #     self.graph_app.deiconify()
 
-        master.bind('<FocusIn>', lift_app)
-        master.bind('<Unmap>', icon_app)
-        master.bind('<Map>', deicon_app)
-        self.metrics_view.generate_update()
+        # master.bind('<FocusIn>', lift_app)
+        # master.bind('<Unmap>', icon_app)
+        # master.bind('<Map>', deicon_app)
+        # self.metrics_view.generate_update()
 
     def create_widgets(self):
         # Button

@@ -1,5 +1,5 @@
 from enum import IntEnum, auto
-from Uma import UmaInfo
+from uma_info import UmaInfo
 from typing import List
 from exception import InvalidValueException
 

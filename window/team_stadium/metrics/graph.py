@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
-from Uma import UmaInfo
+from uma_info.uma_info import UmaInfo
 from enum import Enum, auto
 from colorsys import hsv_to_rgb
 import mplcursors
@@ -89,7 +89,7 @@ class GraphFrame(ttk.Frame):
     def __init__(self, master, graph_view: GraphView):
         super().__init__(master, name='umauma graph')
         self.graph_view = graph_view
-        self._create_widgets()
+        # self._create_widgets()
 
     def _create_buttons(self):
         frame = ttk.Frame(self)
