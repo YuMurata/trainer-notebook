@@ -38,12 +38,6 @@ class ScoreTree(ttk.Treeview):
             self.content_dict[str(i)] = Content(None, None, None)
 
     def fill(self, content_list: List[Content]):
-        if len(content_list) > self.tree_length:
-            logger.debug('too many content')
-            logger.debug(content_list)
-            logger.debug(f'len: {len(content_list)}')
-            return
-
         sorted_list = sorted(content_list, key=self._sort_key)
         if len(sorted_list) > self.tree_length:
             sorted_list = sorted_list[:self.tree_length]
