@@ -57,15 +57,11 @@ class UmaFrame(tk.Frame):
 
     def status_button_left_click(self, event):
         # 選択した表示エリアにステータスの画像を表示して
-        # print(self.winfo_width())
-        # print(self.status_button.winfo_width())
         if self.image:
             self.button_func.status(self.image)
 
     def status_button_right_click(self, event):
         # 選択した表示エリアにステータスの画像を表示して
-        # print(self.winfo_width())
-        # print(self.status_button.winfo_width())
         if self.image:
             self.button_func.compare(ImageStruct(self.image))
 
