@@ -88,15 +88,3 @@ class AppLinkedThread(Thread):
             self.linked_dict = dict()
             self.dispatcher.update_item(
                 LinkedDispatched(self.linked_dict))
-
-    def overwrite_umainfo_file(self):
-        uma_info_dict = UmaPointFileIO.Read()
-
-        with self.lock:
-            for name, info in self.linked_dict.items():
-                score = info['score']
-                rank = info['rank']
-                uma_info_dict[name].add_score(score)
-                uma_info_dict[name].add_rank(rank)
-
-        UmaPointFileIO.Write(uma_info_dict)

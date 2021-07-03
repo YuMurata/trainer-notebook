@@ -102,7 +102,22 @@ class ScoreFrame(ttk.Frame):
         return frame
 
     def _regist(self):
-        self.linked_thread.overwrite_umainfo_file()
+        def is_valid_content_list(content_list: List[Content]):
+            def is_valid_content(content: Content):
+                return all(content)
+            return all([is_valid_content(content) for content in content_list])
+
+        content_list = list(self.treeview_score.content_dict.values())
+        if not is_valid_content_list(content_list):
+            messagebox.showerror('error', 'スコアが正しく入力されていません')
+            return
+
+        uma_info_dict = UmaPointFileIO.Read()
+        for content in content_list:
+            uma_info_dict[content.name].add_rank(content.rank)
+            uma_info_dict[content.name].add_score(content.score)
+
+        UmaPointFileIO.Write(uma_info_dict)
         self.metrics_updater()
 
 
