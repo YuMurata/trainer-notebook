@@ -1,5 +1,6 @@
+from Uma import UmaInfo, UmaInfoDict, UmaPointFileIO
 from TeamStadiumInfoDetection.app_linked import AppLinkedThread
-from typing import Callable, Dict
+from typing import Callable, Dict, List
 import tkinter as tk
 from tkinter import ttk, messagebox
 from TeamStadiumInfoDetection import Dispatcher
@@ -17,7 +18,6 @@ class ScoreFrame(ttk.Frame):
         super().__init__(master)
 
         self.metrics_updater = metrics_updater
-        self.content_dict: Dict[str, Dict[str, int]] = dict()
 
         self.treeview_score = ScoreTree(self)
         self.treeview_score.bind('<<UpdateApp>>', self.update_app)
@@ -66,11 +66,44 @@ class ScoreFrame(ttk.Frame):
         self.treeview_score.select_item = content
 
     def update_app(self, event):
-        self.content_dict = self.linked_thread.get()
+        read_content_dict = self.linked_thread.get()
+        treeview_content_dict = {content.name: dict(
+            rank=content.rank, score=content.score)
+            for content in self.treeview_score.content_dict.values()}
 
-        content_list = [Content(name, content.get('rank', None),
-                                content.get('score', None))
-                        for name, content in self.content_dict.items()]
+        name_set = set(list(read_content_dict.keys()) +
+                       list(treeview_content_dict.keys()))
+
+        def get_read_content(name: str) -> Content:
+            read_content = read_content_dict.get(name, None)
+            if not read_content:
+                return Content(None, None, None)
+
+            rank = read_content.get('rank', None)
+            score = read_content.get('score', None)
+            return Content(name, rank, score)
+
+        def choose_content(name: str) -> Content:
+            read_content = get_read_content(name)
+
+            treeview_content = treeview_content_dict.get(name, None)
+            if not treeview_content:
+                return read_content
+
+            rank = treeview_content['rank']
+            if not rank:
+                rank = read_content.rank
+
+            score = treeview_content['score']
+            if not score:
+                score = read_content.score
+
+            logger.debug(
+                f'read_rank: {read_content.rank}, name: {read_content.name}, score: {read_content.score}')
+            logger.debug(f'rank: {rank}, name: {name}, score: {score}')
+            return Content(name, rank, score)
+
+        content_list = [choose_content(name) for name in name_set if name]
 
         self.treeview_score.clear()
         self.treeview_score.fill(content_list)
@@ -118,6 +151,7 @@ class ScoreFrame(ttk.Frame):
             uma_info_dict[content.name].add_score(content.score)
 
         UmaPointFileIO.Write(uma_info_dict)
+
         self.metrics_updater()
 
 

@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from typing import Callable, List, NamedTuple
+from typing import Callable,  NamedTuple
 from logger import init_logger
 from .treeview import Content
 from exception import IllegalInitializeException
