@@ -53,7 +53,7 @@ class ScoreTree(ttk.Treeview):
 
     def _sort_key(self, content: Content):
         score = -content.score if content.score else 0
-        name = content.name if content.name else 0
+        name = content.name if content.name else ''
         return (score, name)
 
     def sort(self):
