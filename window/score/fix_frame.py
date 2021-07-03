@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Callable,  NamedTuple
 from logger import init_logger
-from .treeview import Content
+from .treeview import Content, ignore_score
 from exception import IllegalInitializeException
 from Uma import UmaNameFileReader
 
@@ -123,9 +123,16 @@ class FixScoreFrame(ttk.Frame):
         self.score_frame.combo.bind(*bind_return_cmd)
         self.score_frame.pack(side=tk.LEFT, padx=3)
 
-        button = ttk.Button(self, text='fix')
-        button.bind('<Button-1>', self._fix_content)
-        button.pack()
+        button_frame = ttk.Frame(self)
+        button_frame.pack()
+
+        fix_button = ttk.Button(button_frame, text='fix')
+        fix_button.bind('<Button-1>', self._fix_content)
+        fix_button.pack(side=tk.LEFT, padx=3)
+
+        delete_button = ttk.Button(button_frame, text='delete')
+        delete_button.bind('<Button-1>', self._delete_content)
+        delete_button.pack(side=tk.LEFT, padx=3)
 
         self.callback: Callback = None
 
@@ -144,4 +151,13 @@ class FixScoreFrame(ttk.Frame):
         content = Content(name=self.name_frame.get_text(),
                           rank=self.rank_frame.get_text(),
                           score=self.score_frame.get_text())
+        self.callback.fix(content)
+
+    def _delete_content(self, event: tk.Widget):
+        if not self.callback:
+            raise IllegalInitializeException('not set callback')
+
+        content = Content(name=self.name_frame.get_text(),
+                          rank=self.rank_frame.get_text(),
+                          score=ignore_score)
         self.callback.fix(content)

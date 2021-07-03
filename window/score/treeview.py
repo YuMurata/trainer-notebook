@@ -12,6 +12,9 @@ class Content(NamedTuple):
     score: int
 
 
+ignore_score = -1
+
+
 class ScoreTree(ttk.Treeview):
     def __init__(self, master: tk.Widget):
         super().__init__(master=master,
@@ -42,7 +45,15 @@ class ScoreTree(ttk.Treeview):
             return
 
         sorted_list = sorted(content_list, key=self._sort_key)
+        if len(sorted_list) > self.tree_length:
+            sorted_list = sorted_list[:self.tree_length]
+
         for i, content in enumerate(sorted_list):
+            self.content_dict[str(i)] = content
+
+            if content.score and content.score == ignore_score:
+                break
+
             raw_list = [(1, content.rank),
                         (2, content.name),
                         (3, content.score)]
@@ -50,7 +61,6 @@ class ScoreTree(ttk.Treeview):
                 if value:
                     self.set(i, column=column, value=value)
 
-            self.content_dict[str(i)] = content
             if self.select_item and content == self.select_item:
                 self.selection_set(i)
 
