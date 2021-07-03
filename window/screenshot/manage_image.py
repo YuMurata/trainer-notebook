@@ -33,7 +33,7 @@ class ManageImageFrame(ttk.Frame):
 
     def set_image_name(self, image_name: str):
         self.org_image_name = image_name
-        self.image_name_var.set(image_name)
+        self.image_name_var.set(image_name if image_name else '')
 
     def _save(self, event: tk.Event):
         if not self.load_image:
@@ -64,6 +64,8 @@ class ManageImageFrame(ttk.Frame):
 
         org_path = screenshot_dir/f'{self.org_image_name}.png'
         org_path.unlink(True)
+
+        self.set_image_name(None)
         self.load_image()
 
     def set_load_image(self, load_image: LoadImage):
