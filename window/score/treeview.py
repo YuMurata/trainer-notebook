@@ -46,7 +46,7 @@ class ScoreTree(ttk.Treeview):
             self.content_dict[str(i)] = content
 
             if content.score and content.score == ignore_score:
-                break
+                continue
 
             raw_list = [(1, content.rank),
                         (2, content.name),
