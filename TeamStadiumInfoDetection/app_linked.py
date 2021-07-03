@@ -41,7 +41,7 @@ class AppLinkedThread(Thread):
         super().__init__(name='AppLinkedThread')
 
         self.snipper = ImageSnipper()
-        self.snipper = DebugSnipperType.RaceScore.value(__name__)
+        self.snipper = DebugSnipperType.Race.value(__name__)
         self.lock = Lock()
         self.dispatcher = dispatcher
         self.is_update = True
