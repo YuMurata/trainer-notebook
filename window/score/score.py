@@ -40,7 +40,7 @@ class ScoreFrame(ttk.Frame):
 
     def _fix_content(self, content: Content):
         if not content.name:
-            messagebox.showerror('error', '名前が入力されていません！')
+            messagebox.showerror('error', '名前が入力されていません！', parent=self)
             return
 
         id_list = self.treeview_score.selection()
@@ -159,7 +159,7 @@ class ScoreFrame(ttk.Frame):
         content_list = extract_content_list(
             list(self.treeview_score.content_dict.values()))
         if not is_valid_content_list(content_list):
-            messagebox.showerror('error', 'スコアが正しく入力されていません')
+            messagebox.showerror('error', 'スコアが正しく入力されていません', parent=self)
             return
 
         uma_info_dict = UmaPointFileIO.Read()
