@@ -28,7 +28,7 @@ class ScoreFrame(ttk.Frame):
 
         self.fix_score_frame = FixScoreFrame(self)
         self.fix_score_frame.set_callback(
-            self.fix_frame.Callback(self._fix_content))
+            fix_frame.Callback(self._fix_content))
         self.fix_score_frame.pack(expand=True, fill=tk.BOTH)
 
         self._create_button().pack()
