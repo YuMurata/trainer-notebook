@@ -4,7 +4,7 @@ from typing import Tuple, Dict, List
 from snip import ImageSnipper
 from window.image import Emphasis, ImageStruct, ImageStructDict
 from window.zoomable_canvas import ZoomableCanvasFrame
-from .name_change import NameChangeFrame
+from .manage_image import ManageImageFrame
 from PIL import Image
 from .define import screenshot_dir
 
@@ -13,9 +13,9 @@ class ViewFrame(ttk.Frame):
     def __init__(self, master: tk.Widget):
         super().__init__(master=master)
 
-        self.name_change_frame = NameChangeFrame(self)
-        self.name_change_frame.set_load_image(self.load_image)
-        self.name_change_frame.pack()
+        self.manage_image_frame = ManageImageFrame(self)
+        self.manage_image_frame.set_load_image(self.load_image)
+        self.manage_image_frame.pack()
 
         width, height = ImageSnipper.snip_size
         width *= 2.2
@@ -53,7 +53,7 @@ class ViewFrame(ttk.Frame):
         self.canvas.itemconfig(item_id, image=image_struct.photoimage)
 
         image_name = self.name_dict[item_id]
-        self.name_change_frame.set_image_name(image_name)
+        self.manage_image_frame.set_image_name(image_name)
 
         self.prev_id = item_id
 
