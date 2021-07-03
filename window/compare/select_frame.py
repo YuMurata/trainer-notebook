@@ -4,7 +4,7 @@ from PIL import Image
 import tkinter as tk
 from tkinter import ttk
 from logger import init_logger
-from compare_window.umaframe import UmaFrame, ButtonFunc
+from .umaframe import UmaFrame, ButtonFunc
 
 logger = init_logger(__name__)
 
