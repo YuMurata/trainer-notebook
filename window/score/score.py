@@ -1,5 +1,5 @@
 from logging import log
-from Uma import UmaPointFileIO
+from uma_info import UmaPointFileIO
 from TeamStadiumInfoDetection.app_linked import AppLinkedThread
 from typing import Callable, List
 import tkinter as tk

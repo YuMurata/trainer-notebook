@@ -4,7 +4,7 @@ from typing import Callable,  NamedTuple
 from logger import init_logger
 from .treeview import Content, ignore_score
 from exception import IllegalInitializeException
-from Uma import UmaNameFileReader
+from uma_info import UmaNameFileReader
 
 logger = init_logger(__name__)
 

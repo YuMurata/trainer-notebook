@@ -1,10 +1,12 @@
 import tkinter as tk
 from tkinter import ttk
 from enum import IntEnum, auto
-from window.graph import GraphApp, GraphView
+from .team_stadium.metrics.graph import GraphApp, GraphView
+from .team_stadium.metrics.metrics import MetricsView
 from .score.score import ScoreFrame, ScoreApp
-from Uma import UmaInfo, UmaPointFileIO
+from uma_info import UmaInfo, UmaPointFileIO
 from typing import List
+from .screenshot import ScreenShotFrame
 
 
 class MetricsView(ttk.Frame):
@@ -181,8 +183,8 @@ class Win1(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
 
-        self.master.geometry("500x400")
-        self.master.resizable(False, False)
+        # self.master.geometry("500x400")
+        # self.master.resizable(False, False)
         self.master.title("umauma drive")
 
         self.tab = ttk.Notebook(self, height=-1, width=-1)
@@ -190,13 +192,13 @@ class Win1(tk.Frame):
 
         self.graph_view = GraphView()
         team_stadium = ttk.Notebook(self, height=-1, width=-1)
-        self.metrics_view = MetricsFrame(team_stadium)
+        self.metrics_view = MetricsView(team_stadium)
         # self.tab.add(self.metrics_view, text='Metrics')
         team_stadium.add(ttk.Label(self, text='rank-score'), text='rank-score')
         team_stadium.add(self.metrics_view, text='metrics')
         self.tab.add(team_stadium, text='TeamStadium')
         self.tab.add(ttk.Label(self, text='Status'), text='Status')
-        self.tab.add(ttk.Label(self, text='Screenshot'), text='Screenshot')
+        self.tab.add(ScreenShotFrame(self), text='Screenshot')
         # self.score_app = ScoreApp(master, self.metrics_view.generate_update)
         # self.graph_app = GraphApp(master, self.graph_view)
         # self.create_widgets()
