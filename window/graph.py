@@ -11,6 +11,8 @@ from Uma import UmaInfo
 from enum import Enum, auto
 from colorsys import hsv_to_rgb
 import mplcursors
+from logger import init_logger
+logger = init_logger(__name__)
 
 
 class GraphView:
@@ -24,7 +26,7 @@ class GraphView:
 
         self.fig.subplots_adjust(bottom=0.2, left=0.2)
         plt.rcParams['font.family'][0] = ('Meiryo')
-        print(plt.rcParams)
+
         self.uma_info_list: List[UmaInfo] = None
         self.draw_target = self.DrawTarget.LINE
         self.update_line()

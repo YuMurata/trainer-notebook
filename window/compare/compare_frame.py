@@ -71,8 +71,6 @@ class CompareFrame(ttk.Frame):
             return
 
         item_id = item_id_list[0]
-        # print(item_id_list)
-
         if item_id not in self.image_dict:
             return
 

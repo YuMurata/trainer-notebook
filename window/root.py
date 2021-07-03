@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from enum import IntEnum, auto
 from window.graph import GraphApp, GraphView
-from window.score import ScoreApp
+from .score.score import ScoreFrame, ScoreApp
 from Uma import UmaInfo, UmaPointFileIO
 from typing import List
 
@@ -187,7 +187,8 @@ class Win1(tk.Frame):
         self.master.title("umauma drive")
         self.graph_view = GraphView()
         self.metrics_view = MetricsView(self)
-        self.score_app = ScoreApp(master, self.metrics_view.generate_update)
+        self.score_app = ScoreApp(
+            master, self.metrics_view.generate_update)
         self.graph_app = GraphApp(master, self.graph_view)
         self.create_widgets()
 

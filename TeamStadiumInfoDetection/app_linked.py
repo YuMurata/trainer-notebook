@@ -2,15 +2,14 @@ from logger import init_logger
 from TeamStadiumInfoDetection.dispatcher import BaseDispatched, Dispatcher
 from TeamStadiumInfoDetection.linked_reader import LinkedReader
 from threading import Thread, Lock
-from snip import ImageSnipper
+from snip import ImageSnipper, DebugSnipperType
 from TeamStadiumInfoDetection.rank import RankReader
 from TeamStadiumInfoDetection.score import ScoreReader
 from typing import Dict, Tuple
 from time import sleep
 from PIL import Image
 from copy import deepcopy
-from Uma import UmaPointFileIO
-
+import threading
 logger = init_logger(__name__)
 
 
@@ -41,6 +40,7 @@ class AppLinkedThread(Thread):
         super().__init__(name='AppLinkedThread')
 
         self.snipper = ImageSnipper()
+        self.snipper = DebugSnipperType.Race.value(__name__)
         self.lock = Lock()
         self.dispatcher = dispatcher
         self.is_update = True
@@ -59,13 +59,16 @@ class AppLinkedThread(Thread):
             return None
 
         while self.is_update:
+            if not threading.main_thread().is_alive():
+                return
+
             snip_image = self.snipper.Snip()
             if snip_image:
                 read_item = each_read(snip_image)
                 if read_item:
                     key = read_item[0]
                     read_dict = read_item[1]
-                    logger.debug(f'key: {key}')
+
                     with self.lock:
                         for name in read_dict.keys():
                             self.linked_dict.setdefault(name, dict())
@@ -84,15 +87,3 @@ class AppLinkedThread(Thread):
             self.linked_dict = dict()
             self.dispatcher.update_item(
                 LinkedDispatched(self.linked_dict))
-
-    def overwrite_umainfo_file(self):
-        uma_info_dict = UmaPointFileIO.Read()
-
-        with self.lock:
-            for name, info in self.linked_dict.items():
-                score = info['score']
-                rank = info['rank']
-                uma_info_dict[name].add_score(score)
-                uma_info_dict[name].add_rank(rank)
-
-        UmaPointFileIO.Write(uma_info_dict)

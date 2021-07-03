@@ -4,9 +4,8 @@ import os
 import pyocr
 import pyocr.builders
 from PIL import ImageDraw,  ImageEnhance, Image
-from Uma import UmaNameFileReader, UmaPointFileIO
+from Uma import UmaNameFileReader
 from exception import FileNotFoundException
-import time
 from logger import init_logger
 import difflib
 
@@ -15,7 +14,6 @@ logger = init_logger(__name__)
 
 path = ";C:\\Program Files\\Tesseract-OCR"
 os.environ['PATH'] = os.environ['PATH'] + path
-logger.debug(os.environ['PATH'])
 
 
 def _get_OCR():
@@ -49,11 +47,16 @@ class ScoreReader(LinkedReader):
         # 白抜き文字だから白黒反転
         img = img.point(lambda x: 255 if x < 200 else 0)
 
-        score_scene_str = self.score_scene_ocr.get_score_scene(img)
-        if not score_scene_str:
+        extract_str = self.score_scene_ocr.get_score_scene(img)
+        if not extract_str:
             return False
 
-        return score_scene_str == 'スコア情報'
+        target_str = 'スコア情報'
+        match_ratio = difflib.SequenceMatcher(None, target_str,
+                                              extract_str).ratio()
+
+        threshold = 0.6
+        return match_ratio > threshold
 
     # スコア情報を読み取るための前処理
 
@@ -73,7 +76,6 @@ class ScoreReader(LinkedReader):
         return test_img
 
     def read(self, snip_image: Image.Image):
-
         preproc_image = self._pre_proc(snip_image)
         return self.score_ocr.get_score(preproc_image)
 
