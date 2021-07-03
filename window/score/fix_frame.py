@@ -26,8 +26,12 @@ class RankFrame(ttk.Frame):
         rank_list = list(range(1, 12+1))
 
         def validate(P: str):
+            if P == '':
+                return True
+
             if not P.isdecimal():
                 return False
+
             rank = int(P)
             return rank in rank_list
 
@@ -79,6 +83,9 @@ class ScoreFrame(ttk.Frame):
         self.score = tk.StringVar(self)
 
         def validate(P: str):
+            if P == '':
+                return True
+
             return P.isdecimal()
 
         val_cmd = (self.register(validate), '%P')
