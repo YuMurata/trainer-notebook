@@ -14,7 +14,8 @@ class Content(NamedTuple):
 
 class ScoreTree(ttk.Treeview):
     def __init__(self, master: tk.Widget):
-        super().__init__(master=master, columns=['Num', 'Rank', 'Name', 'Score'],
+        super().__init__(master=master,
+                         columns=['Num', 'Rank', 'Name', 'Score'],
                          height=15, show='headings', selectmode=tk.BROWSE)
 
         self.tree_length = 15
