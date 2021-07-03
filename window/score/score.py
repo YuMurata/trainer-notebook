@@ -111,8 +111,6 @@ class ScoreFrame(ttk.Frame):
         content_list = [choose_content(name) for name in name_set if name]
         logger.debug(content_list)
 
-        self.treeview_score.selection_remove(
-            self.treeview_score.selection())
         self.fix_score_frame.set_value(Content('', '', ''))
 
         self.treeview_score.clear()
