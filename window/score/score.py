@@ -1,3 +1,4 @@
+from logging import log
 from Uma import UmaPointFileIO
 from TeamStadiumInfoDetection.app_linked import AppLinkedThread
 from typing import Callable, List
@@ -98,16 +99,20 @@ class ScoreFrame(ttk.Frame):
             if not score:
                 score = read_content.score
 
-            logger.debug(
-                f'read_rank: {read_content.rank}, '
-                f'name: {read_content.name}, '
-                f'score: {read_content.score}')
-            logger.debug(f'rank: {rank}, name: {name}, score: {score}')
+            if name in ['マヤノトップガン', 'ダイワスカーレット']:
+                with logger.scope('choose'):
+                    logger.debug(
+                        f'read_rank: {read_content.rank}, '
+                        f'read_name: {read_content.name}, '
+                        f'read_score: {read_content.score}')
+                    logger.debug(f'rank: {rank}, name: {name}, score: {score}')
             return Content(name, rank, score)
 
         content_list = [choose_content(name) for name in name_set if name]
+        logger.debug(content_list)
 
-        self.treeview_score.selection_remove(self.treeview_score.selection())
+        self.treeview_score.selection_remove(
+            self.treeview_score.selection())
         self.fix_score_frame.set_value(Content('', '', ''))
 
         self.treeview_score.clear()
