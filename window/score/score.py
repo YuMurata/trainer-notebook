@@ -1,11 +1,11 @@
-from Uma import UmaInfo, UmaInfoDict, UmaPointFileIO
+from Uma import UmaPointFileIO
 from TeamStadiumInfoDetection.app_linked import AppLinkedThread
-from typing import Callable, Dict, List
+from typing import Callable, List
 import tkinter as tk
 from tkinter import ttk, messagebox
 from TeamStadiumInfoDetection import Dispatcher
 from window.app import BaseApp
-from .treeview import ScoreTree, Content
+from .treeview import ScoreTree, Content, ignore_score
 from .fix_frame import FixScoreFrame
 from . import fix_frame
 from logger import init_logger
@@ -99,13 +99,16 @@ class ScoreFrame(ttk.Frame):
                 score = read_content.score
 
             logger.debug(
-                f'read_rank: {read_content.rank}, name: {read_content.name}, score: {read_content.score}')
+                f'read_rank: {read_content.rank}, '
+                f'name: {read_content.name}, '
+                f'score: {read_content.score}')
             logger.debug(f'rank: {rank}, name: {name}, score: {score}')
             return Content(name, rank, score)
 
         content_list = [choose_content(name) for name in name_set if name]
 
-        self.treeview_score.clear()
+        # self.treeview_score.clear()
+        self.treeview_score.selection_remove(self.treeview_score.selection())
         self.treeview_score.fill(content_list)
 
     def destroy(self) -> None:
@@ -140,7 +143,13 @@ class ScoreFrame(ttk.Frame):
                 return all(content)
             return all([is_valid_content(content) for content in content_list])
 
-        content_list = list(self.treeview_score.content_dict.values())
+        def extract_content_list(content_list: List[Content]):
+            def is_extractable(content: Content):
+                return content.score and content.score != ignore_score
+            return [content for content in content_list
+                    if is_extractable(content)]
+        content_list = extract_content_list(
+            list(self.treeview_score.content_dict.values()))
         if not is_valid_content_list(content_list):
             messagebox.showerror('error', 'スコアが正しく入力されていません')
             return
