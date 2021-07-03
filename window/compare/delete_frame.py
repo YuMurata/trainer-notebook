@@ -13,21 +13,19 @@ class DeleteFrame(tk.Frame):
     def __init__(self, master: tk.Widget, delete_func: DeleteFunc):
         super().__init__(master)
 
-        frame = tk.Frame(self)
-        frame.pack(side=tk.LEFT, pady=5, fill=tk.BOTH, expand=True)
-        self.all_delete_button = ttk.Button(frame, text='all_delete')
+        self.all_delete_button = ttk.Button(self, text='all_delete')
         self.all_delete_button.bind(
             '<Button-1>', self.all_delete_button_left_click)
         self.all_delete_button.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
 
-        self.all_view_delete_button = ttk.Button(frame, text='all_view_clear')
+        self.all_view_delete_button = ttk.Button(self, text='all_view_clear')
         self.all_view_delete_button.bind(
             '<Button-1>', self.all_view_delete_button_left_click)
         self.all_view_delete_button.pack(
             side=tk.LEFT, expand=True, fill=tk.BOTH)
 
         self.compare_view_delete_button = ttk.Button(
-            frame, text='compare_view_clear')
+            self, text='compare_view_clear')
         self.compare_view_delete_button.bind(
             '<Button-1>', self.compare_view_delete_button_left_click)
         self.compare_view_delete_button.pack(

@@ -3,7 +3,7 @@ from PIL import Image
 import tkinter as tk
 from tkinter import ttk
 from logger import init_logger
-from .image import ImageStruct
+from window.image import ImageStruct
 
 logger = init_logger(__name__)
 

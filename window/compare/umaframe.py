@@ -6,7 +6,7 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Callable, NamedTuple
 from logger import init_logger
-from compare_window.image import ImageStruct
+from window.image import ImageStruct
 
 logger = init_logger(__name__)
 
