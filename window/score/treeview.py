@@ -18,7 +18,7 @@ class ScoreTree(ttk.Treeview):
                          height=15, show='headings', selectmode=tk.BROWSE)
 
         self.tree_length = 15
-        self.item_dict: Dict[str, Dict[str, str]] = dict()
+        self.content_dict: Dict[str, Content] = dict()
 
         self._init_column()
         self._init_heading()
@@ -30,14 +30,15 @@ class ScoreTree(ttk.Treeview):
             self.set(i, 2, '')
             self.set(i, 3, '')
 
-            self.item_dict[str(i)] = self.set(i)
+            self.content_dict[str(i)] = Content(None, None, None)
 
     def fill(self, content_list: List[Content]):
         if len(content_list) > self.tree_length:
             logger.debug(content_list)
             return
 
-        for i, content in enumerate(content_list):
+        sorted_list = sorted(content_list, key=self._sort_key)
+        for i, content in enumerate(sorted_list):
             raw_list = [(1, content.rank),
                         (2, content.name),
                         (3, content.score)]
@@ -45,7 +46,16 @@ class ScoreTree(ttk.Treeview):
                 if value:
                     self.set(i, column=column, value=value)
 
-            self.item_dict[str(i)] = self.set(i)
+            self.content_dict[str(i)] = content
+    def _sort_key(self, content: Content):
+        score = -content.score if content.score else 0
+        name = content.name if content.name else 0
+        return (score, name)
+
+    def sort(self):
+        content_list = [content for content in self.content_dict.values()]
+        self.clear()
+        self.fill(content_list)
 
     def fix(self, item_id: str, content: Content):
         rank = content.rank if content.rank else ''
@@ -56,7 +66,8 @@ class ScoreTree(ttk.Treeview):
         self.set(item_id, 2, name)
         self.set(item_id, 3, score)
 
-        self.item_dict[item_id] = self.set(item_id)
+        self.content_dict[item_id] = content
+        self.sort()
 
     def _init_column(self):
         self.column('Num', width=40)
@@ -79,4 +90,4 @@ class ScoreTree(ttk.Treeview):
             value = (num, rank, name, score)
 
             self.insert(parent='', index='end', iid=i, values=value)
-            self.item_dict[str(i)] = self.set(i)
+            self.content_dict[str(i)] = Content(None, None, None)

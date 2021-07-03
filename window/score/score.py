@@ -63,18 +63,12 @@ class ScoreFrame(ttk.Frame):
     def update_app(self, event):
         self.content_dict = self.linked_thread.get()
 
-        def sort_key(content: Content):
-            score = -content.score if content.score else 0
-            name = content.name if content.name else 0
-            return (score, name)
-
         content_list = [Content(name, content.get('rank', None),
                                 content.get('score', None))
                         for name, content in self.content_dict.items()]
-        sorted_list = sorted(content_list, key=sort_key)
 
         self.treeview_score.clear()
-        self.treeview_score.fill(sorted_list)
+        self.treeview_score.fill(content_list)
 
     def destroy(self) -> None:
         self.linked_thread.stop()
