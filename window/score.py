@@ -21,12 +21,14 @@ class ScoreWindow(tk.Toplevel):
         self.linked_thread = AppLinkedThread(Dispatcher(generate_update_app))
         self.linked_thread.start()
 
+        self.treeview_height = 16
+
         self._create_widgets()
         self.metrics_updater = metrics_updater
         self.content_dict: Dict[str, Dict[str, int]] = dict()
 
     def _clear_treeview(self):
-        for i in range(15):
+        for i in range(self.treeview_height):
             self.treeview_score.set(i, 1, '')
             self.treeview_score.set(i, 2, '')
             self.treeview_score.set(i, 3, '')
@@ -52,11 +54,11 @@ class ScoreWindow(tk.Toplevel):
     def update_app(self, event):
         self.content_dict = self.linked_thread.get()
 
-        tree_length = 15
-        if len(self.content_dict) > tree_length:
-            logger.debug('幻の16人目')
-            logger.debug(self.content_dict)
-            return
+        # tree_length = 15
+        # if len(self.content_dict) > tree_length:
+        #     logger.debug('幻の16人目')
+        #     logger.debug(self.content_dict)
+        #     return
 
         self._clear_treeview()
         self._fill_treeview()
@@ -74,7 +76,7 @@ class ScoreWindow(tk.Toplevel):
         frame.pack()
 
         self.treeview_score = ttk.Treeview(
-            frame, columns=['Num', 'Rank', 'Name', 'Score'], height=15,
+            frame, columns=['Num', 'Rank', 'Name', 'Score'], height=self.treeview_height,
             show="headings")
         self.treeview_score.column('Num', width=40)
         self.treeview_score.column('Rank', width=40)
@@ -88,7 +90,7 @@ class ScoreWindow(tk.Toplevel):
         self.treeview_score.heading('Score', text='Score', anchor='center')
 
         # Add data
-        for i in range(15):
+        for i in range(self.treeview_height):
             self.treeview_score.insert(
                 parent='', index='end', iid=i, values=(i+1, '', ''))
 
