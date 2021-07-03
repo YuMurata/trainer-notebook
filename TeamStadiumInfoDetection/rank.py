@@ -143,6 +143,7 @@ class RankReader(LinkedReader):
     def read(self, snip_image: Image.Image) -> Dict[str, int]:
         rank_rect = (5, 350, 390, 630)
         src_region = pil2cv(snip_image.crop(rank_rect))
+        result_img = src_region.copy()
 
         def match(template: np.ndarray):
             return cv2.matchTemplate(src_region, template,
@@ -165,7 +166,7 @@ class RankReader(LinkedReader):
             return (uma_loc_x, uma_loc_y)
 
         uma_rank_dict = dict()
-
+        flag_biwa = False
         for _ in range(max_iter):
             min_val = np.min(match_array)
             min_idx = match_array.argmin()
@@ -186,5 +187,17 @@ class RankReader(LinkedReader):
                 break
 
             uma_rank_dict[uma_name] = uma_rank
+            template = self.template_uma_dict[uma_name].copy()
+            cv2.rectangle(
+                template, (0, 0), (template.shape[1]-1, template.shape[0]-1), (0, 0, 255))
+            result_img[uma_loc[1]:uma_loc[1]+template.shape[0],
+                       uma_loc[0]:uma_loc[0]+template.shape[1]] = template
+            if uma_name == "ビワハヤヒデ":
+                flag_biwa = True
+
+        if flag_biwa:
+            result_img = cv2.vconcat([src_region, result_img])
+            cv2.imshow("result", result_img)
+            cv2.waitKey(0)
 
         return uma_rank_dict
