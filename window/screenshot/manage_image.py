@@ -58,6 +58,8 @@ class ManageImageFrame(ttk.Frame):
             raise IllegalInitializeException('load_image not set')
 
         if not self.org_image_name:
+        if not messagebox.askokcancel('delete',
+                                      f'delete {self.org_image_name} ?'):
             return
 
         org_path = screenshot_dir/f'{self.org_image_name}.png'
