@@ -58,6 +58,9 @@ class ManageImageFrame(ttk.Frame):
             raise IllegalInitializeException('load_image not set')
 
         if not self.org_image_name:
+            messagebox.showerror('delete', 'not select image')
+            return
+
         if not messagebox.askokcancel('delete',
                                       f'delete {self.org_image_name} ?'):
             return
