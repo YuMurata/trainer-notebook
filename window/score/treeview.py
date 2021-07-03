@@ -45,7 +45,7 @@ class ScoreTree(ttk.Treeview):
         for i, content in enumerate(sorted_list):
             self.content_dict[str(i)] = content
 
-            if content.score and content.score == ignore_score:
+            if content.score is not None and content.score == ignore_score:
                 continue
 
             raw_list = [(1, content.rank),
@@ -55,7 +55,7 @@ class ScoreTree(ttk.Treeview):
                 if value:
                     self.set(i, column=column, value=value)
 
-            if self.select_item and content == self.select_item:
+            if self.select_item is not None and content == self.select_item:
                 self.selection_set(i)
 
     def _sort_key(self, content: Content):
