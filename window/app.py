@@ -33,13 +33,13 @@ class BaseApp:
                 master_x = self.master_widget.winfo_rootx()
                 master_y = self.master_widget.winfo_rooty()
                 width = self.window.winfo_width()
-                logger.debug('master_x:', master_x)
-                logger.debug('width:', width)
+                # logger.debug(f'master_x: {master_x}')
+                # logger.debug(f'width: {width}')
                 x = master_x - width
                 y = master_y
 
                 self.window_pos = x, y
-                logger.debug(f'pos: {self.window_pos}')
+                # logger.debug(f'pos: {self.window_pos}')
 
             # self._set_geometry()
 

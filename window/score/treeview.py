@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
 from typing import Dict, List, NamedTuple
-from logger import init_logger
+from logger import CustomLogger
 
-logger = init_logger(__name__)
+logger = CustomLogger(__name__)
 
 
 class Content(NamedTuple):
@@ -64,9 +64,12 @@ class ScoreTree(ttk.Treeview):
         return (score, name)
 
     def sort(self):
-        content_list = [content for content in self.content_dict.values()]
-        self.clear()
-        self.fill(content_list)
+        with logger.scope('sort'):
+            content_list = [content for content in self.content_dict.values()]
+            logger.debug(f'content: {content_list}')
+            logger.debug(f'len: {len(content_list)}')
+            self.clear()
+            self.fill(content_list)
 
     def fix(self, item_id: str, content: Content):
         rank = content.rank if content.rank else ''
