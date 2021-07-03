@@ -59,6 +59,7 @@ class ScoreFrame(ttk.Frame):
                           rank=select_item['Rank'],
                           score=select_item['Score'])
         self.fix_score_frame.set_value(content)
+        self.treeview_score.select_item = content
 
     def update_app(self, event):
         self.content_dict = self.linked_thread.get()

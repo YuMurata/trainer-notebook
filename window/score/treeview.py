@@ -19,6 +19,7 @@ class ScoreTree(ttk.Treeview):
 
         self.tree_length = 15
         self.content_dict: Dict[str, Content] = dict()
+        self.select_item: Content = None
 
         self._init_column()
         self._init_heading()
@@ -47,6 +48,9 @@ class ScoreTree(ttk.Treeview):
                     self.set(i, column=column, value=value)
 
             self.content_dict[str(i)] = content
+            if self.select_item and content == self.select_item:
+                self.selection_set(i)
+
     def _sort_key(self, content: Content):
         score = -content.score if content.score else 0
         name = content.name if content.name else 0
@@ -67,6 +71,7 @@ class ScoreTree(ttk.Treeview):
         self.set(item_id, 3, score)
 
         self.content_dict[item_id] = content
+        self.select_item = content
         self.sort()
 
     def _init_column(self):
