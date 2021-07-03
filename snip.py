@@ -1,6 +1,6 @@
 import ctypes
 from ctypes import wintypes
-from typing import NamedTuple
+from typing import List, NamedTuple
 from PIL import ImageGrab, Image
 from tkinter import messagebox
 from pathlib import Path
@@ -59,9 +59,8 @@ class ImageSnipper:
 
 
 class BaseDebugSnipper(ImageSnipper):
-    def __init__(self, called: str, image_dir: Path):
-        self.image_list = [Image.open(path)
-                           for path in image_dir.iterdir()]
+    def __init__(self, called: str, image_list: List[Image.Image]):
+        self.image_list = image_list
         logger.info(f'debug snipper is called from {called}')
 
     def Snip(self) -> Image.Image:
@@ -72,8 +71,32 @@ class BaseDebugSnipper(ImageSnipper):
 class RaceScoreSnipper(BaseDebugSnipper):
     def __init__(self, called: str) -> None:
         image_dir = Path('./resource/other/debug/race/score')
-        super().__init__(called, image_dir)
+        image_list = [Image.open(path)
+                      for path in image_dir.iterdir()]
+        super().__init__(called, image_list)
+
+
+class RaceRankSnipper(BaseDebugSnipper):
+    def __init__(self, called: str) -> None:
+        image_dir = Path('./resource/other/debug/race/rank')
+        image_list = [Image.open(path)
+                      for path in image_dir.iterdir()]
+        super().__init__(called, image_list)
+
+
+class RaceSnipper(BaseDebugSnipper):
+    def __init__(self, called: str) -> None:
+        score_dir = Path('./resource/other/debug/race/score')
+        score_list = [Image.open(path)
+                      for path in score_dir.iterdir()]
+
+        rank_dir = Path('./resource/other/debug/race/rank')
+        rank_list = [Image.open(path)
+                     for path in rank_dir.iterdir()]
+        super().__init__(called, score_list+rank_list)
 
 
 class DebugSnipperType(Enum):
     RaceScore = RaceScoreSnipper
+    RaceRank = RaceRankSnipper
+    Race = RaceSnipper
