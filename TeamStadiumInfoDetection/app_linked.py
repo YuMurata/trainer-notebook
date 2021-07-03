@@ -9,7 +9,8 @@ from typing import Dict, Tuple
 from time import sleep
 from PIL import Image
 from copy import deepcopy
-import threading
+from uma_info import UmaPointFileIO
+
 logger = init_logger(__name__)
 
 

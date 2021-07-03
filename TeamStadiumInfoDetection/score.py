@@ -4,7 +4,7 @@ import os
 import pyocr
 import pyocr.builders
 from PIL import ImageDraw,  ImageEnhance, Image
-from Uma import UmaNameFileReader
+from uma_info import UmaNameFileReader, UmaPointFileIO
 from exception import FileNotFoundException
 from logger import init_logger
 import difflib
