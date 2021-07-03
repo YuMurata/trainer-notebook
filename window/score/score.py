@@ -49,6 +49,9 @@ class ScoreFrame(ttk.Frame):
             return
 
         select_id = id_list[0]
+        if content.score == ignore_score:
+            self.treeview_score.selection_remove(select_id)
+
         self.treeview_score.fix(select_id, content)
 
     def _select_item(self, event: tk.Event):
