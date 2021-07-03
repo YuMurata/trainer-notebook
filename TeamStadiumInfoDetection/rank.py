@@ -98,8 +98,12 @@ class RankReader(LinkedReader):
             return min_val
 
         min_val = min([match(template) for template in win_lose_img])
+        # if(min_val < 0.05):
+        #     print("minval", min_val)
+        #     cv2.imshow("test", img)
+        #     cv2.waitKey(0)
 
-        return min_val < 0.1
+        return min_val < 0.05
 
     def _read_uma_rank(self, src_region: np.ndarray,
                        uma_loc: Tuple[int, int]) -> int:
