@@ -21,7 +21,7 @@ class ScoreWindow(tk.Toplevel):
         self.linked_thread = AppLinkedThread(Dispatcher(generate_update_app))
         self.linked_thread.start()
 
-        self.treeview_height = 16
+        self.treeview_height = 15
 
         self._create_widgets()
         self.metrics_updater = metrics_updater
