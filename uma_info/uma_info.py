@@ -1,7 +1,6 @@
 from collections import UserDict, UserList
 import numpy as np
-from exception import InvalidKeyException
-from typing import Any, Callable, Iterable, List, Optional
+from typing import Callable, Iterable, List,  Optional
 
 
 class MetricCalculator:
@@ -60,9 +59,6 @@ class MetricList(UserList):
 
 
 class UmaInfo:
-    metrics_name_list = ['RankMean', 'Max', 'Min', 'Mean', 'Std']
-    item_name_list = ['Name'] + metrics_name_list
-
     def __init__(self, name: str, scores: MetricList, ranks: MetricList):
         self.name = name
         self.scores = scores
@@ -74,64 +70,19 @@ class UmaInfo:
         return self.__hash__() == o.__hash__()
 
     def __hash__(self) -> int:
-        return hash(f'{self.name}{self.scores}')
+        return hash(f'{self.name}{self.scores}{self.ranks}')
 
-    @property
-    def Max(self) -> int:
-        points = np.array(self.scores)
-        if np.any(points > 0):
-            return int(np.max(points[points > 0]))
-        return 0
-
-    @property
-    def Min(self) -> int:
-        points = np.array(self.scores)
-        if np.any(points > 0):
-            return int(np.min(points[points > 0]))
-        return 0
-
-    @property
-    def Mean(self) -> int:
-        points = np.array(self.scores)
-        if np.any(points > 0):
-            return int(np.mean(points[points > 0]))
-        return 0
-
-    @property
-    def Std(self) -> int:
-        points = np.array(self.scores)
-        if np.any(points > 0):
-            return int(np.std(points[points > 0]))
-        return 0
-
-    @property
-    def RankMean(self) -> float:
-        ranks = np.array(self.ranks)
-        if np.any(ranks > 0):
-            return np.mean(ranks[ranks > 0])
-        return 0
-
-    @property
-    def NumRace(self) -> int:
-        points = np.array(self.scores)
-        return np.count_nonzero(points > 0)
+    def get_num_race(self) -> int:
+        score_array = np.array(self.scores)
+        rank_array = np.array(self.ranks)
+        return max(np.count_nonzero(score_array > 0),
+                   np.count_nonzero(rank_array > 0))
 
     def add_score(self, score: int):
         self.scores.append(score)
 
     def add_rank(self, rank: int):
         self.ranks.append(rank)
-
-    def __getitem__(self, key: str):
-        item_list = ['Name'] + self.metrics_name_list
-        if key not in item_list:
-            raise InvalidKeyException(f'{key} is not metrics')
-
-        return {name: metrics
-                for name, metrics in zip(item_list, [self.name, self.RankMean,
-                                                     self.Max,
-                                                     self.Min, self.Mean,
-                                                     self.Std])}[key]
 
 
 class UmaInfoDict(UserDict):
@@ -145,5 +96,5 @@ class UmaInfoDict(UserDict):
 
     def __getitem__(self, key: str) -> UmaInfo:
         if key not in self.data:
-            self.add(UmaInfo(key, [], []))
+            self.add(UmaInfo(key, MetricList(), MetricList()))
         return self.data[key]
