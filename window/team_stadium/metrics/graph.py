@@ -98,7 +98,7 @@ class GraphFrame(ttk.Frame):
 
         # self.canvas = FigureCanvasTkAgg(self.graph_view.fig, master=self)
         self.canvas = GraphView(self)
-        self.canvas.get_tk_widget().pack()
+        self.canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
 
         self._create_buttons().pack()
 

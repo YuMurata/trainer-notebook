@@ -15,7 +15,7 @@ class MetricsTreeView(ttk.Treeview):
                                        # 'RankMean',
                                        'Max', 'Min', 'Mean', 'Std'])
         self.column_key_list = tuple(['Num']) + self.metrics_key_list
-        super().__init__(master, height=30, show="headings",
+        super().__init__(master, height=25, show="headings",
                          column=self.column_key_list)
 
         self.uma_info_sorter = SortUmaInfo()
