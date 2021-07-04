@@ -31,14 +31,20 @@ class MetricsView(ttk.Frame):
 
     def __init__(self, master):
         super().__init__(master)
-        self.treeview_score = MetricsTreeView(self)
+        treeview_frame = ttk.Frame(self)
+        self.treeview_score = MetricsTreeView(treeview_frame)
+        vscroll = ttk.Scrollbar(treeview_frame, orient=tk.VERTICAL,
+                                command=self.treeview_score.yview)
+        self.treeview_score.configure(yscroll=vscroll.set)
+        self.treeview_score.pack(side=tk.LEFT, pady=10)
+        vscroll.pack(side=tk.RIGHT, fill=tk.Y, pady=10)
         self.graph_frame = GraphFrame(self)
 
         SelectFrame(self).pack()
         self.treeview_score.set_graph_updater(
             self.graph_frame.canvas.update_uma_info_list)
-        self.treeview_score.pack(side=tk.LEFT)
-        self.graph_frame.pack(side=tk.LEFT)
+        treeview_frame.pack(side=tk.LEFT, expand=True, fill=tk.Y)
+        self.graph_frame.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
         # self.uma_info_sorter = SortUmaInfo(UmaInfo.item_name_list)
         # self.selected_item_dict: dict = None
         # self.graph_updater = None
@@ -76,10 +82,6 @@ class MetricsView(ttk.Frame):
         # Create Heading
         self._create_heading()
 
-        self.vscroll = ttk.Scrollbar(
-            self, orient="vertical", command=self.treeview_score.yview)
-        self.treeview_score.configure(yscroll=self.vscroll.set)
-
         self.score_num = len(UmaPointFileIO.Read())
         # Add data
         for i in range(self.score_num):
@@ -92,9 +94,6 @@ class MetricsView(ttk.Frame):
 
         self.treeview_score.tag_configure(
             'odd', background='red', foreground='blue')
-
-        self.treeview_score.pack(side=tk.LEFT, pady=10)
-        self.vscroll.pack(side=tk.RIGHT, fill=tk.Y, pady=10)
 
         self.treeview_score.bind('<<TreeviewSelect>>', self._click_view)
 
