@@ -46,6 +46,7 @@ class RankFrame(ttk.Frame):
         return int(rank) if rank.isdecimal() else None
 
     def set_text(self, rank: str):
+        logger.debug(f'focus: {self.combo.focus_get()}')
         if self.combo.focus_get() == self.combo:
             return
         self.rank.set(rank)
