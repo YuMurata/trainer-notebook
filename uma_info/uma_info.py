@@ -29,7 +29,9 @@ class MetricCalculator:
 
 
 class MetricList(UserList):
-    def __init__(self, initlist: Optional[Iterable[int]]) -> None:
+    metrics_name_list = ('max', 'min', 'mean', 'std')
+
+    def __init__(self, initlist: Optional[Iterable[int]] = None) -> None:
         super().__init__(initlist=initlist)
 
     def _base(self, calc: Callable[[np.ndarray], int]) -> int:
@@ -57,6 +59,9 @@ class MetricList(UserList):
     def __getitems__(self, i: int) -> int:
         return self.data[i]
     tinko
+
+    def to_list(self) -> List[int]:
+        return self.data
 
 
 class UmaInfo:
