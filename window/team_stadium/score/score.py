@@ -1,4 +1,3 @@
-from logging import log
 from uma_info import UmaPointFileIO
 from TeamStadiumInfoDetection.app_linked import AppLinkedThread
 from typing import Callable, List
@@ -9,9 +8,9 @@ from window.app import BaseApp
 from .treeview import ScoreTree, Content, ignore_score
 from .fix_frame import FixScoreFrame
 from . import fix_frame
-from logger import init_logger
+from logger import CustomLogger
 
-logger = init_logger(__name__)
+logger = CustomLogger(__name__)
 
 
 class ScoreFrame(ttk.Frame):
@@ -102,17 +101,9 @@ class ScoreFrame(ttk.Frame):
             if not score:
                 score = read_content.score
 
-            if name in ['マヤノトップガン', 'ダイワスカーレット']:
-                with logger.scope('choose'):
-                    logger.debug(
-                        f'read_rank: {read_content.rank}, '
-                        f'read_name: {read_content.name}, '
-                        f'read_score: {read_content.score}')
-                    logger.debug(f'rank: {rank}, name: {name}, score: {score}')
             return Content(name, rank, score)
 
         content_list = [choose_content(name) for name in name_set if name]
-        logger.debug(content_list)
 
         self.fix_score_frame.set_value(Content('', '', ''))
 

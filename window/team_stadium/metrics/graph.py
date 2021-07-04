@@ -11,8 +11,8 @@ from uma_info.uma_info import UmaInfo
 from enum import Enum, auto
 from colorsys import hsv_to_rgb
 import mplcursors
-from logger import init_logger
-logger = init_logger(__name__)
+from logger import CustomLogger
+logger = CustomLogger(__name__)
 
 
 class GraphView:

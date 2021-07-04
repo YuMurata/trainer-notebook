@@ -1,7 +1,7 @@
 import tkinter as tk
 from typing import Tuple
-from logger import init_logger
-logger = init_logger(__name__)
+from logger import CustomLogger
+logger = CustomLogger(__name__)
 
 
 class BaseApp:

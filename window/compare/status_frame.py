@@ -2,10 +2,10 @@ from typing import Callable
 from PIL import Image
 import tkinter as tk
 from tkinter import ttk
-from logger import init_logger
+from logger import CustomLogger
 from window.image import ImageStruct
 
-logger = init_logger(__name__)
+logger = CustomLogger(__name__)
 
 
 class StatusFrame(ttk.Frame):

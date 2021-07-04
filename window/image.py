@@ -2,9 +2,9 @@ from collections import UserDict
 from exception import InvalidTypeException
 from typing import NamedTuple, Tuple
 from PIL import Image, ImageTk, ImageDraw
-from logger import init_logger
+from logger import CustomLogger
 
-logger = init_logger(__name__)
+logger = CustomLogger(__name__)
 
 
 class ScaleRatioRange(NamedTuple):
