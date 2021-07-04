@@ -1,8 +1,28 @@
+from enum import Enum
 import tkinter as tk
-from tkinter import ttk
+from tkinter import Widget, ttk
 from uma_info import UmaInfo, UmaPointFileIO, SortUmaInfo
 from typing import List
 from .treeview import MetricsTreeView
+from .graph import GraphFrame
+
+
+class SelectKey(Enum):
+    SCORE = 'score'
+    RANK = 'rank'
+
+
+class SelectFrame(ttk.Labelframe):
+    def __init__(self, master: tk.Widget):
+        super().__init__(master, text='select info')
+        self.select_value = tk.StringVar(self, value=SelectKey.SCORE.value)
+        ttk.Radiobutton(self, text='score', value=SelectKey.SCORE.value,
+                        variable=self.select_value).pack(side=tk.LEFT)
+        ttk.Radiobutton(self, text='rank', value=SelectKey.RANK.value,
+                        variable=self.select_value).pack(side=tk.LEFT)
+
+    def get(self):
+        self.select_value.get()
 
 
 class MetricsView(ttk.Frame):
@@ -12,7 +32,13 @@ class MetricsView(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
         self.treeview_score = MetricsTreeView(self)
-        self.treeview_score.pack()
+        self.graph_frame = GraphFrame(self)
+
+        SelectFrame(self).pack()
+        self.treeview_score.set_graph_updater(
+            self.graph_frame.canvas.update_uma_info_list)
+        self.treeview_score.pack(side=tk.LEFT)
+        self.graph_frame.pack(side=tk.LEFT)
         # self.uma_info_sorter = SortUmaInfo(UmaInfo.item_name_list)
         # self.selected_item_dict: dict = None
         # self.graph_updater = None
