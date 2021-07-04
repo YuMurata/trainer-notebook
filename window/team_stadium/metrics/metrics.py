@@ -1,12 +1,12 @@
 import tkinter as tk
 from tkinter import ttk
-from uma_info import UmaInfo, UmaPointFileIO
 from uma_info import UmaInfo, UmaPointFileIO, SortUmaInfo
 from typing import List
+from .treeview import MetricsTreeView
 
 
 class MetricsView(ttk.Frame):
-    column_name_list = ['Num'] + UmaInfo.item_name_list
+    # column_name_list = ['Num'] + UmaInfo.item_name_list
     update_view_event = '<<UpdateView>>'
 
     def __init__(self, master):
