@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import ttk
-from tkinter.constants import BOTTOM
 from typing import List
 from window.app import BaseApp
 import matplotlib.pyplot as plt
@@ -132,12 +131,13 @@ class GraphFrame(ttk.Frame):
 class GraphApp(BaseApp):
     def __init__(self, master_widget: tk.Toplevel,
                  graph_view: GraphView) -> None:
-        def generator():
-            return GraphWindow(master_widget, graph_view)
-        target_size = (500, 550)
-        self.graph_view = graph_view
-        self.window: GraphWindow = None
-        super().__init__(generator, master_widget, target_size)
+        # def generator():
+        #     return GraphWindow(master_widget, graph_view)
+        # target_size = (500, 550)
+        # self.graph_view = graph_view
+        # self.window: GraphWindow = None
+        # super().__init__(generator, master_widget, target_size)
+        pass
 
     def update_canvas(self, uma_info_list: List[UmaInfo]):
         self.graph_view.update_uma_info_list(uma_info_list)
