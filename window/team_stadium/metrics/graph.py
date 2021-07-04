@@ -116,13 +116,13 @@ class GraphFrame(ttk.Frame):
         return frame
 
     def _click_draw_line(self):
-        self.graph_view.update_target(GraphView.DrawTarget.LINE)
-        self.graph_view.update_line()
+        self.canvas.update_target(GraphView.DrawTarget.LINE)
+        self.canvas.update_line()
         self.update_canvas()
 
     def _click_draw_bar(self):
-        self.graph_view.update_target(GraphView.DrawTarget.BAR)
-        self.graph_view.update_bar()
+        self.canvas.update_target(GraphView.DrawTarget.BAR)
+        self.canvas.update_bar()
         self.update_canvas()
 
     def update_canvas(self):
