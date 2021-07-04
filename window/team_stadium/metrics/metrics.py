@@ -1,7 +1,6 @@
-from enum import Enum
 import tkinter as tk
-from tkinter import Widget, ttk
-from uma_info import UmaInfo, UmaPointFileIO, SortUmaInfo
+from tkinter import ttk
+from uma_info import UmaInfo, UmaPointFileIO
 from typing import List
 from .treeview import MetricsTreeView
 from .graph import GraphFrame
@@ -22,7 +21,7 @@ class MetricsView(ttk.Frame):
         vscroll.pack(side=tk.RIGHT, fill=tk.Y, pady=10)
         self.graph_frame = GraphFrame(self)
 
-        SelectFrame(self).pack()
+        # SelectFrame(self).pack()
         self.treeview_score.set_graph_updater(
             self.graph_frame.canvas.update_uma_info_list)
         treeview_frame.pack(side=tk.LEFT, expand=True, fill=tk.Y)

@@ -144,9 +144,6 @@ class MetricsTreeView(ttk.Treeview):
         self._set_heading()
 
         for i, uma_info in enumerate(treeview_content):
-            # if self.selected_item_dict and uma_info in self.selected_item_dict:
-            #     self.selected_item_dict[uma_info] = i
-
             item_id = uma_info.name
             if self.exists(item_id):
                 self.move(item_id, '', i)
