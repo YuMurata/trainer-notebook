@@ -1,12 +1,12 @@
 import tkinter as tk
 from tkinter import ttk
 from typing import Callable,  NamedTuple
-from logger import init_logger
+from logger import CustomLogger
 from .treeview import Content, ignore_score
 from exception import IllegalInitializeException
 from uma_info import UmaNameFileReader
 
-logger = init_logger(__name__)
+logger = CustomLogger(__name__)
 
 
 class Callback(NamedTuple):
