@@ -1,3 +1,4 @@
+from enum import Enum
 import tkinter as tk
 from tkinter import ttk
 from uma_info import UmaInfo, UmaPointFileIO
