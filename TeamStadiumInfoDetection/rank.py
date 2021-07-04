@@ -6,8 +6,8 @@ from PIL import Image
 import numpy as np
 from TeamStadiumInfoDetection.linked_reader import LinkedReader
 from .define import template_dir
-from logger import init_logger
-logger = init_logger(__name__)
+from logger import CustomLogger
+logger = CustomLogger(__name__)
 
 
 class debugger:

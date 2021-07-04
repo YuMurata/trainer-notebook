@@ -1,4 +1,4 @@
-from logger import init_logger
+from logger import CustomLogger
 from TeamStadiumInfoDetection.dispatcher import BaseDispatched, Dispatcher
 from TeamStadiumInfoDetection.linked_reader import LinkedReader
 from threading import Thread, Lock
@@ -12,7 +12,7 @@ from copy import deepcopy
 from uma_info import UmaPointFileIO
 import threading
 
-logger = init_logger(__name__)
+logger = CustomLogger(__name__)
 
 
 class LinkedDispatched(BaseDispatched):
