@@ -67,10 +67,10 @@ class TeamStadiumNotebook(ttk.Notebook):
         self.sm_treeview = score_metrics_frame.treeview_frame.treeview_score
         self.mg_treeview = metrics_graph_frame.treeview_frame.treeview_score
 
-        self.sm_treeview.bind('<<TreeviewSelect>>',
-                              self._sync_mg_treeview_selection, True)
-        self.mg_treeview.bind('<<TreeviewSelect>>',
-                              self._sync_sm_treeview_selection, True)
+        # self.sm_treeview.bind('<<TreeviewSelect>>',
+        #                       self._sync_mg_treeview_selection, True)
+        # self.mg_treeview.bind('<<TreeviewSelect>>',
+        #                       self._sync_sm_treeview_selection, True)
 
     def _sync_mg_treeview_selection(self, event):
         sm_selection_list = self.sm_treeview.selection()
