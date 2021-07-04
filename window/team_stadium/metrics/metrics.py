@@ -11,11 +11,13 @@ class MetricsView(ttk.Frame):
 
     def __init__(self, master):
         super().__init__(master)
-        self.uma_info_sorter = SortUmaInfo(UmaInfo.item_name_list)
-        self.selected_item_dict: dict = None
-        self.graph_updater = None
-        self._create_widgets()
-        self.bind(self.update_view_event, self._update_view)
+        self.treeview_score = MetricsTreeView(self)
+        self.treeview_score.pack()
+        # self.uma_info_sorter = SortUmaInfo(UmaInfo.item_name_list)
+        # self.selected_item_dict: dict = None
+        # self.graph_updater = None
+        # self._create_widgets()
+        # self.bind(self.update_view_event, self._update_view)
 
     def _create_heading(self):
         for metrics_name in self.column_name_list:
