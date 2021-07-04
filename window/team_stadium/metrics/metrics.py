@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 from uma_info import UmaInfo, UmaPointFileIO
+from uma_info import UmaInfo, UmaPointFileIO, SortUmaInfo
 from typing import List
-from .sort import SortUmaInfo
 
 
 class MetricsView(ttk.Frame):

@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from typing import List
 from uma_info import UmaInfo, UmaPointFileIO
-from .sort import SortUmaInfo
+from uma_info import UmaInfo, UmaPointFileIO, SortUmaInfo
 
 
 class MetricsTreeView(ttk.Treeview):
