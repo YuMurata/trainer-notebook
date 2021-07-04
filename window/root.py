@@ -1,3 +1,5 @@
+from .team_stadium.tab import TeamStadiumNotebook
+from .team_stadium.tab import Metrics_GraphFrame, TeamStadiumNotebook
 import tkinter as tk
 from tkinter import ttk
 from enum import IntEnum, auto
@@ -7,7 +9,6 @@ from typing import List
 from .screenshot import ScreenShotFrame
 from .compare import CompareStatusFrame
 from .team_stadium.score import ScoreFrame
-from .team_stadium.tab import Metrics_GraphFrame, TeamStadiumNotebook
 
 
 class Win1(tk.Frame):
