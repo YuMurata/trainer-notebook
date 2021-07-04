@@ -103,3 +103,6 @@ class UmaInfoDict(UserDict):
         if key not in self.data:
             self.add(UmaInfo(key, MetricList(), MetricList()))
         return self.data[key]
+
+    def to_list(self) -> List[UmaInfo]:
+        return list(self.data.values())
