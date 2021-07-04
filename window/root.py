@@ -21,7 +21,7 @@ class Win1(tk.Frame):
         self.tab = ttk.Notebook(self, height=-1, width=-1)
         self.tab.pack(fill=tk.BOTH, expand=True)
 
-        self.graph_view = GraphView()
+        # self.graph_view = GraphView()
         # self.tab.add(self.metrics_view, text='Metrics')
         team_stadium = ttk.Notebook(self, height=-1, width=-1)
         self.metrics_view = MetricsView(team_stadium)

@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
-from typing import List
-from window.team_stadium.metrics import metrics
+from typing import Callable, List
 from uma_info import UmaInfo, UmaPointFileIO, SortUmaInfo
 from logger import CustomLogger
+from exception import IllegalInitializeException
 logger = CustomLogger(__name__)
 
 
@@ -20,7 +20,7 @@ class MetricsTreeView(ttk.Treeview):
 
         self.uma_info_sorter = SortUmaInfo()
         self.graph_updater = None
-        self.selected_item_dict = dict()
+        self.selected_item_list: List[UmaInfo] = None
 
         self._init_column()
         # Create Heading
@@ -29,6 +29,10 @@ class MetricsTreeView(ttk.Treeview):
 
         self.bind('<<TreeviewSelect>>', self._click_view)
         self.bind(self.update_view_event, self._update_view)
+
+    def set_graph_updater(self,
+                          graph_updater: Callable[[List[UmaInfo]], None]):
+        self.graph_updater = graph_updater
 
     def _init_column(self):
         column_dict = {'Num': dict(anchor=tk.E, width=50),
@@ -94,35 +98,36 @@ class MetricsTreeView(ttk.Treeview):
             logger.debug(f'key: {self.uma_info_sorter.sort_key}')
             logger.debug(f'is_reberse: {self.uma_info_sorter.is_reverse}')
 
-        self.selection_remove(self.selection())
+        # if self.selected_item_dict:
+        #     selected_item_list = list(self.selected_item_dict.values())
+        #     # self.selection_add(selected_item_list)
 
-        if self.selected_item_dict:
-            selected_item_list = list(self.selected_item_dict.values())
-            self.selection_add(selected_item_list)
+        #     sorted_items = sorted(
+        #         self.selected_item_dict.items(), key=lambda x: x[1])
+        #     uma_info_list = [item[0] for item in sorted_items]
 
-            sorted_items = sorted(
-                self.selected_item_dict.items(), key=lambda x: x[1])
-            uma_info_list = [item[0] for item in sorted_items]
-
-            if self.graph_updater:
-                self.graph_updater(uma_info_list)
+        #     if self.graph_updater:
+        #         self.graph_updater(uma_info_list)
 
         self.generate_update()
 
     def _click_view(self, event):
+        if not self.graph_updater:
+            raise IllegalInitializeException('not set graph_upater')
+
         uma_info_dict = UmaPointFileIO.Read()
 
-        item_id_list = self.selection()
+        uma_name_list = self.selection()
 
-        def get_uma_info(item_id) -> UmaInfo:
-            item = self.item(item_id)
-            uma_name = item['values'][1]
-            return uma_info_dict[uma_name]
+        # def get_uma_info(item_id) -> UmaInfo:
+        #     item = self.item(item_id)
+        #     uma_name = item['values'][1]
+        #     return uma_info_dict[uma_name]
 
-        self.selected_item_dict = {get_uma_info(item_id): item_id
-                                   for item_id in item_id_list}
+        self.selected_item_list = [uma_info_dict[uma_name]
+                                   for uma_name in uma_name_list]
         if self.graph_updater:
-            self.graph_updater(list(self.selected_item_dict.keys()))
+            self.graph_updater(self.selected_item_list)
 
     def generate_update(self):
         self.event_generate(self.update_view_event)
@@ -131,13 +136,8 @@ class MetricsTreeView(ttk.Treeview):
         uma_info_dict = UmaPointFileIO.Read()
         treeview_content = uma_info_dict.to_list()
 
-        with logger.scope('update'):
-            logger.debug(
-                f'before sort: {[content.name for content in treeview_content]}')
-            treeview_content.sort(key=self.uma_info_sorter.sort,
-                                  reverse=self.uma_info_sorter.is_reverse)
-            logger.debug(
-                f'after sort: {[content.name for content in treeview_content]}')
+        treeview_content.sort(key=self.uma_info_sorter.sort,
+                              reverse=self.uma_info_sorter.is_reverse)
         self._set_heading()
 
         for i, uma_info in enumerate(treeview_content):

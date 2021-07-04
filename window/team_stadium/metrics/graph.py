@@ -15,16 +15,18 @@ from logger import CustomLogger
 logger = CustomLogger(__name__)
 
 
-class GraphView:
+class GraphView(FigureCanvasTkAgg):
     class DrawTarget(Enum):
         LINE = auto()
         BAR = auto()
 
-    def __init__(self):
-        self.fig = plt.Figure()
-        self.ax = self.fig.add_subplot(111)
+    def __init__(self, master: tk.Widget):
+        fig = plt.Figure()
+        self.ax = fig.add_subplot(111)
 
-        self.fig.subplots_adjust(bottom=0.2, left=0.2)
+        super().__init__(fig, master)
+
+        fig.subplots_adjust(bottom=0.2, left=0.2)
         plt.rcParams['font.family'][0] = ('Meiryo')
 
         self.uma_info_list: List[UmaInfo] = None
@@ -55,6 +57,7 @@ class GraphView:
             self.ax.legend(loc="lower right", fontsize=8,
                            prop={'family': 'Meiryo'})
         mplcursors.cursor(self.ax, hover=True)
+        self.draw()
 
     def update_bar(self):
         self.ax.cla()
@@ -66,14 +69,17 @@ class GraphView:
 
         if self.uma_info_list:
             name_list = [uma_info.name for uma_info in self.uma_info_list]
-            mean_list = [uma_info.Mean for uma_info in self.uma_info_list]
-            std_list = [uma_info.Std for uma_info in self.uma_info_list]
+            mean_list = [
+                uma_info.scores.mean for uma_info in self.uma_info_list]
+            std_list = [uma_info.scores.std for uma_info in self.uma_info_list]
 
             # ax1
             self.ax.bar(name_list, mean_list, yerr=std_list, ecolor='black')
 
             self.ax.set_xticklabels(
                 name_list, fontname='Meiryo', rotation=30, fontsize=8)
+
+        self.draw()
 
     def update_uma_info_list(self, uma_info_list: List[UmaInfo]):
         self.uma_info_list = uma_info_list
@@ -86,12 +92,17 @@ class GraphView:
 
 
 class GraphFrame(ttk.Frame):
-    def __init__(self, master, graph_view: GraphView):
+    def __init__(self, master):
         super().__init__(master, name='umauma graph')
-        self.graph_view = graph_view
-        # self._create_widgets()
+        # self.graph_view = GraphView()
 
-    def _create_buttons(self):
+        # self.canvas = FigureCanvasTkAgg(self.graph_view.fig, master=self)
+        self.canvas = GraphView(self)
+        self.canvas.get_tk_widget().pack()
+
+        self._create_buttons().pack()
+
+    def _create_buttons(self) -> ttk.Frame:
         frame = ttk.Frame(self)
 
         self.line_button = ttk.Button(frame, text="line")
@@ -103,13 +114,6 @@ class GraphFrame(ttk.Frame):
         self.line_button.pack(side=tk.LEFT)
         self.bar_button.pack(side=tk.RIGHT)
         return frame
-
-    def _create_widgets(self):
-        self.canvas = FigureCanvasTkAgg(self.graph_view.fig, master=self)
-        self.canvas.get_tk_widget().pack()
-
-        button_frame = self._create_buttons()
-        button_frame.pack(pady=10, side=BOTTOM)
 
     def _click_draw_line(self):
         self.graph_view.update_target(GraphView.DrawTarget.LINE)
