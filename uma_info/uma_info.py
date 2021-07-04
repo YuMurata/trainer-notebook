@@ -62,9 +62,6 @@ class MetricList(UserList):
     def to_list(self) -> List[int]:
         return self.data
 
-    def to_list(self) -> List[int]:
-        return self.data
-
 
 class UmaInfo:
     def __init__(self, name: str, scores: MetricList, ranks: MetricList):
