@@ -58,7 +58,6 @@ class MetricList(UserList):
 
     def __getitems__(self, i: int) -> int:
         return self.data[i]
-    tinko
 
     def to_list(self) -> List[int]:
         return self.data
@@ -104,6 +103,3 @@ class UmaInfoDict(UserDict):
         if key not in self.data:
             self.add(UmaInfo(key, MetricList(), MetricList()))
         return self.data[key]
-
-
-unko
