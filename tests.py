@@ -1,4 +1,4 @@
-from uma_info import UmaInfo, UmaNameFileReader, UmaPointFileIO
+from uma_info import UmaNameFileReader, UmaPointFileIO
 
 if __name__ == '__main__':
     print(UmaNameFileReader.Read())
