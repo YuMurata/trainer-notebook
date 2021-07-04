@@ -111,7 +111,7 @@ class MetricsTreeView(ttk.Treeview):
 
         self.generate_update()
 
-    def _click_view(self, event):
+    def _graph_update(self):
         if not self.graph_updater:
             raise IllegalInitializeException('not set graph_upater')
 
@@ -129,6 +129,9 @@ class MetricsTreeView(ttk.Treeview):
         if self.graph_updater:
             self.graph_updater(self.selected_item_list)
 
+    def _click_view(self, event):
+        self._graph_update()
+
     def generate_update(self):
         self.event_generate(self.update_view_event)
 
@@ -141,8 +144,8 @@ class MetricsTreeView(ttk.Treeview):
         self._set_heading()
 
         for i, uma_info in enumerate(treeview_content):
-            if self.selected_item_dict and uma_info in self.selected_item_dict:
-                self.selected_item_dict[uma_info] = i
+            # if self.selected_item_dict and uma_info in self.selected_item_dict:
+            #     self.selected_item_dict[uma_info] = i
 
             item_id = uma_info.name
             if self.exists(item_id):
@@ -151,3 +154,16 @@ class MetricsTreeView(ttk.Treeview):
             else:
                 values = self._make_content_values(i+1, uma_info)
                 self.insert(parent='', index=i, iid=item_id, values=values)
+
+        self._graph_update()
+
+
+class TreeViewFrame(ttk.Frame):
+    def __init__(self, master):
+        super().__init__(master)
+        self.treeview_score = MetricsTreeView(self)
+        vscroll = ttk.Scrollbar(self, orient=tk.VERTICAL,
+                                command=self.treeview_score.yview)
+        self.treeview_score.configure(yscroll=vscroll.set)
+        self.treeview_score.pack(side=tk.LEFT, pady=10)
+        vscroll.pack(side=tk.RIGHT, fill=tk.Y, pady=10)
