@@ -120,6 +120,7 @@ class ScoreFrame(ttk.Frame):
 
     def deleteResultReadScore(self):
         self.linked_thread.init_dict()
+        self.treeview_score.clear()
         self.treeview_score.event_generate('<<UpdateApp>>', when='tail')
 
     def _create_button(self):
