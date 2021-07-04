@@ -9,15 +9,16 @@ from .treeview import ScoreTree, Content, ignore_score
 from .fix_frame import FixScoreFrame
 from . import fix_frame
 from logger import CustomLogger
+from exception import IllegalInitializeException
 
 logger = CustomLogger(__name__)
 
 
 class ScoreFrame(ttk.Frame):
-    def __init__(self, master: tk.Widget, metrics_updater: Callable[[], None]):
+    def __init__(self, master: tk.Widget,):
         super().__init__(master)
 
-        self.metrics_updater = metrics_updater
+        self.metrics_updater: Callable[[], None] = None
 
         self.treeview_score = ScoreTree(self)
         self.treeview_score.bind('<<UpdateApp>>', self.update_app)
@@ -36,6 +37,9 @@ class ScoreFrame(ttk.Frame):
             self.treeview_score.event_generate('<<UpdateApp>>', when='tail')
         self.linked_thread = AppLinkedThread(Dispatcher(generate_update_app))
         self.linked_thread.start()
+
+    def set_metrics_updater(self, metrics_updater: Callable[[], None]):
+        self.metrics_updater = metrics_updater
 
     def _fix_content(self, content: Content):
         if not content.name:
@@ -160,6 +164,8 @@ class ScoreFrame(ttk.Frame):
 
         UmaPointFileIO.Write(uma_info_dict)
 
+        if not self.metrics_updater:
+            raise IllegalInitializeException('not set metrics_updater')
         self.metrics_updater()
 
 
