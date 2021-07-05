@@ -77,7 +77,15 @@ class GraphView(FigureCanvasTkAgg):
 
             self.ax.set_xticklabels(
                 name_list, fontname='Meiryo', rotation=30, fontsize=8)
-        mplcursors.cursor(self.ax, hover=True)
+
+        def select_bar(select: mplcursors.Selection):
+            name = name_list[select.target.index]
+            mean = mean_list[select.target.index]
+            text = (f'{name}\n'
+                    f'mean={mean}')
+            return select.annotation.set_text(text)
+
+        mplcursors.cursor(self.ax, hover=True).connect('add', select_bar)
         self.draw()
 
     def update_uma_info_list(self, uma_info_list: List[UmaInfo]):
