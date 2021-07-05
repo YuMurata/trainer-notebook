@@ -50,6 +50,11 @@ class ManageImageFrame(ttk.Frame):
 
         org_path = screenshot_dir/f'{self.org_image_name}.png'
         dst_path = screenshot_dir/f'{image_name}.png'
+
+        if dst_path.exists():
+            messagebox.showerror('error', 'file is exists')
+            return
+
         org_path.rename(dst_path)
         self.load_image()
 
