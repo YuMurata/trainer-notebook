@@ -52,7 +52,7 @@ class RankFrame(ttk.Frame):
                 return
             self.rank.set(rank)
         except:
-            pass
+            logger.warning(f'例外握りつぶすのはよくない、focus_getを要修正')
 
 
 class NameFrame(ttk.Frame):
@@ -79,7 +79,7 @@ class NameFrame(ttk.Frame):
                 return
             self.name.set(name)
         except:
-            pass
+            logger.warning(f'例外握りつぶすのはよくない、focus_getを要修正')
 
 
 class ScoreFrame(ttk.Frame):
@@ -115,7 +115,7 @@ class ScoreFrame(ttk.Frame):
                 return
             self.score.set(score)
         except:
-            pass
+            logger.warning(f'例外握りつぶすのはよくない、focus_getを要修正')
 
 
 class FixScoreFrame(ttk.Frame):
