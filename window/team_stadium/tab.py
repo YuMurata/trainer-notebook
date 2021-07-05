@@ -41,9 +41,14 @@ class Metrics_GraphFrame(ttk.Frame):
         self.metrics_updater = self.treeview_frame.treeview_score.generate_update
         button = ttk.Button(frame, text='read score')
 
+        self.win: tk.Toplevel = None
+
         def create_window():
-            win = tk.Toplevel(self)
-            score_frame = ScoreFrame(win)
+            if self.win and self.win.winfo_exists():
+                return
+
+            self.win = tk.Toplevel(self)
+            score_frame = ScoreFrame(self.win)
             score_frame.set_metrics_updater(self.metrics_updater)
             score_frame.pack()
         button.bind('<Button-1>', lambda e: create_window())
