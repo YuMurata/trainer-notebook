@@ -1,3 +1,4 @@
+from exception import IllegalInitializeException
 from logger import CustomLogger
 import tkinter as tk
 from tkinter import ttk
@@ -11,26 +12,29 @@ from window.team_stadium import score
 logger = CustomLogger(__name__)
 
 
-class Score_MetricsFrame(ttk.Frame):
-    def __init__(self, master: tk.Widget):
-        super().__init__(master)
-        frame = ttk.Frame(self)
-        frame.pack()
-        self.score_frame = ScoreFrame(frame)
-        self.treeview_frame = TreeViewFrame(frame)
+class ScoreWindowManager:
+    def __init__(self, master: tk.Widget) -> None:
+        self.master = master
+        self.win: tk.Toplevel = None
+        self.metrics_updater: Callable[[], None] = None
 
-        self.score_frame.pack(side=tk.LEFT)
-        self.treeview_frame.pack(side=tk.LEFT)
+    def activate(self):
+        if not self.metrics_updater:
+            raise IllegalInitializeException('not set metrics_updater')
 
-    def set_graph_updater(self,
-                          graph_updater: Callable[[List[UmaInfo]], None]):
-        self.treeview_frame.treeview_score.set_graph_updater(graph_updater)
+        if self.win and self.win.winfo_exists():
+            logger.debug('win exists')
+            self.win.deiconify()
+            self.win.lift()
+            return
 
-    def set_metrics_updater(self, updater):
-        def updater_mass():
-            updater()
-            self.treeview_frame.treeview_score.generate_update()
-        self.score_frame.set_metrics_updater(updater_mass)
+        self.win = tk.Toplevel(self.master)
+        score_frame = ScoreFrame(self.win)
+        score_frame.set_metrics_updater(self.metrics_updater)
+        score_frame.pack()
+
+    def set_metrics_updater(self, metrics_updater: Callable[[None], None]):
+        self.metrics_updater = metrics_updater
 
 
 class Metrics_GraphFrame(ttk.Frame):
@@ -41,17 +45,10 @@ class Metrics_GraphFrame(ttk.Frame):
         self.metrics_updater = self.treeview_frame.treeview_score.generate_update
         button = ttk.Button(frame, text='read score')
 
-        self.win: tk.Toplevel = None
+        self.score_manager = ScoreWindowManager(self)
+        self.score_manager.set_metrics_updater(self.metrics_updater)
 
-        def create_window():
-            if self.win and self.win.winfo_exists():
-                return
-
-            self.win = tk.Toplevel(self)
-            score_frame = ScoreFrame(self.win)
-            score_frame.set_metrics_updater(self.metrics_updater)
-            score_frame.pack()
-        button.bind('<Button-1>', lambda e: create_window())
+        button.bind('<Button-1>', lambda e: self.score_manager.activate())
         self.treeview_frame.pack()
         button.pack()
         self.graph_frame = GraphFrame(self)
