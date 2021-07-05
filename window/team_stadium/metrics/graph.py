@@ -63,7 +63,8 @@ class GraphView(FigureCanvasTkAgg):
 
         def select_line(select: mplcursors.Selection):
             name = select.artist.get_label()
-            x, y = map(int, select.target)
+            x = round(select.target.index)
+            y = select.artist.get_ydata()[x]
 
             text = (f'{name}\n'
                     f'x={x}\n'
@@ -97,7 +98,7 @@ class GraphView(FigureCanvasTkAgg):
             mean = mean_list[select.target.index]
             text = (f'{name}\n'
                     f'mean={mean}')
-            return select.annotation.set_text(text)
+            return select.annotation.set(text=text, anncoords="offset points")
 
         mplcursors.cursor(self.ax, hover=True).connect('add', select_bar)
         self.draw()
