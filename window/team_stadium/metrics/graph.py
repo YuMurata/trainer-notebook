@@ -42,6 +42,7 @@ class GraphView(FigureCanvasTkAgg):
         self.ax.get_yaxis().set_major_locator(ticker.MaxNLocator(integer=True))
 
         scatter_list = []
+        plot_list = []
         if self.uma_info_list:
             h_diff = 1.0 / len(self.uma_info_list)
             for i, uma_info in enumerate(self.uma_info_list):
@@ -51,11 +52,13 @@ class GraphView(FigureCanvasTkAgg):
                 rgb = hsv_to_rgb(h_diff*i, 1, 0.8)
 
                 # ax1
-                self.ax.plot(x, y, marker='o',
-                             color=rgb, label=uma_info.name)
+                plot_list.append(self.ax.plot(x, y, marker='o',
+                                              color=rgb, label=uma_info.name))
                 scatter_list.append(self.ax.scatter(x, y, marker='o',
-                                                    color=rgb, label=uma_info.name))
-            self.ax.legend(loc="lower right", fontsize=8,
+                                                    color=rgb,
+                                                    label=uma_info.name))
+            self.ax.legend([uma_info.name for uma_info in self.uma_info_list],
+                           loc="lower right", fontsize=8,
                            prop={'family': 'Meiryo'})
 
         def select_line(select: mplcursors.Selection):
