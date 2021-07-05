@@ -68,7 +68,7 @@ class GraphView(FigureCanvasTkAgg):
             text = (f'{name}\n'
                     f'x={x}\n'
                     f'y={y}')
-            return select.annotation.set(text=text, anncoords="offset points")
+            return select.annotation.set(text=text)
         mplcursors.cursor(scatter_list, hover=True).connect('add', select_line)
         self.draw()
 
