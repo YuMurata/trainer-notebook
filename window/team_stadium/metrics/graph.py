@@ -51,22 +51,26 @@ class GraphView(FigureCanvasTkAgg):
                 rgb = hsv_to_rgb(h_diff*i, 1, 0.8)
 
                 # ax1
+                point = self.ax.scatter(x, y, marker='o',
+                                        color=rgb, label=uma_info.name)
                 self.ax.plot(x, y, marker='o',
                              color=rgb, label=uma_info.name)
+
+                def select_line(select: mplcursors.Selection):
+                    name = select.artist.get_label()
+                    x = round(select.target.index)
+                    y = select.target[1]
+
+                    text = (f'{name}\n'
+                            f'x={x}\n'
+                            f'y={y}')
+                    return select.annotation.set(text=text, anncoords="offset points")
+                mplcursors.cursor(point, hover=True).connect(
+                    'add', select_line)
 
             self.ax.legend(loc="lower right", fontsize=8,
                            prop={'family': 'Meiryo'})
 
-        def select_line(select: mplcursors.Selection):
-            name = select.artist.get_label()
-            x = round(select.target.index)
-            y = select.artist.get_ydata()[x]
-
-            text = (f'{name}\n'
-                    f'x={x}\n'
-                    f'y={y}')
-            return select.annotation.set(text=text, anncoords="offset points")
-        mplcursors.cursor(self.ax, hover=True).connect('add', select_line)
         self.draw()
 
     def update_bar(self):
