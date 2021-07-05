@@ -10,8 +10,10 @@ from .metrics.graph import GraphFrame
 class Score_MetricsFrame(ttk.Frame):
     def __init__(self, master: tk.Widget):
         super().__init__(master)
-        self.score_frame = ScoreFrame(self)
-        self.treeview_frame = TreeViewFrame(self)
+        frame = ttk.Frame(self)
+        frame.pack()
+        self.score_frame = ScoreFrame(frame)
+        self.treeview_frame = TreeViewFrame(frame)
 
         self.score_frame.pack(side=tk.LEFT)
         self.treeview_frame.pack(side=tk.LEFT)
