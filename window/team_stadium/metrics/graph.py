@@ -55,7 +55,16 @@ class GraphView(FigureCanvasTkAgg):
 
             self.ax.legend(loc="lower right", fontsize=8,
                            prop={'family': 'Meiryo'})
-        mplcursors.cursor(self.ax, hover=True)
+
+        def select_bar(select: mplcursors.Selection):
+            name = select.artist.get_label()
+            x, y = map(int, select.target)
+
+            text = (f'{name}\n'
+                    f'x={x}\n'
+                    f'y={y}')
+            return select.annotation.set_text(text)
+        mplcursors.cursor(self.ax, hover=True).connect('add', select_bar)
         self.draw()
 
     def update_bar(self):
