@@ -7,7 +7,7 @@ from typing import List
 from .screenshot import ScreenShotFrame
 from .compare import CompareStatusFrame
 from .team_stadium.score import ScoreFrame
-from .team_stadium.metrics import MetricsView
+from .team_stadium.tab import Metrics_GraphFrame, TeamStadiumNotebook
 
 
 class Win1(tk.Frame):
@@ -21,14 +21,13 @@ class Win1(tk.Frame):
         self.tab = ttk.Notebook(self, height=-1, width=-1)
         self.tab.pack(fill=tk.BOTH, expand=True)
 
-        self.graph_view = GraphView()
+        # self.graph_view = GraphView()
         # self.tab.add(self.metrics_view, text='Metrics')
-        team_stadium = ttk.Notebook(self, height=-1, width=-1)
-        self.metrics_view = MetricsView(team_stadium)
+        # team_stadium = TeamStadiumNotebook(self)
+
         # team_stadium.add(ttk.Label(self, text='rank-score'), text='rank-score')
-        team_stadium.add(self.metrics_view, text='metrics')
-        team_stadium.add(ttk.Label(self, text='graph'), text='graph')
-        self.tab.add(team_stadium, text='TeamStadium')
+        # self.tab.add(team_stadium, text='TeamStadium')
+        self.tab.add(Metrics_GraphFrame(self), text='TeamStadium')
         self.tab.add(CompareStatusFrame(self), text='Status')
         self.tab.add(ScreenShotFrame(self), text='Screenshot')
         # self.score_app = ScoreApp(master, self.metrics_view.generate_update)

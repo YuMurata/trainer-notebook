@@ -29,9 +29,9 @@ class MetricCalculator:
 
 
 class MetricList(UserList):
-    metrics_name_list = ('max', 'min', 'mean', 'std',)
+    metrics_name_list = ('max', 'min', 'mean', 'std')
 
-    def __init__(self, initlist: Optional[Iterable[int]]) -> None:
+    def __init__(self, initlist: Optional[Iterable[int]] = None) -> None:
         super().__init__(initlist=initlist)
 
     def _base(self, calc: Callable[[np.ndarray], int]) -> int:
@@ -58,6 +58,9 @@ class MetricList(UserList):
 
     def __getitems__(self, i: int) -> int:
         return self.data[i]
+
+    def to_list(self) -> List[int]:
+        return self.data
 
 
 class UmaInfo:
@@ -100,3 +103,6 @@ class UmaInfoDict(UserDict):
         if key not in self.data:
             self.add(UmaInfo(key, MetricList(), MetricList()))
         return self.data[key]
+
+    def to_list(self) -> List[UmaInfo]:
+        return list(self.data.values())
