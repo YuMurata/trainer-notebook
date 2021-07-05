@@ -41,6 +41,7 @@ class GraphView(FigureCanvasTkAgg):
         self.ax.get_xaxis().set_major_locator(ticker.MaxNLocator(integer=True))
         self.ax.get_yaxis().set_major_locator(ticker.MaxNLocator(integer=True))
 
+        scatter_list = []
         if self.uma_info_list:
             h_diff = 1.0 / len(self.uma_info_list)
             for i, uma_info in enumerate(self.uma_info_list):
@@ -52,20 +53,20 @@ class GraphView(FigureCanvasTkAgg):
                 # ax1
                 self.ax.plot(x, y, marker='o',
                              color=rgb, label=uma_info.name)
-
+                scatter_list.append(self.ax.scatter(x, y, marker='o',
+                                                    color=rgb, label=uma_info.name))
             self.ax.legend(loc="lower right", fontsize=8,
                            prop={'family': 'Meiryo'})
 
         def select_line(select: mplcursors.Selection):
             name = select.artist.get_label()
-            x = round(select.target.index)
-            y = select.artist.get_ydata()[x]
+            x, y = select.target
 
             text = (f'{name}\n'
                     f'x={x}\n'
                     f'y={y}')
             return select.annotation.set(text=text, anncoords="offset points")
-        mplcursors.cursor(self.ax, hover=True).connect('add', select_line)
+        mplcursors.cursor(scatter_list, hover=True).connect('add', select_line)
         self.draw()
 
     def update_bar(self):
