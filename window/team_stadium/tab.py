@@ -1,3 +1,4 @@
+from logger import CustomLogger
 import tkinter as tk
 from tkinter import ttk
 from typing import Callable, List
@@ -5,6 +6,9 @@ from uma_info.uma_info import UmaInfo
 from .score import ScoreFrame
 from .metrics.treeview import TreeViewFrame
 from .metrics.graph import GraphFrame
+from window.team_stadium import score
+
+logger = CustomLogger(__name__)
 
 
 class Score_MetricsFrame(ttk.Frame):
@@ -32,16 +36,27 @@ class Score_MetricsFrame(ttk.Frame):
 class Metrics_GraphFrame(ttk.Frame):
     def __init__(self, master: tk.Widget):
         super().__init__(master)
-        self.treeview_frame = TreeViewFrame(self)
+        frame = ttk.Frame(self)
+        self.treeview_frame = TreeViewFrame(frame)
+        self.metrics_updater = self.treeview_frame.treeview_score.generate_update
+        button = ttk.Button(frame, text='read score')
+
+        def create_window():
+            win = tk.Toplevel(self)
+            score_frame = ScoreFrame(win)
+            score_frame.set_metrics_updater(self.metrics_updater)
+            score_frame.pack()
+        button.bind('<Button-1>', lambda e: create_window())
+        self.treeview_frame.pack()
+        button.pack()
         self.graph_frame = GraphFrame(self)
 
         self.graph_updater = self.graph_frame.canvas.update_uma_info_list
-        self.metrics_updater = self.treeview_frame.treeview_score.generate_update
 
         self.treeview_frame.treeview_score.set_graph_updater(
             self.graph_updater)
 
-        self.treeview_frame.pack(side=tk.LEFT)
+        frame.pack(side=tk.LEFT)
         self.graph_frame.pack(side=tk.LEFT)
 
     def get_graph_updater(self) -> Callable[[List[UmaInfo]], None]:
