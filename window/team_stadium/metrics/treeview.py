@@ -136,6 +136,7 @@ class MetricsTreeView(ttk.Treeview):
         self.event_generate(self.update_view_event)
 
     def _update_view(self, event):
+        logger.debug('update')
         uma_info_dict = UmaPointFileIO.Read()
         treeview_content = uma_info_dict.to_list()
 
@@ -150,7 +151,13 @@ class MetricsTreeView(ttk.Treeview):
             item_id = uma_info.name
             if self.exists(item_id):
                 self.move(item_id, '', i)
-                self.set(item_id, 'Num', i+1)
+
+                scores = uma_info.scores
+                value_list = (i+1, uma_info.name, scores.max,
+                              scores.min, scores.mean, scores.std)
+                for column, value in zip(self.column_key_list, value_list):
+                    self.set(item_id, column, value)
+
             else:
                 values = self._make_content_values(i+1, uma_info)
                 self.insert(parent='', index=i, iid=item_id, values=values)
