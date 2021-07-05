@@ -63,8 +63,7 @@ class GraphView(FigureCanvasTkAgg):
 
         def select_line(select: mplcursors.Selection):
             name = select.artist.get_label()
-            x = round(select.target.index)
-            y = select.artist.get_ydata()[x]
+            x, y = select.target
 
             text = (f'{name}\n'
                     f'x={x}\n'
