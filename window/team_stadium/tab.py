@@ -7,7 +7,7 @@ from uma_info.uma_info import UmaInfo
 from .score import ScoreFrame
 from .metrics.treeview import TreeViewFrame
 from .metrics.graph import GraphFrame
-from window.team_stadium import score
+
 
 logger = CustomLogger(__name__)
 
@@ -42,7 +42,8 @@ class Metrics_GraphFrame(ttk.Frame):
         super().__init__(master)
         frame = ttk.Frame(self)
         self.treeview_frame = TreeViewFrame(frame)
-        self.metrics_updater = self.treeview_frame.treeview_score.generate_update
+        treeview_score = self.treeview_frame.treeview_score
+        self.metrics_updater = treeview_score.generate_update
         button = ttk.Button(frame, text='read score')
 
         self.score_manager = ScoreWindowManager(self)
@@ -69,42 +70,42 @@ class Metrics_GraphFrame(ttk.Frame):
         return self.metrics_updater
 
 
-class TeamStadiumNotebook(ttk.Notebook):
-    def __init__(self, master: tk.Widget):
-        super().__init__(master, height=-1, width=-1)
-        score_metrics_frame = Score_MetricsFrame(self)
-        metrics_graph_frame = Metrics_GraphFrame(self)
+# class TeamStadiumNotebook(ttk.Notebook):
+#     def __init__(self, master: tk.Widget):
+#         super().__init__(master, height=-1, width=-1)
+#         score_metrics_frame = Score_MetricsFrame(self)
+#         metrics_graph_frame = Metrics_GraphFrame(self)
 
-        score_metrics_frame.set_graph_updater(
-            metrics_graph_frame.get_graph_updater())
+#         score_metrics_frame.set_graph_updater(
+#             metrics_graph_frame.get_graph_updater())
 
-        score_metrics_frame.set_metrics_updater(
-            metrics_graph_frame.get_metrics_updater())
+#         score_metrics_frame.set_metrics_updater(
+#             metrics_graph_frame.get_metrics_updater())
 
-        self.add(score_metrics_frame, text='score-metrics')
-        self.add(metrics_graph_frame, text='metrics-graph')
+#         self.add(score_metrics_frame, text='score-metrics')
+#         self.add(metrics_graph_frame, text='metrics-graph')
 
-        self.sm_treeview = score_metrics_frame.treeview_frame.treeview_score
-        self.mg_treeview = metrics_graph_frame.treeview_frame.treeview_score
+#         self.sm_treeview = score_metrics_frame.treeview_frame.treeview_score
+#         self.mg_treeview = metrics_graph_frame.treeview_frame.treeview_score
 
-        # self.sm_treeview.bind('<<TreeviewSelect>>',
-        #                       self._sync_mg_treeview_selection, True)
-        # self.mg_treeview.bind('<<TreeviewSelect>>',
-        #                       self._sync_sm_treeview_selection, True)
+#         # self.sm_treeview.bind('<<TreeviewSelect>>',
+#         #                       self._sync_mg_treeview_selection, True)
+#         # self.mg_treeview.bind('<<TreeviewSelect>>',
+#         #                       self._sync_sm_treeview_selection, True)
 
-    def _sync_mg_treeview_selection(self, event):
-        sm_selection_list = self.sm_treeview.selection()
-        mg_selection_list = self.mg_treeview.selection()
+#     def _sync_mg_treeview_selection(self, event):
+#         sm_selection_list = self.sm_treeview.selection()
+#         mg_selection_list = self.mg_treeview.selection()
 
-        if sm_selection_list == mg_selection_list:
-            return
+#         if sm_selection_list == mg_selection_list:
+#             return
 
-        self.mg_treeview.selection_set(sm_selection_list)
+#         self.mg_treeview.selection_set(sm_selection_list)
 
-    def _sync_sm_treeview_selection(self, event):
-        sm_selection_list = self.sm_treeview.selection()
-        mg_selection_list = self.mg_treeview.selection()
+#     def _sync_sm_treeview_selection(self, event):
+#         sm_selection_list = self.sm_treeview.selection()
+#         mg_selection_list = self.mg_treeview.selection()
 
-        if sm_selection_list == mg_selection_list:
-            return
-        self.sm_treeview.selection_set(mg_selection_list)
+#         if sm_selection_list == mg_selection_list:
+#             return
+#         self.sm_treeview.selection_set(mg_selection_list)
