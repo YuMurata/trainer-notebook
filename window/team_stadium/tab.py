@@ -48,7 +48,8 @@ class Metrics_GraphFrame(ttk.Frame):
         self.score_manager = ScoreWindowManager(self)
         self.score_manager.set_metrics_updater(self.metrics_updater)
 
-        button.bind('<Button-1>', lambda e: self.score_manager.activate())
+        button.bind('<ButtonRelease-1>',
+                    lambda e: self.score_manager.activate())
         self.treeview_frame.pack()
         button.pack()
         self.graph_frame = GraphFrame(self)
