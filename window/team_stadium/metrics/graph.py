@@ -97,7 +97,7 @@ class GraphView(FigureCanvasTkAgg):
             mean = mean_list[select.target.index]
             text = (f'{name}\n'
                     f'mean={mean}')
-            return select.annotation.set(text=text, anncoords="offset points")
+            return select.annotation.set_text(text)
 
         mplcursors.cursor(self.ax, hover=True).connect('add', select_bar)
         self.draw()
