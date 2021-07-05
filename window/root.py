@@ -1,14 +1,8 @@
-from .team_stadium.tab import TeamStadiumNotebook
-from .team_stadium.tab import Metrics_GraphFrame, TeamStadiumNotebook
+from .team_stadium.tab import Metrics_GraphFrame
 import tkinter as tk
 from tkinter import ttk
-from enum import IntEnum, auto
-from .team_stadium.metrics.graph import GraphView
-from uma_info import UmaInfo, UmaPointFileIO
-from typing import List
 from .screenshot import ScreenShotFrame
 from .compare import CompareStatusFrame
-from .team_stadium.score import ScoreFrame
 
 
 class Win1(tk.Frame):
@@ -26,7 +20,8 @@ class Win1(tk.Frame):
         # self.tab.add(self.metrics_view, text='Metrics')
         # team_stadium = TeamStadiumNotebook(self)
 
-        # team_stadium.add(ttk.Label(self, text='rank-score'), text='rank-score')
+        # team_stadium.add(ttk.Label(self, text='rank-score'),
+        # text='rank-score')
         # self.tab.add(team_stadium, text='TeamStadium')
         self.tab.add(Metrics_GraphFrame(self), text='TeamStadium')
         self.tab.add(CompareStatusFrame(self), text='Status')
@@ -70,7 +65,8 @@ class Win1(tk.Frame):
         # team_stadium = ttk.Notebook(self, height=-1, width=-1)
         # self.metrics_view = MetricsView(team_stadium)
         # # self.tab.add(self.metrics_view, text='Metrics')
-        # team_stadium.add(ttk.Label(self, text='rank-score'), text='rank-score')
+        # team_stadium.add(ttk.Label(self, text='rank-score'),
+        # text='rank-score')
         # team_stadium.add(self.metrics_view, text='metrics')
         # self.tab.add(team_stadium, text='TeamStadium')
         # self.tab.add(ttk.Label(self, text='Status'), text='Status')
