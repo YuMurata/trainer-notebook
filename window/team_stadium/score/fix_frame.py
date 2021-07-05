@@ -64,8 +64,6 @@ class RankFrame(ttk.Frame):
         return int(rank) if rank.isdecimal() else None
 
     def set_text(self, rank: str):
-        if self.combo_focus.get():
-            return
         self.rank.set(rank)
 
 
@@ -92,8 +90,6 @@ class NameFrame(ttk.Frame):
         return self.name.get()
 
     def set_text(self, name: str):
-        if self.entry_focus.get():
-            return
         self.name.set(name)
 
 
@@ -129,8 +125,6 @@ class ScoreFrame(ttk.Frame):
         return int(score) if score.isdecimal() else None
 
     def set_text(self, score: str):
-        if self.combo_focus.get():
-            return
         self.score.set(score)
 
 
@@ -169,6 +163,10 @@ class FixScoreFrame(ttk.Frame):
         self.callback: Callback = None
 
     def set_value(self, content: Content):
+        if any([self.rank_frame.combo_focus.get(),
+                self.name_frame.entry_focus.get(),
+                self.score_frame.combo_focus.get()]):
+            return
         self.rank_frame.set_text(content.rank)
         self.name_frame.set_text(content.name)
         self.score_frame.set_text(content.score)
