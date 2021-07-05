@@ -46,10 +46,13 @@ class RankFrame(ttk.Frame):
         return int(rank) if rank.isdecimal() else None
 
     def set_text(self, rank: str):
-        logger.debug(f'focus: {self.combo.focus_get()}')
-        if self.combo.focus_get() == self.combo:
-            return
-        self.rank.set(rank)
+        try:  # !!! fix !!!
+            logger.debug(f'focus: {self.combo.focus_get()}')
+            if self.combo.focus_get() == self.combo:
+                return
+            self.rank.set(rank)
+        except:
+            pass
 
 
 class NameFrame(ttk.Frame):
@@ -71,9 +74,12 @@ class NameFrame(ttk.Frame):
         return self.name.get()
 
     def set_text(self, name: str):
-        if self.entry.focus_get() == self.entry:
-            return
-        self.name.set(name)
+        try:  # !!! fix !!!
+            if self.entry.focus_get() == self.entry:
+                return
+            self.name.set(name)
+        except:
+            pass
 
 
 class ScoreFrame(ttk.Frame):
@@ -104,9 +110,12 @@ class ScoreFrame(ttk.Frame):
         return int(score) if score.isdecimal() else None
 
     def set_text(self, score: str):
-        if self.combo.focus_get() == self.combo:
-            return
-        self.score.set(score)
+        try:  # !!! fix !!!
+            if self.combo.focus_get() == self.combo:
+                return
+            self.score.set(score)
+        except:
+            pass
 
 
 class FixScoreFrame(ttk.Frame):
