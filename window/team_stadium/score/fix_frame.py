@@ -13,6 +13,20 @@ class Callback(NamedTuple):
     fix: Callable[[Content], None]
 
 
+class FocusObserber:
+    def __init__(self) -> None:
+        self.has_focus = False
+
+    def focus_in(self):
+        self.has_focus = True
+
+    def focus_out(self):
+        self.has_focus = False
+
+    def get(self):
+        return self.has_focus
+
+
 class RankFrame(ttk.Frame):
     def __init__(self, master: tk.Widget):
         super().__init__(master=master)
@@ -39,6 +53,10 @@ class RankFrame(ttk.Frame):
         self.combo = ttk.Combobox(self, textvariable=self.rank, width=width,
                                   values=rank_list, validatecommand=val_cmd,
                                   validate='key')
+
+        self.combo_focus = FocusObserber()
+        self.combo.bind('<FocusIn>', lambda e: self.combo_focus.focus_in())
+        self.combo.bind('<FocusOut>', lambda e: self.combo_focus.focus_out())
         self.combo.pack()
 
     def get_text(self):
@@ -46,13 +64,9 @@ class RankFrame(ttk.Frame):
         return int(rank) if rank.isdecimal() else None
 
     def set_text(self, rank: str):
-        try:  # !!! fix !!!
-            logger.debug(f'focus: {self.combo.focus_get()}')
-            if self.combo.focus_get() == self.combo:
-                return
-            self.rank.set(rank)
-        except:
-            logger.warning(f'例外握りつぶすのはよくない、focus_getを要修正')
+        if self.combo_focus.get():
+            return
+        self.rank.set(rank)
 
 
 class NameFrame(ttk.Frame):
@@ -68,18 +82,19 @@ class NameFrame(ttk.Frame):
         self.name = tk.StringVar(self)
         self.entry = ttk.Combobox(self, textvariable=self.name,
                                   width=width, values=uma_name_list)
+
+        self.entry_focus = FocusObserber()
+        self.entry.bind('<FocusIn>', lambda e: self.entry_focus.focus_in())
+        self.entry.bind('<FocusOut>', lambda e: self.entry_focus.focus_out())
         self.entry.pack()
 
     def get_text(self):
         return self.name.get()
 
     def set_text(self, name: str):
-        try:  # !!! fix !!!
-            if self.entry.focus_get() == self.entry:
-                return
-            self.name.set(name)
-        except:
-            logger.warning(f'例外握りつぶすのはよくない、focus_getを要修正')
+        if self.entry_focus.get():
+            return
+        self.name.set(name)
 
 
 class ScoreFrame(ttk.Frame):
@@ -103,6 +118,10 @@ class ScoreFrame(ttk.Frame):
         self.combo = ttk.Entry(self, textvariable=self.score, width=width,
                                validatecommand=val_cmd,
                                validate='key')
+
+        self.combo_focus = FocusObserber()
+        self.combo.bind('<FocusIn>', lambda e: self.combo_focus.focus_in())
+        self.combo.bind('<FocusOut>', lambda e: self.combo_focus.focus_out())
         self.combo.pack()
 
     def get_text(self):
@@ -110,12 +129,9 @@ class ScoreFrame(ttk.Frame):
         return int(score) if score.isdecimal() else None
 
     def set_text(self, score: str):
-        try:  # !!! fix !!!
-            if self.combo.focus_get() == self.combo:
-                return
-            self.score.set(score)
-        except:
-            logger.warning(f'例外握りつぶすのはよくない、focus_getを要修正')
+        if self.combo_focus.get():
+            return
+        self.score.set(score)
 
 
 class FixScoreFrame(ttk.Frame):
