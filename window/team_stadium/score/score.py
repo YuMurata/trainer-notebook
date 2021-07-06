@@ -1,10 +1,8 @@
-from TeamStadiumInfoDetection.thread_closer import ThreadCloser
 from uma_info import UmaPointFileIO
 from TeamStadiumInfoDetection.app_linked import AppLinkedThread
 from typing import Callable, List
 import tkinter as tk
 from tkinter import ttk, messagebox
-from TeamStadiumInfoDetection import Dispatcher
 from window.app import BaseApp
 from .treeview import ScoreTree, Content, ignore_score
 from .fix_frame import FixScoreFrame
@@ -16,7 +14,7 @@ logger = CustomLogger(__name__)
 
 
 class ScoreFrame(ttk.Frame):
-    def __init__(self, master: tk.Widget,):
+    def __init__(self, master: tk.Widget, linked_thread: AppLinkedThread):
         super().__init__(master)
 
         self.metrics_updater: Callable[[], None] = None
@@ -34,14 +32,12 @@ class ScoreFrame(ttk.Frame):
 
         self._create_button().pack()
 
-        def generate_update_app():
-            if not self.treeview_score.winfo_exists():
-                return
-            self.treeview_score.event_generate('<<UpdateApp>>', when='tail')
+        self.linked_thread = linked_thread
 
-        self.linked_thread = AppLinkedThread(Dispatcher(generate_update_app))
-        ThreadCloser([self.linked_thread]).start()
-        self.linked_thread.start()
+    def generate_update_app(self):
+        if not self.treeview_score.winfo_exists():
+            return
+        self.treeview_score.event_generate('<<UpdateApp>>', when='tail')
 
     def set_metrics_updater(self, metrics_updater: Callable[[], None]):
         self.metrics_updater = metrics_updater
@@ -118,10 +114,6 @@ class ScoreFrame(ttk.Frame):
 
         self.treeview_score.clear()
         self.treeview_score.fill(content_list)
-
-    def destroy(self) -> None:
-        self.linked_thread.stop()
-        return super().destroy()
 
     def deleteResultReadScore(self):
         self.linked_thread.init_dict()

@@ -1,3 +1,7 @@
+from TeamStadiumInfoDetection.thread_closer import ThreadCloser
+from TeamStadiumInfoDetection.dispatcher import Dispatcher
+from TeamStadiumInfoDetection.app_linked import AppLinkedThread
+import threading
 from exception import IllegalInitializeException
 from logger import CustomLogger
 import tkinter as tk
@@ -12,11 +16,34 @@ from .metrics.graph import GraphFrame
 logger = CustomLogger(__name__)
 
 
+class ReadScoreWindow(tk.Toplevel):
+    def __init__(self, master: tk.Widget, linked_thread: AppLinkedThread,
+                 metrics_updater: Callable[[], None]):
+        super().__init__(master)
+
+        self.linked_thread = linked_thread
+        score_frame = ScoreFrame(self, self.linked_thread)
+        self.linked_thread.set_dispatcher(
+            Dispatcher(score_frame.generate_update_app))
+        self.linked_thread.activate()
+        logger.debug(f'thread count: {len(threading.enumerate())}')
+        score_frame.set_metrics_updater(metrics_updater)
+        score_frame.pack()
+
+    def destroy(self) -> None:
+        self.linked_thread.deactivate()
+        return super().destroy()
+
+
 class ScoreWindowManager:
     def __init__(self, master: tk.Widget) -> None:
         self.master = master
         self.win: tk.Toplevel = None
         self.metrics_updater: Callable[[], None] = None
+
+        self.linked_thread = AppLinkedThread()
+        ThreadCloser([self.linked_thread]).start()
+        self.linked_thread.start()
 
     def activate(self):
         if not self.metrics_updater:
@@ -28,10 +55,8 @@ class ScoreWindowManager:
             self.win.lift()
             return
 
-        self.win = tk.Toplevel(self.master)
-        score_frame = ScoreFrame(self.win)
-        score_frame.set_metrics_updater(self.metrics_updater)
-        score_frame.pack()
+        self.win = ReadScoreWindow(
+            self.master, self.linked_thread, self.metrics_updater)
 
     def set_metrics_updater(self, metrics_updater: Callable[[None], None]):
         self.metrics_updater = metrics_updater

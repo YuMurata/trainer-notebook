@@ -38,18 +38,21 @@ class LinkedDispatched(BaseDispatched):
 
 
 class AppLinkedThread(StoppableThread):
-    def __init__(self, dispatcher: Dispatcher) -> None:
+    def __init__(self) -> None:
         super().__init__(name='AppLinkedThread')
 
         self.snipper = ImageSnipper()
         self.snipper = DebugSnipperType.Race.value(__name__)
         self.lock = Lock()
-        self.dispatcher = dispatcher
+        self.dispatcher: Dispatcher = None
         self.is_update = True
         self.linked_dict = dict()
         self.reader_dict: Dict[str, LinkedReader] = {
             'rank': RankReader(), 'score': ScoreReader()}
         self.event = Event()
+
+    def set_dispatcher(self, dispatcher: Dispatcher):
+        self.dispatcher = dispatcher
 
     def stop(self):
         self.is_update = False
@@ -63,26 +66,24 @@ class AppLinkedThread(StoppableThread):
             return None
 
         while self.is_update:
-            self.event.wait()
-            snip_image = self.snipper.Snip()
-            if snip_image:
-                read_item = each_read(snip_image)
-                if read_item:
-                    key = read_item[0]
-                    read_dict = read_item[1]
+            if self.dispatcher:
+                self.event.wait()
+                snip_image = self.snipper.Snip()
+                if snip_image:
+                    read_item = each_read(snip_image)
+                    if read_item:
+                        key = read_item[0]
+                        read_dict = read_item[1]
 
-                    with self.lock:
-                        for name in read_dict.keys():
-                            self.linked_dict.setdefault(name, dict())
-                            self.linked_dict[name][key] = read_dict[name]
-                        self.dispatcher.update_item(
-                            LinkedDispatched(self.linked_dict))
+                        with self.lock:
+                            for name in read_dict.keys():
+                                self.linked_dict.setdefault(name, dict())
+                                self.linked_dict[name][key] = read_dict[name]
+                            self.dispatcher.update_item(
+                                LinkedDispatched(self.linked_dict))
 
+            logger.debug('read app')
             sleep(0.1)
-
-    def start(self) -> None:
-        self.activate()
-        return super().start()
 
     def get(self) -> Dict[str, Dict[str, int]]:
         with self.lock:
