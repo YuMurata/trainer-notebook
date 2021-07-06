@@ -77,25 +77,19 @@ class CompareFrame(tk.Frame):
         scale = self.image_dict.scale_ratio
         image_struct = self.status_func.change(
             self.image_dict[item_id])
-        image_struct.scale(scale)
 
         if not image_struct:
+            self._delete_item_id(item_id)
             return
+
+        image_struct.scale(scale)
 
         self.canvas.itemconfig(item_id, image=image_struct.photoimage)
         self.image_dict[item_id] = image_struct
 
         self._reconfig_scroll()
 
-    def _delete_image(self, event: tk.Event):
-        x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
-        item_id_list: List[int] = self.canvas.find_closest(x, y)
-
-        if len(item_id_list) < 1:
-            return
-
-        item_id = item_id_list[0]
-
+    def _delete_item_id(self, item_id):
         if item_id not in self.image_dict:
             return
 
@@ -108,6 +102,29 @@ class CompareFrame(tk.Frame):
             old_item_id = item_id
 
         self._reconfig_scroll()
+
+    def _delete_image(self, event: tk.Event):
+        x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
+        item_id_list: List[int] = self.canvas.find_closest(x, y)
+
+        if len(item_id_list) < 1:
+            return
+
+        item_id = item_id_list[0]
+
+        self._delete_item_id(item_id)
+        # if item_id not in self.image_dict:
+        #     return
+
+        # self.image_dict.pop(item_id)
+        # self.canvas.delete(item_id)
+
+        # old_item_id = None
+        # for i, item_id in enumerate(self.image_dict.keys()):
+        #     self.canvas.moveto(item_id, *self._get_image_xy(old_item_id))
+        #     old_item_id = item_id
+
+        # self._reconfig_scroll()
 
     def _get_image_xy(self, item_id: int):
         if not item_id:

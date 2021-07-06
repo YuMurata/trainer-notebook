@@ -44,18 +44,7 @@ class StatusFrame(ttk.Frame):
         logger.debug('delete status')
 
     def select_image(self, image: Image.Image):
-        self.image_struct = ImageStruct(image)
-        self.image_struct.scale(self.scale)
-        if not self.image_id:
-            self.image_id = self.canvas.create_image(
-                0, 0, anchor='nw', image=self.image_struct.photoimage)
-        else:
-            self.canvas.itemconfig(
-                self.image_id, image=self.image_struct.photoimage)
-
-        self.canvas.update_idletasks()
-        self.canvas.config(
-            scrollregion=self.canvas.bbox("all"))  # スクロール範囲
+        self._set_image(ImageStruct(image))
 
     def _scroll_y(self, event):
         if event.delta > 0:
@@ -65,24 +54,9 @@ class StatusFrame(ttk.Frame):
 
     def change_image(self,
                      image_struct: ImageStruct) -> ImageStruct:
-        if not self.image_id or not self.image_struct:
-            return None
 
-        scale = self.image_struct.scale_ratio
         change_image = self.image_struct
-        self.image_struct = image_struct
-        self.image_struct.scale(scale)
-
-        if not self.image_id:
-            self.canvas.create_image(
-                0, 0, anchor='nw', image=self.image_struct.photoimage)
-        else:
-            self.canvas.itemconfig(
-                self.image_id, image=self.image_struct.photoimage)
-
-        self.canvas.update_idletasks()
-        self.canvas.config(
-            scrollregion=self.canvas.bbox("all"))  # スクロール範囲
+        self._set_image(image_struct)
 
         return change_image
 
@@ -105,6 +79,22 @@ class StatusFrame(ttk.Frame):
         if not scrollregion:
             scrollregion = (0, 0, 0, 0)
         self.canvas.config(scrollregion=scrollregion)  # スクロール範囲
+
+    def _set_image(self, image_struct: ImageStruct):
+        if not image_struct or not image_struct.image:
+            return
+        self.image_struct = image_struct
+        self.image_struct.scale(self.scale)
+        if not self.image_id:
+            self.image_id = self.canvas.create_image(
+                0, 0, anchor='nw', image=self.image_struct.photoimage)
+        else:
+            self.canvas.itemconfig(
+                self.image_id, image=self.image_struct.photoimage)
+
+        self.canvas.update_idletasks()
+        self.canvas.config(
+            scrollregion=self.canvas.bbox("all"))  # スクロール範囲
 
     def clear(self, event):
         self._delete_image(event)
