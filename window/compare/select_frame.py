@@ -51,11 +51,12 @@ class SelectFrame(ttk.Frame):
         for i, umaframe in enumerate(self.umaframe_dict.values()):
             if i == frame_idx:
                 break
-            height += umaframe.winfo_height()
+            height += umaframe.winfo_reqheight()
         y = height
         return x, y
 
     def add_umaframe(self):
+        print(len(self.umaframe_dict))
         button_func = ButtonFunc(
             self.show_image_status, self.show_image_compare, self.add_umaframe,
             self.delete_umaframe)
@@ -69,6 +70,7 @@ class SelectFrame(ttk.Frame):
 
         self._reconfig_scroll()
         self.umaframe_dict[item_id] = umaframe
+        self.canvas.yview_moveto(self.canvas.bbox('all')[3])
 
     def _reconfig_scroll(self):
         self.canvas.update_idletasks()
@@ -111,3 +113,7 @@ class SelectFrame(ttk.Frame):
             self.canvas.yview_scroll(-1, 'units')
         elif event.delta < 0:
             self.canvas.yview_scroll(1, 'units')
+
+    def new_status(self, event):
+        list(self.umaframe_dict.values(
+        ))[::-1][0].add_button.event_generate('<Button-1>')

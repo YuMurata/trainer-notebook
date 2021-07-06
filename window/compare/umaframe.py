@@ -33,13 +33,13 @@ class UmaFrame(tk.Frame):
         controll_frame = tk.Frame(self)
         controll_frame.pack(side=tk.RIGHT, pady=1)
 
-        add_button = ttk.Button(controll_frame, text='画像取得')
-        add_button.bind('<Button-1>', self.add_button_left_click)
-        add_button.bind('<Button-3>', self.add_button_right_click)
+        self.add_button = ttk.Button(controll_frame, text='画像取得')
+        self.add_button.bind('<Button-1>', self.add_button_left_click)
+        self.add_button.bind('<Button-3>', self.add_button_right_click)
         delete_button = ttk.Button(controll_frame, text='削除')
         delete_button.bind('<Button-1>', self.delete_button_left_click)
 
-        add_button.pack(fill=tk.X)
+        self.add_button.pack(fill=tk.X)
         delete_button.pack(fill=tk.X)
 
         self.snipper = snipper
@@ -145,8 +145,8 @@ class UmaFrame(tk.Frame):
             'RGB', (uma_img.width + status_img.width, status_img.height))
         concat_img.paste(uma_img, (0, 0))
         concat_img.paste(status_img, (uma_img.width, 0))
-        bt_width = self.status_button.winfo_width()-10
-        bt_height = self.status_button.winfo_height()-10
+        bt_width = self.status_button.winfo_reqwidth()-10
+        bt_height = self.status_button.winfo_reqheight()-10
         if bt_width/bt_height < concat_img.width/concat_img.height:
             concat_img = concat_img.resize(
                 (bt_width, int(concat_img.height/concat_img.width*bt_width)))

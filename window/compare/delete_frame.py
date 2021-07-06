@@ -3,15 +3,20 @@ from tkinter import ttk
 from typing import Callable, NamedTuple
 
 
-class DeleteFunc(NamedTuple):
+class ControlFunc(NamedTuple):
+    new: Callable[[], None]
     list_delete: Callable[[], None]
     status_view_delete: Callable[[], None]
     compare_view_delete: Callable[[], None]
 
 
-class DeleteFrame(tk.Frame):
-    def __init__(self, master: tk.Widget, delete_func: DeleteFunc):
+class ControlFrame(tk.Frame):
+    def __init__(self, master: tk.Widget, control_func: ControlFunc):
         super().__init__(master)
+
+        self.new_button = ttk.Button(self, text='new')
+        self.new_button.bind('<Button-1>', control_func.new)
+        self.new_button.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
 
         self.all_delete_button = ttk.Button(self, text='all_delete')
         self.all_delete_button.bind(
@@ -31,15 +36,16 @@ class DeleteFrame(tk.Frame):
         self.compare_view_delete_button.pack(
             side=tk.LEFT, expand=True, fill=tk.BOTH)
 
-        self.delete_func = delete_func
+        self.control_func = control_func
 
     def all_delete_button_left_click(self, event):
-        for func in self.delete_func:
-            func(event)
+        self.control_func.list_delete(event)
+        self.control_func.status_view_delete(event)
+        self.control_func.compare_view_delete(event)
 
     def all_view_delete_button_left_click(self, event):
-        self.delete_func.status_view_delete(event)
-        self.delete_func.compare_view_delete(event)
+        self.control_func.status_view_delete(event)
+        self.control_func.compare_view_delete(event)
 
     def compare_view_delete_button_left_click(self, event):
-        self.delete_func.compare_view_delete(event)
+        self.control_func.compare_view_delete(event)
