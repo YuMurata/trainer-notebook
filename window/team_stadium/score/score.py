@@ -35,6 +35,8 @@ class ScoreFrame(ttk.Frame):
         self._create_button().pack()
 
         def generate_update_app():
+            if not self.treeview_score.winfo_exists():
+                return
             self.treeview_score.event_generate('<<UpdateApp>>', when='tail')
         self.linked_thread = AppLinkedThread(Dispatcher(generate_update_app))
         ThreadCloser([self.linked_thread]).start()
