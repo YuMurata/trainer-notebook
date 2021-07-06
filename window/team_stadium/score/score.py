@@ -1,3 +1,4 @@
+from TeamStadiumInfoDetection.thread_closer import ThreadCloser
 from uma_info import UmaPointFileIO
 from TeamStadiumInfoDetection.app_linked import AppLinkedThread
 from typing import Callable, List
@@ -36,6 +37,7 @@ class ScoreFrame(ttk.Frame):
         def generate_update_app():
             self.treeview_score.event_generate('<<UpdateApp>>', when='tail')
         self.linked_thread = AppLinkedThread(Dispatcher(generate_update_app))
+        ThreadCloser([self.linked_thread]).start()
         self.linked_thread.start()
 
     def set_metrics_updater(self, metrics_updater: Callable[[], None]):

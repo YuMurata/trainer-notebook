@@ -10,7 +10,8 @@ from time import sleep
 from PIL import Image
 from copy import deepcopy
 from uma_info import UmaPointFileIO
-import threading
+from .thread_closer import StoppableThread
+
 
 logger = CustomLogger(__name__)
 
@@ -37,7 +38,7 @@ class LinkedDispatched(BaseDispatched):
         return LinkedDispatched(self.linked_dict)
 
 
-class AppLinkedThread(Thread):
+class AppLinkedThread(StoppableThread):
     def __init__(self, dispatcher: Dispatcher) -> None:
         super().__init__(name='AppLinkedThread')
 
