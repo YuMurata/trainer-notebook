@@ -113,18 +113,6 @@ class CompareFrame(tk.Frame):
         item_id = item_id_list[0]
 
         self._delete_item_id(item_id)
-        # if item_id not in self.image_dict:
-        #     return
-
-        # self.image_dict.pop(item_id)
-        # self.canvas.delete(item_id)
-
-        # old_item_id = None
-        # for i, item_id in enumerate(self.image_dict.keys()):
-        #     self.canvas.moveto(item_id, *self._get_image_xy(old_item_id))
-        #     old_item_id = item_id
-
-        # self._reconfig_scroll()
 
     def _get_image_xy(self, item_id: int):
         if not item_id:
