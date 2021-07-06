@@ -6,7 +6,7 @@ from pathlib import Path
 from logger import CustomLogger
 import random
 from enum import Enum
-from collections import UserList
+
 
 logger = CustomLogger(__name__)
 
@@ -36,7 +36,7 @@ class ImageSnipper:
         return (Rectangle.left + 8, Rectangle.top + 30,
                 Rectangle.right - 8, Rectangle.bottom - 8)
 
-    def Snip(self) -> Image:
+    def Snip(self) -> Image.Image:
         rect = self._GetWindowRectFromName()
 
         if rect:

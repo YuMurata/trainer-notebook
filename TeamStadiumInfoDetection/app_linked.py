@@ -9,7 +9,6 @@ from typing import Dict, Tuple
 from time import sleep
 from PIL import Image
 from copy import deepcopy
-from uma_info import UmaPointFileIO
 from .thread_closer import StoppableThread
 
 
