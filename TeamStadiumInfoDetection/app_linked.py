@@ -1,7 +1,7 @@
 from logger import CustomLogger
 from TeamStadiumInfoDetection.dispatcher import BaseDispatched, Dispatcher
 from TeamStadiumInfoDetection.linked_reader import LinkedReader
-from threading import Thread, Lock
+from threading import Event,  Lock
 from snip import ImageSnipper, DebugSnipperType
 from TeamStadiumInfoDetection.rank import RankReader
 from TeamStadiumInfoDetection.score import ScoreReader
@@ -50,9 +50,11 @@ class AppLinkedThread(StoppableThread):
         self.linked_dict = dict()
         self.reader_dict: Dict[str, LinkedReader] = {
             'rank': RankReader(), 'score': ScoreReader()}
+        self.event = Event()
 
     def stop(self):
         self.is_update = False
+        self.event.set()
 
     def run(self) -> None:
         def each_read(snip_image: Image.Image) -> Tuple[str, Dict[str, int]]:
@@ -62,9 +64,7 @@ class AppLinkedThread(StoppableThread):
             return None
 
         while self.is_update:
-            if not threading.main_thread().is_alive():
-                return
-
+            self.event.wait()
             snip_image = self.snipper.Snip()
             if snip_image:
                 read_item = each_read(snip_image)
@@ -81,6 +81,10 @@ class AppLinkedThread(StoppableThread):
 
             sleep(0.1)
 
+    def start(self) -> None:
+        self.activate()
+        return super().start()
+
     def get(self) -> Dict[str, Dict[str, int]]:
         with self.lock:
             return self.linked_dict
@@ -90,3 +94,9 @@ class AppLinkedThread(StoppableThread):
             self.linked_dict = dict()
             self.dispatcher.update_item(
                 LinkedDispatched(self.linked_dict))
+
+    def activate(self):
+        self.event.set()
+
+    def deactivate(self):
+        self.event.clear()
