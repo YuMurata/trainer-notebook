@@ -3,10 +3,10 @@ from snip import ImageSnipper
 from PIL import Image
 import tkinter as tk
 from tkinter import ttk
-from logger import init_logger
-from compare_window.umaframe import UmaFrame, ButtonFunc
+from logger import CustomLogger
+from .umaframe import UmaFrame, ButtonFunc
 
-logger = init_logger(__name__)
+logger = CustomLogger(__name__)
 
 
 class SelectFrame(ttk.Frame):
@@ -74,7 +74,6 @@ class SelectFrame(ttk.Frame):
         self.canvas.update_idletasks()
         self.canvas.config(
             scrollregion=self.canvas.bbox("all"))  # スクロール範囲
-        logger.debug(self.canvas.bbox("all"))
 
     def delete_umaframe(self, delete_id: int):
         if len(self.umaframe_dict) <= 1:

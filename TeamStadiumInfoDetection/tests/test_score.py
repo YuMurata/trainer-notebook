@@ -1,7 +1,7 @@
 from TeamStadiumInfoDetection import ScoreReader
 from snip import ImageSnipper
-from logger import init_logger
-logger = init_logger(__name__)
+from logger import CustomLogger
+logger = CustomLogger(__name__)
 
 
 def test_read_score():

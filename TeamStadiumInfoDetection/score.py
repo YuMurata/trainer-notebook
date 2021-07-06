@@ -4,13 +4,13 @@ import os
 import pyocr
 import pyocr.builders
 from PIL import ImageDraw,  ImageEnhance, Image
-from Uma import UmaNameFileReader
+from uma_info import UmaNameFileReader, UmaPointFileIO
 from exception import FileNotFoundException
-from logger import init_logger
+from logger import CustomLogger
 import difflib
 
 
-logger = init_logger(__name__)
+logger = CustomLogger(__name__)
 
 path = ";C:\\Program Files\\Tesseract-OCR"
 os.environ['PATH'] = os.environ['PATH'] + path

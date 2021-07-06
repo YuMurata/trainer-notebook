@@ -2,24 +2,24 @@ from exception import IllegalInitializeException
 from typing import Callable, List, NamedTuple
 import tkinter as tk
 from tkinter import ttk
-from logger import init_logger
-from .image import ImageStruct, ImageStructDict
+from logger import CustomLogger
+from window.image import ImageStruct, ImageStructDict
 
-logger = init_logger(__name__)
+logger = CustomLogger(__name__)
 
 
 class StatusFunc(NamedTuple):
     change: Callable[[ImageStruct], ImageStruct]
 
 
-class CompareFrame(ttk.Frame):
+class CompareFrame(tk.Frame):
     def __init__(self, master: tk.Widget):
         super().__init__(master)
         frame = ttk.Frame(self)
-        frame.pack(fill=tk.X, expand=True, side=tk.LEFT)
+        frame.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
 
         self.canvas = tk.Canvas(frame, bg='white', height=300)
-        self.canvas.pack(fill=tk.X, expand=True)
+        self.canvas.pack(fill=tk.BOTH, expand=True)
 
         self.x_scroll = ttk.Scrollbar(frame, orient=tk.HORIZONTAL)
         self.x_scroll.config(command=self.canvas.xview)

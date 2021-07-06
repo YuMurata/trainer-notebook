@@ -3,12 +3,12 @@ from typing import List, NamedTuple
 from PIL import ImageGrab, Image
 from tkinter import messagebox
 from pathlib import Path
-from logger import init_logger
+from logger import CustomLogger
 import random
 from enum import Enum
 from collections import UserList
 
-logger = init_logger(__name__)
+logger = CustomLogger(__name__)
 
 
 class SnipSize(NamedTuple):

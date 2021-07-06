@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
-from logger import init_logger
+from logger import CustomLogger
 from compare_window.app import CompareApp
 
-logger = init_logger(__name__)
+logger = CustomLogger(__name__)
 
 
 def status_window_main():

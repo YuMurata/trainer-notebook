@@ -38,7 +38,6 @@ class CustomLogger(Logger):
 
 def init_logger(name: str):
     logger = CustomLogger(name)
-    logger.warning('init_logger is deplicate !')
-    logger.warning('use CustomLogger')
+    logger.warning(f'{name}: init_logger is deplicate! use CustomLogger')
 
     return logger

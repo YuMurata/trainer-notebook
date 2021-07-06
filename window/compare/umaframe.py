@@ -5,10 +5,10 @@ from PIL import Image, ImageTk
 import tkinter as tk
 from tkinter import ttk
 from typing import Callable, NamedTuple
-from logger import init_logger
-from compare_window.image import ImageStruct
+from logger import CustomLogger
+from window.image import ImageStruct
 
-logger = init_logger(__name__)
+logger = CustomLogger(__name__)
 
 
 class ButtonFunc(NamedTuple):
