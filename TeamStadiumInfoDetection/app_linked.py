@@ -80,9 +80,9 @@ class AppLinkedThread(StoppableThread):
                             for name in read_dict.keys():
                                 self.linked_dict.setdefault(name, dict())
                                 self.linked_dict[name][key] = read_dict[name]
-                            if threading.main_thread().is_alive():
-                                self.dispatcher.update_item(
-                                    LinkedDispatched(self.linked_dict))
+
+                            self.dispatcher.update_item(
+                                LinkedDispatched(self.linked_dict))
 
             logger.debug('read app')
             sleep(0.1)

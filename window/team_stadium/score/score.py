@@ -1,3 +1,4 @@
+import threading
 from uma_info import UmaPointFileIO
 from TeamStadiumInfoDetection.app_linked import AppLinkedThread
 from typing import Callable, List
@@ -35,9 +36,10 @@ class ScoreFrame(ttk.Frame):
         self.linked_thread = linked_thread
 
     def generate_update_app(self):
-        if not self.treeview_score.winfo_exists():
-            return
-        self.treeview_score.event_generate('<<UpdateApp>>', when='tail')
+        if threading.main_thread().is_alive():
+            if self.treeview_score.winfo_exists():
+                self.treeview_score.event_generate(
+                    '<<UpdateApp>>', when='tail')
 
     def set_metrics_updater(self, metrics_updater: Callable[[], None]):
         self.metrics_updater = metrics_updater
