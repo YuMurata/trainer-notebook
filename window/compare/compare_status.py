@@ -3,7 +3,7 @@ from tkinter import ttk
 from snip import ImageSnipper
 from .compare_frame import CompareFrame, StatusFunc
 from .status_frame import StatusFrame
-from .delete_frame import ControlFrame, ControlFunc
+from .control_frame import ControlFrame, ControlFunc
 from .select_frame import SelectFrame
 
 
