@@ -9,7 +9,7 @@ class TextFunc(NamedTuple):
     new: Callable[[], None]
     save: Callable[[], None]
     delete: Callable[[], None]
-    update: Callable[[], None]
+    reload: Callable[[], None]
 
 
 class ManageNotePadFrame(ttk.Frame):
@@ -19,51 +19,67 @@ class ManageNotePadFrame(ttk.Frame):
         label = ttk.Label(self, text='notepad name: ')
         label.pack(side=tk.LEFT)
 
-        self.image_name_var = tk.StringVar(self)
-        self.entry = ttk.Entry(self, textvariable=self.image_name_var)
-        self.entry.bind('<Return>', self._save)
+        self.text_name_var = tk.StringVar(self)
+        self.entry = ttk.Entry(self, textvariable=self.text_name_var)
         self.entry.pack(side=tk.LEFT)
 
         label = ttk.Label(self, text='.png')
         label.pack(side=tk.LEFT)
 
-        new_button = ttk.Button(self, text='new')
-        new_button.bind('<Button-1>', self._new)
-        new_button.pack(side=tk.LEFT)
+        self.new_button = ttk.Button(self, text='new')
+        self.new_button.bind('<Button-1>', self._new)
+        self.new_button.pack(side=tk.LEFT)
 
-        change_button = ttk.Button(self, text='name change')
-        change_button.pack(side=tk.LEFT)
+        self.change_button = ttk.Button(self, text='name change')
+        self.change_button.pack(side=tk.LEFT)
 
-        change_button.bind('<Button-1>', self._save)
+        # self.change_button.bind('<Button-1>', self._save)
 
-        delete_button = ttk.Button(self, text='delete')
-        delete_button.pack(side=tk.LEFT)
-        delete_button.bind('<Button-1>', self._delete)
+        self.delete_button = ttk.Button(self, text='delete')
+        self.delete_button.pack(side=tk.LEFT)
+        # self.delete_button.bind('<Button-1>', self._delete)
 
-        update_button = ttk.Button(self, text='update')
-        update_button.pack(side=tk.LEFT)
-        update_button.bind('<Button-1>', self._update)
+        self.reload_button = ttk.Button(self, text='reload')
+        self.reload_button.pack(side=tk.LEFT)
+        # self.reload_button.bind('<Button-1>', self.text_func.reload)
 
         self.edit_file: str = None
 
-    def set_image_name(self, image_name: str):
-        self.org_image_name = image_name
-        self.image_name_var.set(image_name if image_name else '')
+    def set_text_func(self, text_func: TextFunc):
+        self.text_func = text_func
+        self.new_button.bind('<Button-1>', self.text_func.new)
+        self.change_button.bind('<Button-1>', self.text_func.save)
+        self.delete_button.bind('<Button-1>', self.text_func.delete)
+        self.reload_button.bind('<Button-1>', self.text_func.reload)
+
+    def set_text_name(self, text_name: str):
+        self.org_text_name = text_name
+        self.text_name_var.set(text_name if text_name else '')
+
+    def save(self, filename):
+        if filename == '':
+            messagebox.showerror('error', 'not set name')
+            return
+        text_name = self.text_name_var.get()
+
+        org_path = notepad_dir/f'{self.org_text_name}.png'
+        dst_path = notepad_dir/f'{text_name}.png'
+        org_path.rename(dst_path)
 
     def _new(self, event: tk.Event):
         pass
 
     def _save(self, event: tk.Event):
 
-        image_name = self.image_name_var.get()
+        image_name = self.text_name_var.get()
         if image_name == '':
             messagebox.showerror('error', 'not set name')
             return
 
-        org_path = screenshot_dir/f'{self.org_image_name}.png'
-        dst_path = screenshot_dir/f'{image_name}.png'
+        org_path = notepad_dir/f'{self.org_image_name}.png'
+        dst_path = notepad_dir/f'{image_name}.png'
         org_path.rename(dst_path)
-        self.load_image()
+        self.load_text()
 
     def _delete(self, event):
         if not self.org_image_name:
@@ -74,38 +90,13 @@ class ManageNotePadFrame(ttk.Frame):
                                       f'delete {self.org_image_name} ?'):
             return
 
-        org_path = screenshot_dir/f'{self.org_image_name}.png'
+        org_path = notepad_dir/f'{self.org_image_name}.png'
         org_path.unlink(True)
 
-        self.set_image_name(None)
+        self.load_text()
 
-    def _update(self, event):
-        pass
-
-    def load_text(self):
-        for item_id in self.image_dict.keys():
-            self.canvas.delete(item_id)
-
-        self.image_dict.clear()
-        self.name_dict.clear()
-
-        old_item_id: int = None
-        for image_path in screenshot_dir.iterdir():
-            if image_path.suffix != '.png':
-                continue
-
-            image_struct = ImageStruct(Image.open(image_path))
-
-            item_id = self.canvas.create_image(self._get_image_xy(
-                old_item_id), anchor=tk.NW, image=image_struct.photoimage,
-                tags='screenshot')
-            old_item_id = item_id
-
-            self.image_dict[item_id] = image_struct
-            self.name_dict[item_id] = image_path.stem
-
-        self.canvas_frame.reconfig_scroll()
-        self.prev_id = None
+    def get_str(self):
+        return self.entry.get()
 
 
 class NotePadListBox(tk.Listbox):
@@ -129,9 +120,9 @@ class ListFrame(tk.Frame):
         scroll_y.pack(side=tk.RIGHT, fill="y")
         self.listbox["yscrollcommand"] = scroll_y.set
 
-        self.update_list()
+        self.reload_list()
 
-    def update_list(self):
+    def reload_list(self):
         self.listbox.delete(0, tk.END)
 
         for path in notepad_dir.iterdir():
@@ -154,20 +145,28 @@ class TextBoxFrame(tk.Frame):
         frame = tk.Frame(self)
         frame.pack()
 
-        textbox = tk.Text(frame, wrap=tk.NONE)
-        textbox.pack(side=tk.LEFT)
+        self.textbox = tk.Text(frame, wrap=tk.NONE)
+        self.textbox.pack(side=tk.LEFT)
 
         scroll_y = tk.Scrollbar(
-            frame, orient=tk.VERTICAL, command=textbox.yview)
+            frame, orient=tk.VERTICAL, command=self.textbox.yview)
         scroll_y.pack(side=tk.RIGHT, fill="y")
 
         scroll_x = tk.Scrollbar(
-            self, orient=tk.HORIZONTAL, command=textbox.xview)
+            self, orient=tk.HORIZONTAL, command=self.textbox.xview)
         scroll_x.pack(side=tk.BOTTOM, fill="x")
 
         # 動きをスクロールバーに反映
-        textbox["yscrollcommand"] = scroll_y.set
-        textbox["xscrollcommand"] = scroll_x.set
+        self.textbox["yscrollcommand"] = scroll_y.set
+        self.textbox["xscrollcommand"] = scroll_x.set
+
+    def clear_text(self):
+        # self.textbox.insert(tk.END, 'test')
+        if self.get_text() != '':
+            self.textbox.delete(1, tk.END)
+
+    def get_text(self):
+        return self.textbox.get("1.0", 'end-1c')
 
 
 class NotePadFrame(tk.Frame):
@@ -184,5 +183,22 @@ class NotePadFrame(tk.Frame):
         textbox_frame = TextBoxFrame(self)
         textbox_frame.pack(padx=5)
 
-        manage_frame = ManageNotePadFrame(self)
+        manage_frame = ManageNotePadFrame(
+            self)
         manage_frame.pack()
+
+        def new_text(event):
+            textbox_frame.clear_text()
+            listbox_frame.reload_list()
+
+        def save_text(event):
+            pass
+
+        def delete_text(event):
+            pass
+
+        def reload_text(event):
+            pass
+
+        manage_frame.set_text_func(
+            TextFunc(new_text, save_text, delete_text, reload_text))
