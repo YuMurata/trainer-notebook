@@ -32,6 +32,7 @@ class ReadScoreWindow(tk.Toplevel):
 
     def destroy(self) -> None:
         self.linked_thread.deactivate()
+        self.linked_thread.init_dict()
         return super().destroy()
 
 
