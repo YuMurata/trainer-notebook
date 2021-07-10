@@ -69,6 +69,7 @@ class AppLinkedThread(StoppableThread):
             if self.dispatcher:
                 self.event.wait()
                 snip_image = self.snipper.Snip()
+                logger.debug('read app')
                 if snip_image:
                     read_item = each_read(snip_image)
                     if read_item:
@@ -83,7 +84,6 @@ class AppLinkedThread(StoppableThread):
                             self.dispatcher.update_item(
                                 LinkedDispatched(self.linked_dict))
 
-            logger.debug('read app')
             sleep(0.1)
 
     def get(self) -> Dict[str, Dict[str, int]]:
