@@ -25,14 +25,17 @@ class ReadScoreWindow(tk.Toplevel):
         score_frame = ScoreFrame(self, self.linked_thread)
         self.linked_thread.set_dispatcher(
             Dispatcher(score_frame.generate_update_app))
+        logger.debug('--- activate ---')
         self.linked_thread.activate()
         logger.debug(f'thread count: {len(threading.enumerate())}')
         score_frame.set_metrics_updater(metrics_updater)
         score_frame.pack()
 
     def destroy(self) -> None:
+        logger.debug('--- deactivate ---')
         self.linked_thread.deactivate()
-        self.linked_thread.init_dict()
+        with logger.scope('init'):
+            self.linked_thread.init_dict()
         return super().destroy()
 
 

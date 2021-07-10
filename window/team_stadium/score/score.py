@@ -76,7 +76,8 @@ class ScoreFrame(ttk.Frame):
         self.treeview_score.select_item = content
 
     def update_app(self, event):
-        read_content_dict = self.linked_thread.get()
+        with logger.scope('get score'):
+            read_content_dict = self.linked_thread.get()
         treeview_content_dict = {content.name: dict(
             rank=content.rank, score=content.score)
             for content in self.treeview_score.content_dict.values()}

@@ -76,25 +76,31 @@ class AppLinkedThread(StoppableThread):
                         key = read_item[0]
                         read_dict = read_item[1]
 
-                        with self.lock:
-                            for name in read_dict.keys():
-                                self.linked_dict.setdefault(name, dict())
-                                self.linked_dict[name][key] = read_dict[name]
-
-                            self.dispatcher.update_item(
-                                LinkedDispatched(self.linked_dict))
+                        with logger.scope('lock update'):
+                            with self.lock:
+                                logger.debug('set dict')
+                                for name in read_dict.keys():
+                                    self.linked_dict.setdefault(name, dict())
+                                    self.linked_dict[name][key] = read_dict[name]
+                                logger.debug('update item')
+                                self.dispatcher.update_item(
+                                    LinkedDispatched(self.linked_dict))
 
             sleep(0.1)
 
     def get(self) -> Dict[str, Dict[str, int]]:
-        with self.lock:
-            return self.linked_dict
+        with logger.scope('lock get'):
+            with self.lock:
+                return self.linked_dict
 
     def init_dict(self):
-        with self.lock:
-            self.linked_dict = dict()
-            self.dispatcher.update_item(
-                LinkedDispatched(self.linked_dict))
+        with logger.scope('lock init'):
+            with self.lock:
+                logger.debug('set dict')
+                self.linked_dict = dict()
+                logger.debug('update item')
+                self.dispatcher.update_item(
+                    LinkedDispatched(self.linked_dict))
 
     def activate(self):
         self.event.set()
