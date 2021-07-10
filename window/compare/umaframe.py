@@ -33,13 +33,13 @@ class UmaFrame(tk.Frame):
         controll_frame = tk.Frame(self)
         controll_frame.pack(side=tk.RIGHT, pady=1)
 
-        add_button = ttk.Button(controll_frame, text='画像取得')
-        add_button.bind('<Button-1>', self.add_button_left_click)
-        add_button.bind('<Button-3>', self.add_button_right_click)
+        self.add_button = ttk.Button(controll_frame, text='画像取得')
+        self.add_button.bind('<Button-1>', self.add_button_left_click)
+        self.add_button.bind('<Button-3>', self.add_button_right_click)
         delete_button = ttk.Button(controll_frame, text='削除')
         delete_button.bind('<Button-1>', self.delete_button_left_click)
 
-        add_button.pack(fill=tk.X)
+        self.add_button.pack(fill=tk.X)
         delete_button.pack(fill=tk.X)
 
         self.snipper = snipper
