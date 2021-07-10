@@ -5,100 +5,6 @@ from .define import notepad_dir
 from typing import Callable,  NamedTuple
 
 
-class TextFunc(NamedTuple):
-    new: Callable[[], None]
-    save: Callable[[], None]
-    delete: Callable[[], None]
-    reload: Callable[[], None]
-
-
-class ManageNotePadFrame(ttk.Frame):
-    def __init__(self, master: tk.Widget):
-        super().__init__(master=master)
-
-        label = ttk.Label(self, text='notepad name: ')
-        label.pack(side=tk.LEFT)
-
-        self.text_name_var = tk.StringVar(self)
-        self.entry = ttk.Entry(self, textvariable=self.text_name_var)
-        self.entry.pack(side=tk.LEFT)
-
-        label = ttk.Label(self, text='.png')
-        label.pack(side=tk.LEFT)
-
-        self.new_button = ttk.Button(self, text='new')
-        self.new_button.bind('<Button-1>', self._new)
-        self.new_button.pack(side=tk.LEFT)
-
-        self.change_button = ttk.Button(self, text='name change')
-        self.change_button.pack(side=tk.LEFT)
-
-        # self.change_button.bind('<Button-1>', self._save)
-
-        self.delete_button = ttk.Button(self, text='delete')
-        self.delete_button.pack(side=tk.LEFT)
-        # self.delete_button.bind('<Button-1>', self._delete)
-
-        self.reload_button = ttk.Button(self, text='reload')
-        self.reload_button.pack(side=tk.LEFT)
-        # self.reload_button.bind('<Button-1>', self.text_func.reload)
-
-        self.edit_file: str = None
-
-    def set_text_func(self, text_func: TextFunc):
-        self.text_func = text_func
-        self.new_button.bind('<Button-1>', self.text_func.new)
-        self.change_button.bind('<Button-1>', self.text_func.save)
-        self.delete_button.bind('<Button-1>', self.text_func.delete)
-        self.reload_button.bind('<Button-1>', self.text_func.reload)
-
-    def set_text_name(self, text_name: str):
-        self.org_text_name = text_name
-        self.text_name_var.set(text_name if text_name else '')
-
-    def save(self, filename):
-        if filename == '':
-            messagebox.showerror('error', 'not set name')
-            return
-        text_name = self.text_name_var.get()
-
-        org_path = notepad_dir/f'{self.org_text_name}.png'
-        dst_path = notepad_dir/f'{text_name}.png'
-        org_path.rename(dst_path)
-
-    def _new(self, event: tk.Event):
-        pass
-
-    def _save(self, event: tk.Event):
-
-        image_name = self.text_name_var.get()
-        if image_name == '':
-            messagebox.showerror('error', 'not set name')
-            return
-
-        org_path = notepad_dir/f'{self.org_image_name}.png'
-        dst_path = notepad_dir/f'{image_name}.png'
-        org_path.rename(dst_path)
-        self.load_text()
-
-    def _delete(self, event):
-        if not self.org_image_name:
-            messagebox.showerror('delete', 'not select image')
-            return
-
-        if not messagebox.askokcancel('delete',
-                                      f'delete {self.org_image_name} ?'):
-            return
-
-        org_path = notepad_dir/f'{self.org_image_name}.png'
-        org_path.unlink(True)
-
-        self.load_text()
-
-    def get_str(self):
-        return self.entry.get()
-
-
 class NotePadListBox(tk.Listbox):
     def __init__(self, master: tk.Widget):
         super().__init__(master=master)
@@ -115,11 +21,16 @@ class ListFrame(tk.Frame):
         self.listbox = tk.Listbox(self)
         self.listbox.pack(side=tk.LEFT, fill=tk.Y)
 
+        self.listbox.bind('<<ListboxSelect>>', self.left_click)
+
         scroll_y = tk.Scrollbar(
             self, orient=tk.VERTICAL, command=self.listbox.yview)
         scroll_y.pack(side=tk.RIGHT, fill="y")
         self.listbox["yscrollcommand"] = scroll_y.set
 
+        self.reload_list()
+
+    def reload_event(self, event):
         self.reload_list()
 
     def reload_list(self):
@@ -133,6 +44,17 @@ class ListFrame(tk.Frame):
 
     def addList(self, filename):
         self.listbox.insert(tk.END, filename)
+
+    def left_click(self, event):
+        itemIdxList = self.listbox.curselection()
+        if len(itemIdxList) == 1:
+            filename = self.listbox.get(itemIdxList)
+            with open(notepad_dir/f'{filename}.txt', mode='r') as f:
+                text = f.read()
+            self.load_file(filename, text)
+
+    def set_load_func(self, load_file):
+        self.load_file = load_file
 
 
 class TextBoxFrame(tk.Frame):
@@ -160,13 +82,108 @@ class TextBoxFrame(tk.Frame):
         self.textbox["yscrollcommand"] = scroll_y.set
         self.textbox["xscrollcommand"] = scroll_x.set
 
+        self.isvisible = False
+        # self.textbox.pack_forget()
+
     def clear_text(self):
         # self.textbox.insert(tk.END, 'test')
         if self.get_text() != '':
-            self.textbox.delete(1, tk.END)
+            self.textbox.delete(1.0, tk.END)
 
     def get_text(self):
         return self.textbox.get("1.0", 'end-1c')
+
+    def set_text(self, str):
+        self.clear_text()
+        self.textbox.insert(1.0, str)
+
+
+class ManageNotePadFrame(ttk.Frame):
+    def __init__(self, master: tk.Widget, get_text: Callable[[], None], clear_text: Callable[[], None], reload: Callable[[], None]):
+        super().__init__(master=master)
+
+        self.edit_file: str = None
+        self.get_text = get_text
+        self.clear_text = clear_text
+        self.reload = reload
+
+        label = ttk.Label(self, text='notepad name: ')
+        label.pack(side=tk.LEFT)
+
+        self.text_name_var = tk.StringVar(self)
+        self.entry = ttk.Entry(self, textvariable=self.text_name_var)
+        self.entry.pack(side=tk.LEFT)
+
+        label = ttk.Label(self, text='.png')
+        label.pack(side=tk.LEFT)
+
+        self.new_button = ttk.Button(self, text='new')
+        self.new_button.bind('<Button-1>', self._new)
+        self.new_button.pack(side=tk.LEFT)
+
+        self.change_button = ttk.Button(self, text='name change')
+        self.change_button.pack(side=tk.LEFT)
+
+        self.change_button.bind('<Button-1>', self._rename)
+
+        self.delete_button = ttk.Button(self, text='delete')
+        self.delete_button.pack(side=tk.LEFT)
+        self.delete_button.bind('<Button-1>', self._delete)
+
+        self.reload_button = ttk.Button(self, text='reload')
+        self.reload_button.pack(side=tk.LEFT)
+        self.reload_button.bind('<Button-1>', self.reload)
+
+    def load_file(self, text_name: str):
+        self.org_text_name = text_name
+        self.text_name_var.set(text_name if text_name else '')
+        self.edit_file = text_name
+
+    def save(self, filename):
+        if not self.edit_file:
+            return
+        with open(notepad_dir/f'{self.edit_file}.txt', mode='w') as f:
+            f.write(self.get_text())
+
+    def _new(self, event: tk.Event):
+        edit_file = self.entry.get()
+        if edit_file == '':
+            return
+        self.edit_file = edit_file
+        self.clear_text()
+        with open(notepad_dir/f'{self.edit_file}.txt', mode='w') as f:
+            pass
+        self.reload(event)
+
+    def _rename(self, event: tk.Event):
+
+        new_name = self.get_str()
+        if new_name == '':
+            messagebox.showerror('error', 'not set name')
+            return
+
+        org_path = notepad_dir/f'{self.edit_file}.txt'
+        dst_path = notepad_dir/f'{new_name}.txt'
+        org_path.rename(dst_path)
+        self.edit_file = new_name
+        self.reload(event)
+
+    def _delete(self, event):
+        if not self.edit_file:
+            messagebox.showerror('delete', 'not select image')
+            return
+
+        if not messagebox.askokcancel('delete',
+                                      f'delete {self.edit_file} ?'):
+            return
+
+        org_path = notepad_dir/f'{self.edit_file}.txt'
+        org_path.unlink(True)
+
+        self.reload(event)
+
+    def get_str(self):
+        return self.entry.get()
 
 
 class NotePadFrame(tk.Frame):
@@ -184,21 +201,11 @@ class NotePadFrame(tk.Frame):
         textbox_frame.pack(padx=5)
 
         manage_frame = ManageNotePadFrame(
-            self)
+            self, textbox_frame.get_text, textbox_frame.clear_text, listbox_frame.reload_event)
         manage_frame.pack()
 
-        def new_text(event):
-            textbox_frame.clear_text()
-            listbox_frame.reload_list()
+        def load_file(filename, text):
+            textbox_frame.set_text(text)
+            manage_frame.load_file(filename)
 
-        def save_text(event):
-            pass
-
-        def delete_text(event):
-            pass
-
-        def reload_text(event):
-            pass
-
-        manage_frame.set_text_func(
-            TextFunc(new_text, save_text, delete_text, reload_text))
+        listbox_frame.set_load_func(load_file)
