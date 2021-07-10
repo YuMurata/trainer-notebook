@@ -1,3 +1,4 @@
+import threading
 from logger import CustomLogger
 from TeamStadiumInfoDetection.dispatcher import BaseDispatched, Dispatcher
 from TeamStadiumInfoDetection.linked_reader import LinkedReader
@@ -79,8 +80,9 @@ class AppLinkedThread(StoppableThread):
                             for name in read_dict.keys():
                                 self.linked_dict.setdefault(name, dict())
                                 self.linked_dict[name][key] = read_dict[name]
-                            self.dispatcher.update_item(
-                                LinkedDispatched(self.linked_dict))
+                            if threading.main_thread().is_alive():
+                                self.dispatcher.update_item(
+                                    LinkedDispatched(self.linked_dict))
 
             logger.debug('read app')
             sleep(0.1)
