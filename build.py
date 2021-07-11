@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     noconfirm = ['--noconfirm']
     add_data = ['--add-data', 'resource;resource']
-    app_name = ['--name', 'umaumadrive']
+    app_name = ['--name', 'trainer_notebook']
     windowed = ['--windowed']
     option_list = noconfirm+add_data+app_name+windowed
     subprocess.run([command, file_path]+option_list)
