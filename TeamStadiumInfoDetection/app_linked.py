@@ -1,7 +1,7 @@
 from logger import CustomLogger
 from TeamStadiumInfoDetection.dispatcher import BaseDispatched, Dispatcher
 from TeamStadiumInfoDetection.linked_reader import LinkedReader
-from threading import Thread, Lock
+from threading import Event,  Lock
 from snip import ImageSnipper, DebugSnipperType
 from TeamStadiumInfoDetection.rank import RankReader
 from TeamStadiumInfoDetection.score import ScoreReader
@@ -9,8 +9,8 @@ from typing import Dict, Tuple
 from time import sleep
 from PIL import Image
 from copy import deepcopy
-from uma_info import UmaPointFileIO
-import threading
+from .thread_closer import StoppableThread
+
 
 logger = CustomLogger(__name__)
 
@@ -37,21 +37,27 @@ class LinkedDispatched(BaseDispatched):
         return LinkedDispatched(self.linked_dict)
 
 
-class AppLinkedThread(Thread):
-    def __init__(self, dispatcher: Dispatcher) -> None:
+class AppLinkedThread(StoppableThread):
+    def __init__(self) -> None:
         super().__init__(name='AppLinkedThread')
 
         self.snipper = ImageSnipper()
         self.snipper = DebugSnipperType.Race.value(__name__)
         self.lock = Lock()
-        self.dispatcher = dispatcher
+        self.dispatcher: Dispatcher = None
         self.is_update = True
         self.linked_dict = dict()
+        self.init_flag = False
         self.reader_dict: Dict[str, LinkedReader] = {
             'rank': RankReader(), 'score': ScoreReader()}
+        self.event = Event()
+
+    def set_dispatcher(self, dispatcher: Dispatcher):
+        self.dispatcher = dispatcher
 
     def stop(self):
         self.is_update = False
+        self.event.set()
 
     def run(self) -> None:
         def each_read(snip_image: Image.Image) -> Tuple[str, Dict[str, int]]:
@@ -61,31 +67,48 @@ class AppLinkedThread(Thread):
             return None
 
         while self.is_update:
-            if not threading.main_thread().is_alive():
-                return
+            sleep(0.1)
+            self.event.wait()
+            if not self.dispatcher:
+                continue
 
             snip_image = self.snipper.Snip()
-            if snip_image:
-                read_item = each_read(snip_image)
-                if read_item:
-                    key = read_item[0]
-                    read_dict = read_item[1]
+            logger.debug('read app')
+            if not snip_image:
+                continue
 
-                    with self.lock:
-                        for name in read_dict.keys():
-                            self.linked_dict.setdefault(name, dict())
-                            self.linked_dict[name][key] = read_dict[name]
-                        self.dispatcher.update_item(
-                            LinkedDispatched(self.linked_dict))
+            read_item = each_read(snip_image)
+            if not read_item:
+                continue
 
-            sleep(0.1)
+            key = read_item[0]
+            read_dict = read_item[1]
+
+            with logger.scope('lock update'):
+                with self.lock:
+                    if self.init_flag:
+                        self.linked_dict = dict()
+                        self.init_flag = False
+
+                    logger.debug('set dict')
+                    for name in read_dict.keys():
+                        self.linked_dict.setdefault(name, dict())
+                        self.linked_dict[name][key] = read_dict[name]
+                    logger.debug('update item')
+                    self.dispatcher.update_item(
+                        LinkedDispatched(self.linked_dict))
 
     def get(self) -> Dict[str, Dict[str, int]]:
-        with self.lock:
-            return self.linked_dict
+        with logger.scope('lock get'):
+            with self.lock:
+                return self.linked_dict
 
     def init_dict(self):
-        with self.lock:
-            self.linked_dict = dict()
-            self.dispatcher.update_item(
-                LinkedDispatched(self.linked_dict))
+        with logger.scope('lock init'):
+            self.init_flag = True
+
+    def activate(self):
+        self.event.set()
+
+    def deactivate(self):
+        self.event.clear()

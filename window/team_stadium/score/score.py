@@ -1,9 +1,9 @@
+import threading
 from uma_info import UmaPointFileIO
 from TeamStadiumInfoDetection.app_linked import AppLinkedThread
 from typing import Callable, List
 import tkinter as tk
 from tkinter import ttk, messagebox
-from TeamStadiumInfoDetection import Dispatcher
 from window.app import BaseApp
 from .treeview import ScoreTree, Content, ignore_score
 from .fix_frame import FixScoreFrame
@@ -15,7 +15,7 @@ logger = CustomLogger(__name__)
 
 
 class ScoreFrame(ttk.Frame):
-    def __init__(self, master: tk.Widget,):
+    def __init__(self, master: tk.Widget, linked_thread: AppLinkedThread):
         super().__init__(master)
 
         self.metrics_updater: Callable[[], None] = None
@@ -33,10 +33,21 @@ class ScoreFrame(ttk.Frame):
 
         self._create_button().pack()
 
-        def generate_update_app():
-            self.treeview_score.event_generate('<<UpdateApp>>', when='tail')
-        self.linked_thread = AppLinkedThread(Dispatcher(generate_update_app))
-        self.linked_thread.start()
+        self.linked_thread = linked_thread
+
+    def generate_update_app(self):
+        if not threading.main_thread().is_alive():
+            return
+
+        if not self.treeview_score.winfo_exists():
+            return
+
+        with logger.scope('generate'):
+            try:
+                self.treeview_score.event_generate(
+                    '<<UpdateApp>>', when='tail')
+            except tk.TclError as e:
+                logger.error(str(e))
 
     def set_metrics_updater(self, metrics_updater: Callable[[], None]):
         self.metrics_updater = metrics_updater
@@ -73,7 +84,8 @@ class ScoreFrame(ttk.Frame):
         self.treeview_score.select_item = content
 
     def update_app(self, event):
-        read_content_dict = self.linked_thread.get()
+        with logger.scope('get score'):
+            read_content_dict = self.linked_thread.get()
         treeview_content_dict = {content.name: dict(
             rank=content.rank, score=content.score)
             for content in self.treeview_score.content_dict.values()}
@@ -113,10 +125,6 @@ class ScoreFrame(ttk.Frame):
 
         self.treeview_score.clear()
         self.treeview_score.fill(content_list)
-
-    def destroy(self) -> None:
-        self.linked_thread.stop()
-        return super().destroy()
 
     def deleteResultReadScore(self):
         self.linked_thread.init_dict()

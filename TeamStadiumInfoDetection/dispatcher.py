@@ -1,6 +1,9 @@
 from abc import ABCMeta, abstractmethod
+from logger import CustomLogger
 from exception import InvalidValueException
 from typing import Callable
+
+logger = CustomLogger(__name__)
 
 
 class BaseDispatched(metaclass=ABCMeta):
@@ -40,7 +43,8 @@ class Dispatcher:
 
         self.current_item.update_current(item.copy())
         if not self.old_item or self.current_item != self.old_item:
-            self.callback()
+            with logger.scope('callback'):
+                self.callback()
 
         if not self.old_item:
             self.old_item = item.copy()
