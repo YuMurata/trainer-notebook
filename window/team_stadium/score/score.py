@@ -36,10 +36,18 @@ class ScoreFrame(ttk.Frame):
         self.linked_thread = linked_thread
 
     def generate_update_app(self):
-        if threading.main_thread().is_alive():
-            if self.treeview_score.winfo_exists():
+        if not threading.main_thread().is_alive():
+            return
+
+        if not self.treeview_score.winfo_exists():
+            return
+
+        with logger.scope('generate'):
+            try:
                 self.treeview_score.event_generate(
                     '<<UpdateApp>>', when='tail')
+            except tk.TclError as e:
+                logger.error(str(e))
 
     def set_metrics_updater(self, metrics_updater: Callable[[], None]):
         self.metrics_updater = metrics_updater

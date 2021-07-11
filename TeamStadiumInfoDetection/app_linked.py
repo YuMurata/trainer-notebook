@@ -1,7 +1,7 @@
 from logger import CustomLogger
 from TeamStadiumInfoDetection.dispatcher import BaseDispatched, Dispatcher
 from TeamStadiumInfoDetection.linked_reader import LinkedReader
-from threading import Event,  RLock
+from threading import Event,  Lock
 from snip import ImageSnipper, DebugSnipperType
 from TeamStadiumInfoDetection.rank import RankReader
 from TeamStadiumInfoDetection.score import ScoreReader
@@ -43,10 +43,11 @@ class AppLinkedThread(StoppableThread):
 
         self.snipper = ImageSnipper()
         self.snipper = DebugSnipperType.Race.value(__name__)
-        self.lock = RLock()
+        self.lock = Lock()
         self.dispatcher: Dispatcher = None
         self.is_update = True
         self.linked_dict = dict()
+        self.init_flag = False
         self.reader_dict: Dict[str, LinkedReader] = {
             'rank': RankReader(), 'score': ScoreReader()}
         self.event = Event()

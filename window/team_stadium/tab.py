@@ -19,7 +19,7 @@ logger = CustomLogger(__name__)
 class ReadScoreWindow(tk.Toplevel):
     def __init__(self, master: tk.Widget, linked_thread: AppLinkedThread,
                  metrics_updater: Callable[[], None]):
-        super().__init__(master)
+        super().__init__(master, name='read_score')
 
         self.linked_thread = linked_thread
         score_frame = ScoreFrame(self, self.linked_thread)
@@ -27,15 +27,15 @@ class ReadScoreWindow(tk.Toplevel):
             Dispatcher(score_frame.generate_update_app))
         logger.debug('--- activate ---')
         self.linked_thread.activate()
-        logger.debug(f'thread count: {len(threading.enumerate())}')
+        logger.debug(f'thread: {threading.enumerate()}')
         score_frame.set_metrics_updater(metrics_updater)
         score_frame.pack()
 
     def destroy(self) -> None:
         logger.debug('--- deactivate ---')
-        self.linked_thread.deactivate()
         with logger.scope('init'):
             self.linked_thread.init_dict()
+        self.linked_thread.deactivate()
         return super().destroy()
 
 
